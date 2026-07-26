@@ -1,0 +1,62 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  # Extract this version's changelog entry from readme.txt
+  prepare-changelog:
+    runs-on: self-hosted
+    outputs:
+      changelog: ${{ steps.extract.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        if: runner.environment == 'github-hosted'
+        with:
+          node-version: '24'
+
+      - name: Extract changelog from readme.txt
+        id: extract
+        run: |
+          CHANGELOG=$(node build/extract-changelog.js latest)
+          {
+            echo "changelog<<EOF"
+            echo "$CHANGELOG"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  # Build, validate versions, create the GitHub release
+  release:
+    needs: prepare-changelog
+    uses: artkrsk/wordpress-plugin-release-action/.github/workflows/release.yml@main
+    with:
+      # Node 24: last LTS line that still bundles corepack (the action uses it for pnpm)
+      node_version: '24'
+      php_version: '8.4'
+      # The action installs Node deps only; composer install must be explicit —
+      # the build copies vendor/autoload.php into the staged plugin and its
+      # release assertions fail fast without it.
+      build_command: 'composer install --prefer-dist --no-progress && pnpm build'
+
+      # Changelog from readme.txt
+      custom_changelog: ${{ needs.prepare-changelog.outputs.changelog }}
+
+      # WordPress.org listing assets (icons today; banners and screenshots pending)
+      assets_directory: '.wordpress-org'
+
+      # Version consistency: all three are stamped from composer.json "version",
+      # and the tag must match them.
+      version_files: '["plugin_header", "readme.txt", "package.json"]'
+
+      # Not on WordPress.org yet, so there is no SVN repo to check out — leaving
+      # this on would fail the release outright. Flip to true and add the
+      # SVN_USERNAME / SVN_PASSWORD repo secrets once the plugin is approved.
+      deploy_to_wordpress: false

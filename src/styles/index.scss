@@ -1,0 +1,22 @@
+// Arts Cursor Follower for Elementor — the engine stylesheet.
+//
+// Architecture:
+// - All rules live in the `arts-cursor` cascade layer: any unlayered theme CSS
+//   wins by default, no specificity wars.
+// - The per-frame motion is written by JS as one real `transform` on the root
+//   (translate + a symmetric matrix for the elastic squash) — no
+//   custom-property plumbing, nothing inherits, nothing to fence.
+// - Effects are a CSS state machine: JS flips data-cursor-* attributes and the
+//   two registered state vars; transitions on real properties do the animating.
+// - The six public theming vars (--arts-cursor-size/-text-color/-loading-color/
+//   -border-width/-border-color/-background-color) are deliberately NOT
+//   registered via @property: registration would give them permanent initial
+//   values and silently disable the `var(--x, fallback)` contract the styles
+//   are built on.
+
+@use 'tokens';
+@use 'cursor';
+@use 'parts';
+@use 'globals';
+@use 'keyframes';
+@use 'integrations';

@@ -1,0 +1,160 @@
+/* Docs' own cursor theming through the public vars — the same channel a real
+   site's Site Settings uses. Scoped to the highlight state (the engine's own
+   data attribute), so the resting cursor keeps the plugin's out-of-box ring
+   while the highlight paints as a visible disc: with no background set
+   anywhere, the stylesheet's fallback is transparent and the highlight would
+   be a near-invisible enlarged hairline. */
+.arts-cursor[data-cursor-highlight] {
+  --arts-cursor-background-color: rgba(128, 128, 128, 0.3);
+}
+
+/* Pills as dark chips (the fluid-ds look). The pill border follows the fill
+   by the stylesheet's own fallback design — no stray ring to hide — and the
+   text flips light only inside the pill, so bare labels keep currentColor. */
+.arts-cursor[data-cursor-shape='pill'] {
+  --arts-cursor-label-background: #181818;
+  --arts-cursor-text-color: #ffffff;
+}
+
+/* Presentation for the demo snippets. Deliberately NOT part of the displayed
+   code: the snippets show only the wire contract — the payload attribute —
+   and how a target looks is the host page's business, so it lives here.
+   Everything is scoped under the stage so demo classes can't leak. */
+
+.cursor-demo__stage button {
+  padding: 10px 20px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  font: inherit;
+}
+
+.cursor-demo__stage .demo-magnetic-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 50%;
+  color: inherit;
+  transition: border-color 0.2s;
+}
+
+/* The cursor ring wraps the icon on hover, so the icon's own border hands
+   off to it — gated on the engine's <html> class: with no cursor (touch),
+   the border stays. */
+html.has-cursor-follower .cursor-demo__stage .demo-magnetic-icon:hover {
+  border-color: transparent;
+}
+
+.cursor-demo__stage .demo-magnetic-button {
+  padding: 14px 28px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.cursor-demo__stage .demo-magnetic-button:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.cursor-demo__stage .demo-card {
+  display: block;
+  width: 280px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cursor-demo__stage .demo-card__media {
+  display: block;
+  aspect-ratio: 3 / 2;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(128, 128, 128, 0.25), rgba(128, 128, 128, 0.1));
+}
+
+.cursor-demo__stage .demo-card__title {
+  display: block;
+  padding-top: 10px;
+  font-size: 14px;
+}
+
+.cursor-demo__stage .demo-drag-strip {
+  width: 100%;
+  max-width: 520px;
+  padding: 56px 24px;
+  border: 1px dashed rgba(128, 128, 128, 0.4);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--vp-c-text-2);
+  user-select: none;
+}
+
+.cursor-demo__stage .demo-anchor-zone {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  padding: 56px 96px 56px 24px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  color: var(--vp-c-text-2);
+}
+
+.cursor-demo__stage .demo-anchor-dot {
+  position: absolute;
+  top: 50%;
+  right: 32px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.cursor-demo__stage .demo-rules-scope {
+  width: 100%;
+  max-width: 520px;
+}
+
+.cursor-demo__stage .demo-rules-card {
+  display: block;
+  padding: 40px 24px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--vp-c-text-2);
+}
+
+.cursor-demo__stage .demo-orbit-zone {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  border: 1px dashed rgba(128, 128, 128, 0.4);
+  border-radius: 50%;
+}
+
+.cursor-demo__stage .demo-orbit-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: demo-orbit 5s linear infinite;
+}
+
+@keyframes demo-orbit {
+  from {
+    transform: rotate(0turn) translateX(75px);
+  }
+  to {
+    transform: rotate(1turn) translateX(75px);
+  }
+}

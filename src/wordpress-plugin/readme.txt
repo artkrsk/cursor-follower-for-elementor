@@ -1,0 +1,108 @@
+=== Arts Cursor Follower for Elementor ===
+Contributors: artemsemkin
+Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
+Requires at least: 6.0
+Tested up to: 7.0
+Requires PHP: 8.0
+Stable tag: 1.0.0
+License: GPLv3
+License URI: https://www.gnu.org/licenses/gpl-3.0
+GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
+
+An animated cursor follower for Elementor: magnetic buttons, link highlights, text and icon hints, drag effects. Loads nothing on touch devices.
+
+== Description ==
+
+Cursor Follower adds an animated custom cursor to your Elementor site. It trails the mouse with a smooth lag, grows over links, pulls itself onto buttons, and turns slides and images into labeled targets: "Drag", "Zoom", "View Project".
+
+This is a plugin you judge by feel. Press Live Preview above and move your mouse around.
+
+One thing it is not: a static cursor image swapper. If you want to replace the pointer with a PNG, plenty of plugins do that. Cursor Follower is a motion engine that reacts to what's under the pointer.
+
+Live demos and developer documentation: https://artkrsk.github.io/cursor-follower-for-elementor/
+
+= The effects =
+
+* **Link highlight.** The cursor grows and fades over links and buttons. On by default, works everywhere.
+* **Magnetic hover.** Buttons, icons and carousel arrows pull the cursor onto themselves. Switched on per widget, tuned globally. No HTML classes to hand-edit, and none of it is paywalled.
+* **Text and icon hints.** A pill follows the cursor across linked images, portfolio cards and slides. Change the wording per widget, or swap the text for any Elementor icon, SVG included.
+* **Drag hints for carousels.** Three styles: a text pill, text that grows arrows while you drag, or arrows only with a dot that stands in for the native cursor during the gesture.
+* **Elastic squash and click feedback.** The cursor stretches along its own movement and dips when pressed. Both optional, both tunable.
+* **Blend modes.** Difference and exclusion, per state, so the cursor stays readable over photos and dark sections.
+* **Loading state.** A spinner takes over the cursor while something is in flight, with a progress API for developers.
+
+= Built for Elementor, not "compatible with page builders" =
+
+Most cursor plugins ship one global effect and tell you to add CSS classes. This one plugs into Elementor itself:
+
+* A Cursor Follower tab in Site Settings covers the whole design: size, colors, borders, blend modes, hint typography, and per-state overrides for highlight, magnetic, hints and loading. Changes apply live in the editor.
+* A Cursor Effects section appears inside the widgets themselves: Button, Icon, Icon Box, Image, Image Box, Social Icons, Call to Action, Flip Box, Slides, Portfolio, and every carousel including the new nested Carousel. Each widget only shows the effects that make sense for it.
+* The defaults already work. Carousel arrows and dots become magnetic, sliders get a drag hint, linked images get a Zoom hint, and the Elementor Lightbox gets magnetic navigation, before you touch a single setting.
+* Elementor Free and Pro widgets are both covered.
+
+= Performance, in numbers =
+
+Every cursor plugin calls itself lightweight. Here are actual numbers:
+
+* Visitors get a ~1 KB inline loader and nothing else up front. The engine, under 20 KB gzipped including its CSS, loads on the first mouse movement.
+* Phones and tablets never produce that movement, so touch devices download zero bytes of engine code.
+* No jQuery. No dependencies.
+* The animation itself runs as GPU-composited CSS transitions. The JavaScript goes to sleep whenever the cursor is at rest.
+* Caching and optimizer plugins are accounted for: the loader carries the standard opt-out markers so Autoptimize, WP Rocket and similar tools leave it alone.
+
+== Installation ==
+
+1. Install and activate Elementor (the free version is fine).
+2. Install and activate Arts Cursor Follower for Elementor.
+3. Browse your site. The defaults are already on. To restyle the cursor, open Elementor's Site Settings and find the Cursor Follower tab.
+
+Or press Live Preview on this page and try it without installing anything.
+
+== Frequently Asked Questions ==
+
+= Will it slow down my site? =
+
+Visitors download a ~1 KB loader. The engine itself, under 20 KB gzipped, only loads after the first mouse movement, and touch devices never load it at all. The animation runs in CSS, and the JavaScript sleeps while the cursor is idle.
+
+= What happens on phones and tablets? =
+
+Nothing, on purpose. There is no mouse to follow, so the engine never downloads and the native touch experience is untouched.
+
+= Does it replace my visitor's real cursor? =
+
+No. The follower draws alongside the native cursor, so pointing stays precise. The one exception is the arrows-only drag style, which hides the native cursor during the drag gesture and brings it back after.
+
+= Does it need Elementor Pro? =
+
+No. It works with free Elementor, and if you have Pro, widgets like Media Carousel, Testimonial Carousel, Slides and Portfolio get their own Cursor Effects too.
+
+= Can I change the hint wording, like "Drag" or "View Project"? =
+
+Yes, per widget, in its Cursor Effects section. You can also replace the text with an icon. The built-in wording is translation-ready.
+
+= Does it work with my theme? =
+
+It's theme-agnostic: the plugin builds its own markup and ships styles in a CSS cascade layer, so your theme's CSS keeps the upper hand. Blend modes keep the cursor readable on busy backgrounds.
+
+= Does it work with caching and optimization plugins? =
+
+Yes. The loader is marked so optimizers (Autoptimize, WP Rocket, LiteSpeed Cache and others) skip it instead of deferring or combining it.
+
+= Does it work with smooth scrolling? =
+
+Yes. Magnetic effects stay glued to their targets while the page scrolls, including under Lenis-based smooth scrolling.
+
+= How do I turn it off? =
+
+Deactivate the plugin, or for conditional control use the arts/cursor/enabled PHP filter. Individual effects have their own switches in Site Settings and per widget.
+
+== Screenshots ==
+
+1. The cursor in motion: link highlight, magnetic pull and a drag hint over a carousel.
+2. The Cursor Follower tab in Elementor Site Settings.
+3. The Cursor Effects section inside a widget's panel.
+
+== Changelog ==
+
+= 1.0.0 =
+* Initial release.

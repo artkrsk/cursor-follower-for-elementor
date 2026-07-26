@@ -1,0 +1,734 @@
+import {
+  ARROW_BREADTH_RATIO,
+  ARROW_DEPTH_RATIO,
+  ARROW_GAP_FALLBACK,
+  ARROW_GAP_VAR,
+  ARROW_RADIUS_VAR,
+  ARROW_SIZE_FALLBACK,
+  ARROW_SIZE_VAR,
+  ARROWS_ATTR,
+  ARROWS_POSITION_ATTR,
+  BASE_SIZE_FALLBACK,
+  BG_VAR,
+  BORDER_COLOR_VAR,
+  BORDER_WIDTH_VAR,
+  CLEAR_DELAY_PAD_MS,
+  CONTENT_OFFSET_VAR,
+  CONTENT_OFFSET_Y,
+  DISABLED_SELECTOR,
+  DOT_ATTR,
+  HIGHLIGHT_ATTR,
+  HTML_NO_NATIVE,
+  HTML_PROGRESS,
+  ICON_ATTR,
+  ICON_KIND_ATTR,
+  ICON_MASK_VAR,
+  LABEL_ATTR,
+  LABEL_FIT_MARGIN,
+  LABEL_ICON_ATTR,
+  LOADING_ATTR,
+  NO_HIGHLIGHT_SELECTOR,
+  OFFSET_X_VAR,
+  OFFSET_Y_VAR,
+  PILL_PAD_X,
+  PILL_PAD_X_VAR,
+  PILL_PAD_Y,
+  PILL_PAD_Y_VAR,
+  PRESS_VAR,
+  PRESSED_ATTR,
+  SCALE_PRESSED_VAR,
+  SCALE_VAR,
+  SHAPE_ATTR,
+  SHAPE_AXIS_ATTR,
+  SHAPE_HEIGHT_VAR,
+  SHAPE_WIDTH_VAR,
+  SIZE_VAR,
+  TEXT_COLOR_VAR
+} from '../constants'
+import type {
+  IAppearance,
+  ICursorPayload,
+  ICursorRefs,
+  IEffectsSuite,
+  IGeometryCache,
+  IResolvedOptions
+} from '../interfaces'
+import { labelFitScale, resolveScale, usesTargetRef } from '../utils'
+
+/**
+ * Effect state, computed from LAYERS: the transient hover payload at the
+ * bottom, then programmatic sessions in creation order (last wins per key).
+ * Any layer change triggers one recompute of the merged effective payload —
+ * so independent consumers compose instead of fighting (two loaders, a drag
+ * state over a transition, etc.), and releasing a session restores exactly
+ * what remains. No sticky flags, no reset ambiguity.
+ *
+ * All animation lives in CSS: this module only flips data-cursor-* attributes,
+ * two document-level classes, and custom properties; transitions do the rest.
+ * Everything that decides *what* to write is a pure module-scope function
+ * taking explicit arguments; recompute() is the applier, with its label and
+ * icon sections split out as module-scope sub-appliers (applyLabel, applyIcon)
+ * that take their state explicitly.
+ *
+ * Every element written to arrives through args — including `html`, so nothing
+ * here resolves the document itself. That is not full independence from the
+ * environment: pillPad reads getComputedStyle, clearAfterTransition
+ * uses setTimeout, and the label-box memo clears on ownerDocument.fonts.ready — so
+ * the module still needs a DOM.
+ */
+
+const isLeftUnmodified = (e: PointerEvent) =>
+  e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey
+
+/** Absent (null or undefined) removes the property — the deciders below return
+    "nothing to say" that way, so no call site needs its own `?? null`. */
+const setVar = (
+  el: HTMLElement | null,
+  name: string,
+  value: string | number | null | undefined
+) => {
+  if (!el) {
+    return
+  }
+  if (value == null) {
+    el.style.removeProperty(name)
+  } else {
+    el.style.setProperty(name, String(value))
+  }
+}
+
+/** Attribute mirror of setVar: an absent or false value removes. */
+const setAttr = (el: HTMLElement, name: string, value: string | false | null | undefined) => {
+  if (value) {
+    el.setAttribute(name, value)
+  } else {
+    el.removeAttribute(name)
+  }
+}
+
+/** One px var off a computed style; the constant fallback covers a DOM with no
+    stylesheet (tests). */
+const readPxVar = (cs: CSSStyleDeclaration | null, name: string, fallback: number) => {
+  const v = cs ? Number.parseFloat(cs.getPropertyValue(name)) : Number.NaN
+  return Number.isFinite(v) ? v : fallback
+}
+
+/** Copies one key only when the layer actually stated it — an explicit
+    `undefined` means "not stated," never a clobber of a lower layer's value.
+    Generic so the write typechecks: a plain `keyof` union's write position
+    collapses to the intersection of all field types. */
+const assignDefined = <T, K extends keyof T>(target: T, key: K, value: T[K] | undefined) => {
+  if (value !== undefined) {
+    target[key] = value
+  }
+}
+
+/** Hover payload at the bottom, sessions stacked over it — last wins per
+    STATED key. */
+export const mergeLayers = (
+  hover: ICursorPayload | undefined,
+  sessions: ICursorPayload[]
+): ICursorPayload => {
+  const merged: ICursorPayload = { ...hover }
+  for (const session of sessions) {
+    for (const key of Object.keys(session) as (keyof ICursorPayload)[]) {
+      assignDefined(merged, key, session[key])
+    }
+  }
+  return merged
+}
+
+/** The hovered element's larger dimension — costs a layout read when cold. */
+const targetSizeOf = (geometry: IGeometryCache, element: Element | null) => {
+  if (!element) {
+    return undefined
+  }
+  const entry = geometry.resolve(element)
+  return Math.max(entry.w, entry.h)
+}
+
+/** Element/payload side of the highlight decision; the global toggle is the
+    caller's check. */
+export const highlightEligible = (merged: ICursorPayload, element: Element | null): boolean => {
+  if (element && (element.closest(NO_HIGHLIGHT_SELECTOR) || element.matches(DISABLED_SELECTOR))) {
+    return false
+  }
+  if (Object.keys(merged).length > 0) {
+    // With a payload present, highlight is opt-in: an authored payload means
+    // the author is in charge.
+    return merged.highlight !== undefined && merged.highlight !== false
+  }
+  // Bare interactive (link/button/.has-cursor-highlight): auto-highlight.
+  return element !== null
+}
+
+/**
+ * Scale and the highlight decision for a merged payload. The hovered
+ * element is measured only when the size grammar actually references it (a
+ * clamp bound counts) — hovering a plain link must not force a layout read.
+ * The highlight scale wins only if it resolves; otherwise the payload's own
+ * scale stands.
+ */
+export const resolveAppearance = (
+  merged: ICursorPayload,
+  element: Element | null,
+  geometry: IGeometryCache,
+  baseSize: number,
+  highlightOption: IResolvedOptions['highlight']
+): IAppearance => {
+  if (highlightOption === false || !highlightEligible(merged, element)) {
+    const targetSize = usesTargetRef(merged.scale) ? targetSizeOf(geometry, element) : undefined
+    return {
+      scale: resolveScale(merged.scale ?? null, baseSize, targetSize),
+      highlight: false
+    }
+  }
+  const config = typeof merged.highlight === 'object' ? merged.highlight : {}
+  const highlightScale = config.scale ?? highlightOption.scale
+  const targetSize =
+    usesTargetRef(merged.scale) || usesTargetRef(highlightScale)
+      ? targetSizeOf(geometry, element)
+      : undefined
+  const payloadScale = resolveScale(merged.scale ?? null, baseSize, targetSize)
+  return {
+    scale: resolveScale(highlightScale, baseSize, targetSize) ?? payloadScale,
+    highlight: true
+  }
+}
+
+/** Explicit payload width, written inline so it beats kit CSS; null otherwise.
+    Optical constancy under scaling lives in the stylesheet — box-shadow divides
+    the width var by the scale var — so there is nothing to compensate here, and
+    kit rules may re-declare the var per state. */
+export const borderWidthCss = (width: number | string | undefined): string | null => {
+  if (width !== undefined) {
+    return typeof width === 'number' ? `${width}px` : width
+  }
+  return null
+}
+
+/** The ring's live radius in px (base size × the applied scale), written as a
+    plain inheriting var so the arrow siblings seat against the current edge —
+    no per-frame JS. */
+export const arrowRadiusCss = (baseSize: number, scale: number | null): string =>
+  `${(baseSize * (scale ?? 1)) / 2}px`
+
+/** A shown label floors the ring: the circle has to contain its text box
+    whatever the payload asked for. `labelFit` is 0 when no label is shown, and
+    a payload with no scale of its own starts from 1 rather than from null. */
+export const floorScale = (scale: number | null, labelFit: number): number | null =>
+  labelFit > 0 ? Math.max(scale ?? 1, labelFit) : scale
+
+/** The pill's box hugging a label: height = label box + vertical padding, width
+    = label box + horizontal padding (floored to a circle so a 1-char label is
+    still a disc). The follower morphs by animating its own box to this width and
+    height; a width equal to the height IS the circle. Pure. */
+export const pillGeometry = (
+  labelW: number,
+  labelH: number,
+  padX: number,
+  padY: number
+): { width: number; height: number } => {
+  const height = labelH + 2 * padY
+  const width = Math.max(labelW + 2 * padX, height)
+  return { width, height }
+}
+
+/** The room an active INSIDE arrow pair asks of the shape. `x`/`y` grow the
+    half-dimension on the pointing axis by gap + glyph depth (size×⅓) — the CSS
+    seat calc parks the tail at reach − gap − depth, so this lands it flush with
+    the un-reserved content edge (the pill's own padding stays the only inner
+    breathing room). `floorW`/`floorH` floor the PERPENDICULAR content axis to
+    the glyph's breadth (size×⅔), so arrows alone can establish a box that
+    wraps the chevron. All zeros when arrows are off or seated outside —
+    nothing to reserve for there; `theme` is a thunk so the computed-style read
+    behind it stays off payloads that reserve nothing. Pure. */
+export const arrowReservation = (
+  merged: ICursorPayload,
+  theme: () => { gap: number; size: number }
+): { x: number; y: number; floorW: number; floorH: number } => {
+  if (!merged.arrows || merged.arrowsPosition === 'outside') {
+    return { x: 0, y: 0, floorW: 0, floorH: 0 }
+  }
+  const { gap, size } = theme()
+  const depth = gap + size * ARROW_DEPTH_RATIO
+  const breadth = size * ARROW_BREADTH_RATIO
+  const horizontal = merged.arrows === 'horizontal' || merged.arrows === 'all'
+  const vertical = merged.arrows === 'vertical' || merged.arrows === 'all'
+  return {
+    x: horizontal ? depth : 0,
+    y: vertical ? depth : 0,
+    floorW: vertical ? breadth : 0,
+    floorH: horizontal ? breadth : 0
+  }
+}
+
+/** The pill box an active INSIDE pair establishes with no label content —
+    glyph-breadth content wrapped in the same padding vars, grown by the
+    reservation on the pointing axis. One pair commits the stadium to its own
+    axis; 'all' would be a rounded square (neither pill nor circle) and falls
+    through to the base circle — null, like every payload that reserves
+    nothing. The vertical stadium is the transpose of the horizontal one — the
+    long axis takes the wide padding + reservation, the cross axis the snug
+    padding — so pillGeometry runs transposed and swaps back, keeping its
+    "equal sides IS the circle" floor. Pure. */
+export const arrowOnlyPill = (
+  merged: ICursorPayload,
+  pillPad: () => { x: number; y: number },
+  arrowTheme: () => { gap: number; size: number }
+): { width: number; height: number } | null => {
+  if (merged.shape !== 'pill') {
+    return null
+  }
+  const r = arrowReservation(merged, arrowTheme)
+  if (r.x && !r.y) {
+    const pad = pillPad()
+    return pillGeometry(r.floorW, r.floorH, pad.x + r.x, pad.y + r.y)
+  }
+  if (r.y && !r.x) {
+    const pad = pillPad()
+    const t = pillGeometry(0, r.floorW, pad.x + r.y, pad.y)
+    return { width: t.height, height: t.width }
+  }
+  return null
+}
+
+/** The auto nudge as a CSS value rather than a literal, so Site Settings can
+    retune the distance through the kit var while this module keeps deciding
+    when a nudge applies at all. The constant stays the fallback. */
+const CONTENT_OFFSET_CSS = `var(${CONTENT_OFFSET_VAR}, ${CONTENT_OFFSET_Y}px)`
+
+/** The pair that shifts the whole cluster off the pointer: an explicit payload
+    offset wins (in px), otherwise a label or icon auto-nudges up so its content
+    clears the OS cursor — skipped when the native cursor is hidden, since
+    there's nothing to clear. Null when the cluster sits on the pointer. */
+export const offsetCss = (merged: ICursorPayload): [string, string] | null => {
+  if (merged.offset) {
+    return [`${merged.offset[0]}px`, `${merged.offset[1]}px`]
+  }
+  const autoNudge =
+    (merged.label || merged.className || iconKind(merged)) && !merged.hideNativeCursor
+  return autoNudge ? ['0px', CONTENT_OFFSET_CSS] : null
+}
+
+const classListOf = (className: string) => className.split(/\s+/).filter(Boolean)
+
+/** Clear content after the hide transition so it doesn't vanish mid-fade. */
+const clearAfterTransition = (el: HTMLElement, delayMs: number, clear: () => void) => {
+  let done = false
+  const finish = () => {
+    if (!done) {
+      done = true
+      clear()
+    }
+  }
+  el.addEventListener('transitionend', finish, { once: true })
+  setTimeout(finish, delayMs)
+}
+
+/**
+ * Retract a content part: lower its attribute, then clear it once the hide
+ * transition ends. Shared by the label and the icon — they differ in what they
+ * set, not in how they retract. A newer recompute may have re-shown the part by
+ * the time the callback runs, which the second attribute check catches.
+ */
+const hideContent = (
+  root: HTMLElement,
+  el: HTMLElement,
+  attr: string,
+  delayMs: number,
+  clear: () => void
+) => {
+  root.removeAttribute(attr)
+  clearAfterTransition(el, delayMs, () => {
+    if (!root.hasAttribute(attr)) {
+      clear()
+    }
+  })
+}
+
+/** Which of the three icon forms a payload states, in precedence order — a
+    masked URL wins because it is the only one that can be recoloured, then a
+    glyph class, then raw markup. Null when the payload asks for no icon. Pure. */
+export const iconKind = (merged: ICursorPayload): 'mask' | 'glyph' | 'markup' | null => {
+  if (merged.iconUrl) {
+    return 'mask'
+  }
+  if (merged.iconClass) {
+    return 'glyph'
+  }
+  return merged.icon ? 'markup' : null
+}
+
+/** Fill the text and icon slots and raise the label attributes. Text and the
+    optional icon go in their own slots (built markup); adopted markup without
+    them falls back to text on the label itself, no icon. Markup is raw
+    author-trusted HTML — set as innerHTML; a glyph becomes a real element so a
+    class string never has to be escaped into markup. */
+const fillLabelSlots = (
+  merged: ICursorPayload,
+  refs: ICursorRefs,
+  root: HTMLElement,
+  label: HTMLElement
+) => {
+  const textEl = refs.labelText ?? label
+  textEl.textContent = merged.label ?? ''
+  const kind = iconKind(merged)
+  const slot = refs.labelIcon
+  if (slot) {
+    if (kind === 'glyph' && merged.iconClass) {
+      const glyph = slot.ownerDocument.createElement('i')
+      glyph.className = merged.iconClass
+      slot.textContent = ''
+      slot.appendChild(glyph)
+    } else {
+      slot.innerHTML = kind === 'markup' ? (merged.icon ?? '') : ''
+    }
+    setVar(slot, ICON_MASK_VAR, kind === 'mask' ? `url("${merged.iconUrl}")` : null)
+  }
+  setAttr(root, LABEL_ICON_ATTR, kind ? (merged.iconPosition ?? 'after') : false)
+  setAttr(root, ICON_KIND_ATTR, kind)
+  root.setAttribute(LABEL_ATTR, '')
+}
+
+/** Lower the label and clear its slots once the hide transition ends. */
+const retractLabel = (
+  refs: ICursorRefs,
+  root: HTMLElement,
+  label: HTMLElement,
+  clearDelay: number
+) => {
+  hideContent(root, label, LABEL_ATTR, clearDelay, () => {
+    const textEl = refs.labelText ?? label
+    textEl.textContent = ''
+    if (refs.labelIcon) {
+      refs.labelIcon.innerHTML = ''
+      setVar(refs.labelIcon, ICON_MASK_VAR, null)
+    }
+    root.removeAttribute(LABEL_ICON_ATTR)
+    root.removeAttribute(ICON_KIND_ATTR)
+  })
+}
+
+/**
+ * The label section of a recompute: fill the slots and measure (memoized) when
+ * a label is shown, retract when one was up. Returns what the rest of the
+ * recompute needs from the label — the circle-floor scale and the pill box.
+ * Active inside arrows reserve their room in whichever box wins (the pill
+ * grows, the circle floor inflates), and on a pill they can establish the box
+ * with no label at all — so `pill` can be non-null when nothing shows.
+ * The pill DEMOTES to the circle whenever an inside pair grows its vertical
+ * axis against competing horizontal content — a labeled pill with any vertical
+ * reservation, or an 'all' pair with or without one — because the near-square
+ * result reads as neither pill nor circle. The exception is
+ * a label-less vertical pair: with nothing competing for width, the shape
+ * commits to the vertical axis as a true vertical stadium.
+ */
+export const applyLabel = (
+  merged: ICursorPayload,
+  refs: ICursorRefs,
+  root: HTMLElement,
+  labelBoxes: Map<string, { w: number; h: number }>,
+  pillPad: () => { x: number; y: number },
+  arrowTheme: () => { gap: number; size: number },
+  baseSize: number,
+  clearDelay: number
+): { labelFit: number; pill: { width: number; height: number } | null } => {
+  // An icon with no wording is content in its own right, so the pill has to
+  // render for it — gating on the label alone left an icon-only payload invisible.
+  if ((merged.label || iconKind(merged)) && refs.label) {
+    fillLabelSlots(merged, refs, root, refs.label)
+    // NUL join so "a b" + "" can't collide with "a" + "b".
+    const key = [merged.label, merged.icon, merged.iconClass, merged.iconUrl].join('\u0000')
+    let box = labelBoxes.get(key)
+    if (!box) {
+      // offsetWidth/Height are transform-independent (the reveal scale and the
+      // root's elastic matrix don't distort them), so they read the intrinsic
+      // label box — icon included, so the pill/circle sizes to fit both. One
+      // layout flush, on a cache miss only — off the frame path.
+      box = { w: refs.label.offsetWidth, h: refs.label.offsetHeight }
+      labelBoxes.set(key, box)
+    }
+    const r = arrowReservation(merged, arrowTheme)
+    const w = Math.max(box.w, r.floorW)
+    const h = Math.max(box.h, r.floorH)
+    // Any vertical reservation on a LABELED pill is the demotion case: width
+    // stays text-driven while height grows arrow-driven, and the near-square
+    // (or rounded-square, for 'all') result reads as neither pill nor circle —
+    // the circle floor below sizes the ring to contain label + arrows instead.
+    if (merged.shape === 'pill' && r.y === 0) {
+      // Pill hugs the label instead of growing the circle, so labelFit stays 0.
+      const pad = pillPad()
+      return { labelFit: 0, pill: pillGeometry(w, h, pad.x + r.x, pad.y + r.y) }
+    }
+    return {
+      labelFit: labelFitScale(w, h, baseSize, LABEL_FIT_MARGIN + Math.max(r.x, r.y)),
+      pill: null
+    }
+  }
+  if (root.hasAttribute(LABEL_ATTR) && refs.label) {
+    retractLabel(refs, root, refs.label, clearDelay)
+  }
+  // LABEL_ATTR stays down for an arrow-only pill: its styling keys on the
+  // shape attr.
+  return { labelFit: 0, pill: arrowOnlyPill(merged, pillPad, arrowTheme) }
+}
+
+/**
+ * The standalone-icon section of a recompute: diff the class list in place
+ * when an icon is shown, retract when one was up. Returns the class list now
+ * on the element — the caller's persistent state. The no-op fallthrough
+ * returns the previous list UNCHANGED; the caller reassigns unconditionally,
+ * so anything else would clobber a pending retract's deferred removal.
+ */
+export const applyIcon = (
+  merged: ICursorPayload,
+  refs: ICursorRefs,
+  root: HTMLElement,
+  prevIconClasses: string[],
+  clearDelay: number
+): string[] => {
+  if (merged.className && refs.icon) {
+    const next = classListOf(merged.className)
+    refs.icon.classList.remove(...prevIconClasses.filter((c) => !next.includes(c)))
+    refs.icon.classList.add(...next)
+    root.setAttribute(ICON_ATTR, '')
+    return next
+  }
+  if (root.hasAttribute(ICON_ATTR) && refs.icon) {
+    const el = refs.icon
+    const stale = prevIconClasses
+    hideContent(root, el, ICON_ATTR, clearDelay, () => {
+      el.classList.remove(...stale)
+    })
+    return []
+  }
+  return prevIconClasses
+}
+
+export function createEffectsSuite(args: {
+  refs: ICursorRefs
+  options: IResolvedOptions
+  geometry: IGeometryCache
+  /** Target for the two document-level flags — documentElement in the engine. */
+  html: HTMLElement
+}): IEffectsSuite {
+  const { refs, options, geometry, html } = args
+  const root = refs.root
+  const follower = refs.follower
+
+  // Base cursor size for scale resolution — one layout read at creation time,
+  // re-sampled only through remeasure().
+  let baseSize = follower
+    ? Math.max(follower.offsetWidth, follower.offsetHeight) || BASE_SIZE_FALLBACK
+    : BASE_SIZE_FALLBACK
+  // Read at retract time, not captured: the composition root re-derives
+  // options.animation from computed CSS (the kit Duration control is live in
+  // the editor), and a clear scheduled against a stale duration would cut the
+  // content off mid-transition.
+  const clearDelay = () => options.animation.duration * 1000 + CLEAR_DELAY_PAD_MS
+
+  let hover: { payload: ICursorPayload; element: Element | null } | null = null
+  const sessions: ICursorPayload[] = []
+
+  // Pill padding: the tunable CSS vars, read once (same lazy pattern) so the pill
+  // can be sized in JS. Falls back to constants when there's no stylesheet.
+  let cachedPad: { x: number; y: number } | null = null
+  const pillPad = () => {
+    if (cachedPad === null) {
+      const cs = follower ? getComputedStyle(follower) : null
+      cachedPad = {
+        x: readPxVar(cs, PILL_PAD_X_VAR, PILL_PAD_X),
+        y: readPxVar(cs, PILL_PAD_Y_VAR, PILL_PAD_Y)
+      }
+    }
+    return cachedPad
+  }
+
+  // Same read-once pattern for the theme's arrow box size + gap — one computed
+  // style, sampled only when a payload actually reserves arrow room
+  // (arrowReservation calls the thunk after its own guard).
+  let cachedArrowTheme: { gap: number; size: number } | null = null
+  const arrowTheme = () => {
+    if (cachedArrowTheme === null) {
+      const cs = follower ? getComputedStyle(follower) : null
+      cachedArrowTheme = {
+        gap: readPxVar(cs, ARROW_GAP_VAR, ARROW_GAP_FALLBACK),
+        size: readPxVar(cs, ARROW_SIZE_VAR, ARROW_SIZE_FALLBACK)
+      }
+    }
+    return cachedArrowTheme
+  }
+
+  let iconClasses: string[] = []
+
+  // Last-written value per custom property, so a recompute that changes one
+  // layer does not rewrite the rest — an identical setProperty still dirties
+  // style. Var names are unique across root/follower, so the name is the key.
+  const written = new Map<string, string | null>()
+  const writeVar = (
+    el: HTMLElement | null,
+    name: string,
+    value: string | number | null | undefined
+  ) => {
+    if (!el) {
+      return
+    }
+    const next = value == null ? null : String(value)
+    if (written.get(name) === next) {
+      return
+    }
+    written.set(name, next)
+    setVar(el, name, next)
+  }
+
+  // Label box memo: refs.label.offsetWidth/Height is a forced synchronous layout,
+  // and the same label recurs across a page's links. Cache the measured box keyed
+  // by what changes it — the text and the icon markup; the icon side is `order`
+  // only, so it reorders the flex row without changing the box. The pill/floor
+  // maths recompute from the cached box each hover (both pure), so shape switching
+  // costs no layout. Font-dependent — cleared once the initial webfont load
+  // settles (a held fonts.ready promise is one-shot, so later font loads never
+  // re-clear; read off ownerDocument, not the global — the module resolves no
+  // document of its own).
+  const labelBoxes = new Map<string, { w: number; h: number }>()
+  root.ownerDocument.fonts?.ready.then(() => labelBoxes.clear())
+
+  const recompute = () => {
+    const merged = mergeLayers(hover?.payload, sessions)
+    const element = hover?.element ?? null
+
+    // -- label (applied FIRST so its measured box sizes the pill / floors the
+    //    circle scale below) --
+    const { labelFit, pill } = applyLabel(
+      merged,
+      refs,
+      root,
+      labelBoxes,
+      pillPad,
+      arrowTheme,
+      baseSize,
+      clearDelay()
+    )
+
+    // -- scale (highlight config wins; a label floors the size) --
+    const appearance = resolveAppearance(merged, element, geometry, baseSize, options.highlight)
+    const scale = floorScale(appearance.scale, labelFit)
+    root.toggleAttribute(HIGHLIGHT_ATTR, appearance.highlight)
+    writeVar(follower, SCALE_VAR, scale)
+    // Live ring radius the arrows seat against (plain, inheriting — see _parts).
+    // Written every pass, pill included: under a pill it is inert purely because
+    // the CSS reach calc prefers the shape vars over it — that fallback order is
+    // the whole contract between this write and the shape write below.
+    writeVar(root, ARROW_RADIUS_VAR, arrowRadiusCss(baseSize, scale))
+
+    // -- colors / border --
+    writeVar(root, TEXT_COLOR_VAR, merged.textColor)
+    writeVar(root, BG_VAR, merged.backgroundColor)
+    writeVar(root, BORDER_COLOR_VAR, merged.borderColor)
+    writeVar(root, BORDER_WIDTH_VAR, borderWidthCss(merged.borderWidth))
+
+    // -- shape: the follower morphs to the pill's box (absent → circle). The
+    //    axis mark is derived from the box itself (a labeled pill can never be
+    //    taller than wide, so height > width IS the vertical stadium) and
+    //    steers which side the pressed clamp squeezes. --
+    setAttr(root, SHAPE_ATTR, pill ? 'pill' : false)
+    setAttr(root, SHAPE_AXIS_ATTR, pill ? (pill.height > pill.width ? 'y' : 'x') : false)
+    writeVar(root, SHAPE_WIDTH_VAR, pill ? `${pill.width}px` : null)
+    writeVar(root, SHAPE_HEIGHT_VAR, pill ? `${pill.height}px` : null)
+
+    // -- offset: shift the cluster off the pointer --
+    const [offsetX, offsetY] = offsetCss(merged) ?? [null, null]
+    writeVar(root, OFFSET_X_VAR, offsetX)
+    writeVar(root, OFFSET_Y_VAR, offsetY)
+
+    // -- icon --
+    iconClasses = applyIcon(merged, refs, root, iconClasses, clearDelay())
+
+    // -- arrows --
+    setAttr(root, ARROWS_ATTR, merged.arrows)
+    setAttr(root, ARROWS_POSITION_ATTR, merged.arrowsPosition)
+
+    // -- press dot (eligibility only; the stylesheet keys the scale-up on this
+    //    plus data-cursor-pressed) --
+    root.toggleAttribute(DOT_ATTR, merged.dot === true)
+
+    // -- document-level states (the merged view IS the refcount) --
+    html.classList.toggle(HTML_NO_NATIVE, merged.hideNativeCursor === true)
+    html.classList.toggle(HTML_PROGRESS, merged.showProgressCursor === true)
+    root.toggleAttribute(LOADING_ATTR, merged.showLoadingAnimation === true)
+  }
+
+  return {
+    setHover(payload, element) {
+      hover = { payload, element }
+      recompute()
+    },
+    clearHover() {
+      if (hover) {
+        hover = null
+        recompute()
+      }
+    },
+    addSession(payload) {
+      sessions.push(payload)
+      recompute()
+      let released = false
+      return () => {
+        if (released) {
+          return
+        }
+        released = true
+        const index = sessions.indexOf(payload)
+        if (index !== -1) {
+          sessions.splice(index, 1)
+        }
+        recompute()
+      }
+    },
+    handlePress(e) {
+      if (options.clickScale === false || !isLeftUnmodified(e)) {
+        return null
+      }
+      const scale = resolveScale(options.clickScale.scale, baseSize) ?? 1
+      root.setAttribute(PRESSED_ATTR, '')
+      setVar(follower, SCALE_PRESSED_VAR, scale)
+      // Mirror onto the root (inheriting) so the arrows re-seat on the pressed
+      // ring; the follower's registered var can't reach them.
+      setVar(root, PRESS_VAR, scale)
+      return scale
+    },
+    handleRelease(e) {
+      if (e.button !== 0) {
+        return false
+      }
+      root.removeAttribute(PRESSED_ATTR)
+      setVar(follower, SCALE_PRESSED_VAR, null)
+      setVar(root, PRESS_VAR, null)
+      return true
+    },
+    remeasure() {
+      // The winning cascade value, whoever set it. Only a px value is adoptable;
+      // anything else (a theme var in rem, a calc()) is unparseable without a
+      // layout read, and a layout read here would catch the width mid-transition
+      // or under a pill's shape override — keep the current base instead.
+      const raw = follower ? getComputedStyle(follower).getPropertyValue(SIZE_VAR).trim() : ''
+      if (raw.endsWith('px')) {
+        const parsed = Number.parseFloat(raw)
+        if (Number.isFinite(parsed) && parsed > 0) {
+          baseSize = parsed
+        }
+      }
+      cachedPad = null
+      cachedArrowTheme = null
+      labelBoxes.clear()
+      recompute()
+    },
+    dispose() {
+      hover = null
+      sessions.length = 0
+      recompute()
+      html.classList.remove(HTML_NO_NATIVE, HTML_PROGRESS)
+    }
+  }
+}

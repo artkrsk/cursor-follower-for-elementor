@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=./node_modules/lefthook/schema.json
+
+pre-commit:
+  # Sequential on purpose: Biome rewrites the staged files, and everything after
+  # it has to read what the fix produced rather than what was typed.
+  parallel: false
+  jobs:
+    - name: format
+      glob: '*.{ts,mts,js,json,jsonc,vue}'
+      run: pnpm exec biome check --write --no-errors-on-unmatched {staged_files}
+      # Fold the rewrites back into the commit being made, not the next one.
+      stage_fixed: true
+
+    - name: typecheck
+      run: pnpm typecheck
+
+    - name: test
+      run: pnpm test
+
+    - name: phpstan
+      glob: '*.php'
+      run: pnpm phpstan
+
+# Not covered here, matching the repo as it stands: SCSS (nothing lints or
+# formats it) and PHP formatting (no PHPCS config exists).

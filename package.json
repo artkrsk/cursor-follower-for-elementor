@@ -1,0 +1,45 @@
+{
+  "name": "@arts/cursor-follower",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "types": "./src/ts/index.ts",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=22.17.0"
+  },
+  "scripts": {
+    "prepare": "[ -n \"$CI\" ] || lefthook install",
+    "dev:plugin": "node build/index.js dev",
+    "docs:dev": "vitepress dev docs --port 5200",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs --port 5200",
+    "build": "node build/index.js build",
+    "typecheck": "tsc --noEmit",
+    "phpstan": "composer phpstan",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "knip": "knip",
+    "fallow": "fallow",
+    "fallow:health": "pnpm test:coverage && fallow health --coverage coverage/coverage-final.json"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.3",
+    "@types/node": "^26.1.1",
+    "@vitest/coverage-istanbul": "4.1.10",
+    "archiver": "^8.0.0",
+    "chokidar": "^5.0.0",
+    "esbuild": "0.28.1",
+    "fallow": "3.8.0",
+    "happy-dom": "20.11.1",
+    "knip": "6.29.0",
+    "lefthook": "^2.1.10",
+    "sass": "^1.101.0",
+    "typescript": "^7.0.2",
+    "vitepress": "2.0.0-alpha.18",
+    "vitest": "4.1.10"
+  }
+}

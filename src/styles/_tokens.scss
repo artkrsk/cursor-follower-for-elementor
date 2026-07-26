@@ -1,0 +1,79 @@
+@use 'sass:list';
+
+// Two halves, one contract file:
+// 1. The SCSS-language layer — deliberately this small:
+//    three $values, one selector function, one mixin. Compile-time only.
+// 2. The runtime knobs: two registered state vars, then every tunable custom
+//    property JS samples once per style epoch (motion tokens, pill paddings,
+//    arrow box + gap) — declared together so the JS↔CSS contract has one home.
+//    _cursor.scss owns the root's layout block; _parts.scss derives the arrow
+//    seat calcs from the knobs declared here.
+
+// Mirrors BASE_SIZE_FALLBACK in src/ts/constants/tuning.ts — the size used
+// wherever --arts-cursor-size is unset.
+$size-fallback: 60px;
+
+// The motion pair every transition rides; the two vars stay the runtime knobs.
+$motion: var(--arts-cursor-duration) var(--arts-cursor-ease);
+
+// The slider widgets whose controls get enlarged hover areas in
+// _integrations.scss — mirrors the rule set in Options::build. n-carousel is
+// Pro's Nested Carousel: its root class overrides get_html_wrapper_class().
+$carousel-widgets: 'image-carousel', 'media-carousel', 'testimonial-carousel', 'slides',
+  'n-carousel';
+
+// One selector per slider widget: .elementor-widget-<w><marker> <inner>.
+@function carousel-selectors($marker, $inner) {
+  $out: ();
+  @each $w in $carousel-widgets {
+    $out: list.append($out, '.elementor-widget-#{$w}#{$marker} #{$inner}', comma);
+  }
+  @return $out;
+}
+
+// The square hover-target enlargement shared by slider arrows and magnetic
+// icons — sizing rationale lives with the call sites in _integrations.scss.
+@mixin square-hit-area {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  aspect-ratio: 1;
+  min-width: max(150%, var(--arts-cursor-size, #{$size-fallback}));
+  min-height: max(150%, var(--arts-cursor-size, #{$size-fallback}));
+}
+
+// Internal state vars — registered so they are typed and non-inheriting.
+// JS sets them directly on the elements that consume them.
+@property --arts-cursor-scale {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@property --arts-cursor-scale-pressed {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@layer arts-cursor {
+  .arts-cursor {
+    // Motion tokens: JS overrides these inline from options.animation.
+    // The default ease is the canonical back-out curve (≈ GSAP back.out(1.7)).
+    // Deliberately cubic-bezier, not linear(): an unsupported easing arriving
+    // through var() is invalid at computed-value time and silently kills the
+    // whole transition — bezier works everywhere.
+    --arts-cursor-duration: 0.25s;
+    --arts-cursor-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+    // Tunable padding the filled pill keeps around the label (read once by JS).
+    --arts-cursor-pill-padding-x: 18px;
+    --arts-cursor-pill-padding-y: 8px;
+    // Tunable arrow theme knobs, px-only — JS samples the raw token (see
+    // ARROW_SIZE_VAR/ARROW_GAP_VAR in constants/cssVars.ts); the seat calcs
+    // deriving from them live in _parts.scss.
+    --arts-cursor-arrow-size: 16px;
+    --arts-cursor-arrow-gap: 8px;
+  }
+}
