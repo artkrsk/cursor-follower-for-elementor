@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Plugin {
 	private static ?Plugin $instance = null;
 
-	/** Memoized `arts/cursor/enabled` verdict for this request. */
+	/** Memoized `arts_cursor_follower/enabled` verdict for this request. */
 	private ?bool $enabled = null;
 
 	public static function instance(): Plugin {
@@ -187,7 +187,7 @@ class Plugin {
 	}
 
 	/**
-	 * Lazily memoized `arts/cursor/enabled` verdict — evaluated once per
+	 * Lazily memoized `arts_cursor_follower/enabled` verdict — evaluated once per
 	 * request, shared by the <html> class filter and the gate printer. The
 	 * editor preview bypasses the filter entirely: it is the product's
 	 * showroom, and a site owner's "disable on the front end" snippet must
@@ -195,11 +195,11 @@ class Plugin {
 	 */
 	private function is_enabled(): bool {
 		return $this->enabled ??= $this->is_editor_preview()
-			|| (bool) apply_filters( 'arts/cursor/enabled', true );
+			|| (bool) apply_filters( 'arts_cursor_follower/enabled', true );
 	}
 
 	/**
-	 * A request disabled via `arts/cursor/enabled` still gets
+	 * A request disabled via `arts_cursor_follower/enabled` still gets
 	 * `no-cursor-follower` on <html>: the class pair is the documented "which
 	 * world" signal, and a page carrying neither class would be a third state
 	 * no CSS consumer handles. It cannot ride the gate (which simply doesn't

@@ -480,7 +480,7 @@ class Options {
 		 *
 		 * @param array<string, mixed> $options
 		 */
-		return apply_filters( 'arts/cursor/options', $options );
+		return apply_filters( 'arts_cursor_follower/options', $options );
 	}
 
 	/**

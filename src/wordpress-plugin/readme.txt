@@ -94,7 +94,7 @@ Yes. Magnetic effects stay glued to their targets while the page scrolls, includ
 
 = How do I turn it off? =
 
-Deactivate the plugin, or for conditional control use the arts/cursor/enabled PHP filter. Individual effects have their own switches in Site Settings and per widget.
+Deactivate the plugin, or for conditional control use the "arts_cursor_follower/enabled" PHP filter. Individual effects have their own switches in Site Settings and per widget.
 
 == Screenshots ==
 

@@ -1,7 +1,7 @@
 <?php
 // Display twin of docs/.vitepress/theme/rulesDemoScopes.ts — the docs engine
 // runs these exact rules; this is what they look like as the WordPress filter.
-add_filter( 'arts/cursor/options', function ( $options ) {
+add_filter( 'arts_cursor_follower/options', function ( $options ) {
 	$options['targetScopes'][] = array(
 		'scope' => '.demo-rules-scope',
 		'rules' => array(

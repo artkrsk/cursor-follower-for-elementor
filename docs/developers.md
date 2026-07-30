@@ -152,7 +152,7 @@ They are deliberately unregistered (no `@property`), so `var(--x, fallback)` cha
 Conditional loading enqueues nothing (the engine arrives through an inline gate), so there is no script handle to dequeue. The supported switch:
 
 ```php
-add_filter( 'arts/cursor/enabled', fn( $on ) => $on && ! is_checkout() );
+add_filter( 'arts_cursor_follower/enabled', fn( $on ) => $on && ! is_checkout() );
 ```
 
 Evaluated once per request, before output. A disabled request prints no gate and no globals, and `<html>` still gets `no-cursor-follower` (via `language_attributes`), so the class contract stays total — to your CSS, a filtered page is a touch page. The Elementor editor preview ignores the filter; it always shows the cursor.

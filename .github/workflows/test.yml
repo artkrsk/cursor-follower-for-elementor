@@ -138,7 +138,7 @@ jobs:
           build-dir: './dist/cursor-follower-for-elementor'
           wp-version: 'latest'
           # The plugin's prefixes (Arts\CursorFollower, ARTS_CURSOR_FOLLOWER_*,
-          # the arts/cursor/* filters) are deliberate and consistent, but they
+          # the arts_cursor_follower/* filters) are deliberate and consistent, but they
           # don't derive from the slug, which is all this sniff accepts.
           ignore-codes: |
             WordPress.NamingConventions.PrefixAllGlobals.InvalidPrefixPassed
