@@ -9,5 +9,6 @@ export type { TGateBoot } from './TGateBoot'
 // unused-export analyzers.
 export type { TKitSettings } from './TKitSettings'
 export type { TScaleValue } from './TScaleValue'
+export type { TStateVarKey } from './TStateVarKey'
 export type { TStyledElement } from './TStyledElement'
 export type { TTickerCallback } from './TTickerCallback'

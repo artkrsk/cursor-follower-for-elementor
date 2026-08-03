@@ -9,9 +9,11 @@ import {
   resolveAnchor,
   ruleGeometry,
   ruleTrigger,
-  withCssContent
+  withCssContent,
+  withStateVars
 } from '@ts/interaction/targets'
 import type { ICompiledRule, ICursorPayload, ITargetScope } from '@ts/interfaces'
+import type { TStateVarKey } from '@ts/types'
 import { describe, expect, it, vi } from 'vitest'
 
 /** Stand in for the browser's getComputedStyle over a var → value map. */
@@ -276,21 +278,82 @@ describe('parsePayload', () => {
   })
 })
 
-describe('withCssContent', () => {
-  const compiled = (
-    vars: { labelVar?: string; iconVar?: string },
-    payload: ICursorPayload
-  ): ICompiledRule => ({
-    scope: '.widget',
-    trigger: '.widget a',
-    anchor: undefined,
-    payload,
-    source: { payload },
-    labelVar: vars.labelVar,
-    iconVar: vars.iconVar,
-    active: true
+const compiled = (
+  vars: {
+    labelVar?: string
+    iconVar?: string
+    stateVars?: Partial<Record<TStateVarKey, string>>
+  },
+  payload: ICursorPayload
+): ICompiledRule => ({
+  scope: '.widget',
+  trigger: '.widget a',
+  anchor: undefined,
+  payload,
+  source: { payload },
+  labelVar: vars.labelVar,
+  iconVar: vars.iconVar,
+  stateVars: vars.stateVars,
+  active: true
+})
+
+describe('withStateVars', () => {
+  it('hands the payload back untouched when the rule names no state var', () => {
+    const payload: ICursorPayload = { label: 'Scroll' }
+
+    expect(withStateVars(compiled({}, payload), {} as Element)).toBe(payload)
   })
 
+  it('takes a token off the element', () => {
+    stubVars({ '--shape': 'pill' })
+
+    expect(
+      withStateVars(
+        compiled({ stateVars: { shape: '--shape' } }, { label: 'Scroll' }),
+        {} as Element
+      )
+    ).toEqual({ label: 'Scroll', shape: 'pill' })
+  })
+
+  /** The nesting case this channel exists for: custom properties inherit, so an
+      instance that wants a key OFF has to say so — an absent property would just
+      read whatever an enclosing scope set. */
+  it('drops a key the rule states when the instance resolves none', () => {
+    stubVars({ '--arrows': 'none' })
+
+    expect(
+      withStateVars(
+        compiled({ stateVars: { arrows: '--arrows' } }, { label: 'Scroll', arrows: 'all' }),
+        {} as Element
+      )
+    ).toEqual({ label: 'Scroll' })
+  })
+
+  it('keeps the rule payload, by identity, when every named var is unset', () => {
+    stubVars({})
+    const payload: ICursorPayload = { label: 'Scroll', shape: 'pill' }
+
+    expect(
+      withStateVars(
+        compiled({ stateVars: { shape: '--shape', arrows: '--a' } }, payload),
+        {} as Element
+      )
+    ).toBe(payload)
+  })
+
+  it('leaves the rule value standing for the vars that resolved to nothing', () => {
+    stubVars({ '--arrows': 'vertical' })
+
+    expect(
+      withStateVars(
+        compiled({ stateVars: { shape: '--shape', arrows: '--arrows' } }, { shape: 'pill' }),
+        {} as Element
+      )
+    ).toEqual({ shape: 'pill', arrows: 'vertical' })
+  })
+})
+
+describe('withCssContent', () => {
   /** Identity, not a copy: no var named means no style read (getComputedStyle
       does not exist under node, so a read would throw) and no allocation. */
   it('hands the payload back untouched when the rule names no var', () => {
@@ -359,6 +422,31 @@ describe('withCssContent', () => {
       withCssContent(compiled({ labelVar: '--l', iconVar: '--i' }, payload), {} as Element)
     ).toBe(payload)
   })
+
+  it('carries resolved state through when no content var resolves', () => {
+    stubVars({ '--shape': 'pill' })
+
+    expect(
+      withCssContent(
+        compiled({ labelVar: '--l', stateVars: { shape: '--shape' } }, { label: 'Scroll' }),
+        {} as Element
+      )
+    ).toEqual({ label: 'Scroll', shape: 'pill' })
+  })
+
+  /** State resolves first so the icon branch still gets the last word: an
+      instance asking for a pill AND an icon has to land where a rule asking for
+      both already does — a lone glyph never sits in a stadium. */
+  it('lets a resolved icon strip a pill the instance asked for', () => {
+    stubVars({ '--shape': 'pill', '--icon': 'fas fa-search' })
+
+    expect(
+      withCssContent(
+        compiled({ iconVar: '--icon', stateVars: { shape: '--shape' } }, { label: 'Scroll' }),
+        {} as Element
+      )
+    ).toEqual({ iconClass: 'fas fa-search' })
+  })
 })
 
 describe('matchRule', () => {
@@ -370,6 +458,7 @@ describe('matchRule', () => {
     source: { selector: '.icon', payload: { label: 'View' } },
     labelVar: undefined,
     iconVar: undefined,
+    stateVars: undefined,
     active: true,
     ...over
   })

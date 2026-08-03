@@ -474,6 +474,7 @@ class Options {
 		);
 
 		$options['targetScopes'][] = self::lightbox_scope( $control_magnet );
+		$options['targetScopes'][] = self::container_scope();
 
 		/**
 		 * Filters the cursor options payload before it is printed inline.
@@ -562,6 +563,47 @@ class Options {
 		return array(
 			'scope' => '.elementor-lightbox',
 			'rules' => $rules,
+		);
+	}
+
+	/**
+	 * A whole Container as one target — the section-wide hint (ContainerControls).
+	 *
+	 * LAST in targetScopes, and that placement is load-bearing. Order is priority
+	 * across the flattened rule list, and this rule's trigger is an ancestor of
+	 * everything a container holds. A link or button inside protects itself (a
+	 * rule matched on an ancestor never claims an interactive element), but a
+	 * carousel's `.swiper-wrapper` is not interactive — so ahead of the widget
+	 * scopes this rule would answer for it and swallow the drag hint.
+	 *
+	 * ONE rule covers every container on the site whatever each is set to,
+	 * because the per-instance choices arrive as custom properties rather than as
+	 * marker classes in the trigger. That is not an optimisation: containers nest,
+	 * and `closest()` on a trigger carrying a marker class walks past a nearer
+	 * container that lacks it to match a farther one that has it, so an inner
+	 * container would wear its ancestor's look. A property is read off the nearest
+	 * matching scope instead. `label` here is the fallback the hint vars replace
+	 * per instance; `none` is the token that clears a key the payload states.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private static function container_scope(): array {
+		return array(
+			'scope' => '.e-con.arts-cursor-container-on',
+			'rules' => array(
+				// No `selector`: it defaults to `:scope`, the container itself.
+				array(
+					'payload'   => array(
+						'label' => __( 'Scroll', 'cursor-follower-for-elementor' ),
+					),
+					'labelVar'  => '--arts-cursor-container-label',
+					'iconVar'   => '--arts-cursor-container-icon',
+					'stateVars' => array(
+						'shape'  => '--arts-cursor-container-shape',
+						'arrows' => '--arts-cursor-container-arrows',
+					),
+				),
+			),
 		);
 	}
 

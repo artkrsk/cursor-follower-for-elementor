@@ -10,6 +10,7 @@ import type {
   ITargetScope,
   ITargets
 } from '../interfaces'
+import type { TStateVarKey } from '../types'
 import { usesTargetRef } from '../utils'
 
 /**
@@ -131,8 +132,45 @@ export const readCssLabel = (el: Element, property: string): string => {
   return raw.startsWith('"') && raw.endsWith('"') ? raw.slice(1, -1) : raw
 }
 
-/** True when a rule takes any per-instance content off the hovered element. */
-export const isTuned = (rule: ICompiledRule): boolean => Boolean(rule.labelVar || rule.iconVar)
+/** True when a rule takes anything per-instance off the hovered element. */
+export const isTuned = (rule: ICompiledRule): boolean =>
+  Boolean(rule.labelVar || rule.iconVar || rule.stateVars)
+
+/**
+ * The rule's payload carrying whichever STATE its `stateVars` resolve to on this
+ * instance. An unset property leaves the key alone — the rule's own value
+ * stands; the literal `none` DROPS it, which is the only way an instance can
+ * turn off something the rule states. An absent property could never say that:
+ * custom properties inherit, so a nested scope with nothing of its own reads its
+ * ancestor's value, which is exactly the case this channel exists to get right.
+ *
+ * Values are written through unvalidated. They land as `data-cursor-*` state
+ * attributes whose styling keys on known tokens, so an unknown one is inert —
+ * cheaper than a validation table that would have to be kept in step with the
+ * stylesheet. Returns the rule's own payload when nothing resolved, so the
+ * common path allocates nothing.
+ */
+export const withStateVars = (rule: ICompiledRule, scopeEl: Element): ICursorPayload => {
+  if (!rule.stateVars) {
+    return rule.payload
+  }
+  let payload: ICursorPayload | null = null
+  for (const [key, property] of Object.entries(rule.stateVars)) {
+    const value = readCssLabel(scopeEl, property)
+    if (!value) {
+      continue
+    }
+    payload ??= { ...rule.payload }
+    if (value === 'none') {
+      delete payload[key as TStateVarKey]
+    } else {
+      // The cast is the channel's contract: a custom property carries a token,
+      // and TStateVarKey is closed to keys whose payload type IS that token.
+      ;(payload as Record<TStateVarKey, string>)[key as TStateVarKey] = value
+    }
+  }
+  return payload ?? rule.payload
+}
 
 /** Which icon form a resolved var holds. One property carries both because a
     host substitutes a single value per property — so the value itself says what
@@ -149,6 +187,9 @@ export const asIcon = (value: string): Pick<ICursorPayload, 'iconUrl' | 'iconCla
 
 /** The rule's payload carrying whichever per-instance content its vars resolve to
     — read fresh per crossing, since the whole point is to track a live edit.
+    State resolves FIRST, so the icon branch below still gets the last word on
+    `shape`: an instance asking for a pill and an icon must land where a rule
+    asking for both already does.
 
     The two vars are an EITHER/OR the host picked between, not a pair to combine,
     so a resolved icon REPLACES the wording — including the rule's own fallback,
@@ -157,12 +198,13 @@ export const asIcon = (value: string): Pick<ICursorPayload, 'iconUrl' | 'iconCla
     reads as a mistake. A rule wanting an icon *beside* wording states it in the
     payload instead; this channel is only ever one or the other. */
 export const withCssContent = (rule: ICompiledRule, scopeEl: Element): ICursorPayload => {
+  const base = withStateVars(rule, scopeEl)
   const label = rule.labelVar ? readCssLabel(scopeEl, rule.labelVar) : ''
   const icon = rule.iconVar ? readCssLabel(scopeEl, rule.iconVar) : ''
   if (!label && !icon) {
-    return rule.payload
+    return base
   }
-  const payload = { ...rule.payload }
+  const payload = { ...base }
   if (label) {
     payload.label = label
   }
@@ -229,6 +271,7 @@ export function createTargets(args: {
         source: rule,
         labelVar: rule.labelVar,
         iconVar: rule.iconVar,
+        stateVars: rule.stateVars,
         active: true
       })
     }

@@ -32,6 +32,7 @@ export type {
   TDragPayload,
   TKitSettings,
   TScaleValue,
+  TStateVarKey,
   TTickerCallback
 } from './types'
 export { resolveScale } from './utils'

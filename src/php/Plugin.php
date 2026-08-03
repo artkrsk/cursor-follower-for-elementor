@@ -49,6 +49,7 @@ class Plugin {
 		add_action( 'elementor/kit/register_tabs', array( $this, 'register_kit_tab' ) );
 		add_action( 'elementor/editor/after_enqueue_scripts', array( $this, 'print_editor_bridge' ) );
 		( new Elementor\WidgetControls() )->register();
+		( new Elementor\ContainerControls() )->register();
 		( new Elementor\LightboxControls() )->register();
 	}
 

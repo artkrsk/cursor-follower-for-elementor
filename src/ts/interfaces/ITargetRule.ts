@@ -1,3 +1,4 @@
+import type { TStateVarKey } from '../types/TStateVarKey'
 import type { ICursorPayload } from './ICursorPayload'
 
 /** A rule inside a scope group. `selector` is resolved relative to the group
@@ -17,4 +18,14 @@ export interface ITargetRule {
       only substitute one value per property: a `url(…)` is masked (and so takes
       the cursor's colour), anything else is read as webfont classes. */
   iconVar?: string
+  /** Payload STATE taken per-instance from custom properties on the hovered
+      scope element — the same channel as `labelVar`/`iconVar`, for the keys that
+      name a CSS state rather than content. `none` drops the key (so the rule's
+      own default can't reassert), an empty property leaves the payload alone.
+
+      This is the only per-instance channel that survives NESTING: the property
+      is read off the nearest matching scope, whereas a marker class in the
+      trigger selector is not — `closest()` walks straight past a nearer scope
+      that lacks the class and matches a farther one that has it. */
+  stateVars?: Partial<Record<TStateVarKey, string>>
 }

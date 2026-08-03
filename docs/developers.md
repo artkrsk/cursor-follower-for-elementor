@@ -84,6 +84,7 @@ The grammar: `targetScopes` is a list of `{scope, rules}` groups. `scope` is the
 - **Interactive elements protect themselves** — a rule matched on an *ancestor* never claims an element that is itself interactive; only a rule naming the element directly can. A track-wide drag rule can't swallow the links inside its slides.
 - **`payload.anchor` is scope-relative** and resolves within the hovered instance.
 - **`labelVar` / `iconVar`** name a CSS custom property on the scope element that replaces the rule's `label`/icon per instance — the channel for per-widget wording (`url(…)` values are masked images; anything else is webfont classes). Named per rule so one rule's label can never leak onto its siblings.
+- **`stateVars`** is the same channel for state rather than content: `{ shape: '--my-shape', arrows: '--my-arrows' }` takes those payload keys off the hovered instance. A property set to `none` drops the key; an unset one leaves the rule's own value standing. Reach for it over a marker class in the selector whenever your scope can nest inside itself — a property resolves against the *nearest* matching scope, while `closest()` walks past a nearer element that lacks the class to match a farther one that has it.
 - Rules whose payload carries `highlight` drop out while the site-wide Highlight toggle is off.
 
 The same filter carries the tuning keys (`trailing`, `elastic`, `magnetic`, `highlight`, `pressScale`) if you need to override Site Settings programmatically.

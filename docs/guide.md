@@ -20,12 +20,13 @@ All global configuration lives in Elementor's Site Settings: open any page **Edi
 - **Magnetic** — global pull strength and release radius. Which elements magnetize is decided per widget, not here.
 - **Loading** — the spinner that takes over the cursor during loading states.
 
-## Per-widget Cursor Effects
+## Per-element Cursor Effects
 
-A **Cursor Effects** section appears at the end of the Style tab for the widgets the plugin integrates. Effects with an obvious win default on; anything presumptuous defaults off — every switch is per widget instance.
+A **Cursor Effects** section appears at the end of the Style tab for the Container and for the widgets the plugin integrates. Effects with an obvious win default on; anything presumptuous defaults off — every switch is per instance.
 
-| Widget | What you control |
+| Element | What you control |
 |---|---|
+| Container | A hint over the whole region — the "Scroll" circle over a hero. Wording or icon, circle or pill, optional arrows, and hiding the native cursor inside it. Links, buttons and integrated widgets inside keep their own effect |
 | Button, Call to Action, Flip Box | Magnetic pull onto the button (the cursor collapses; the button's own hover state is the feedback) |
 | Icon, Icon Box | Magnetic pull with the cursor wrapping the icon |
 | Social Icons | Magnetic pull per icon |
