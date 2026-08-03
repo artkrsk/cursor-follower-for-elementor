@@ -10,3 +10,4 @@ src/php/libraries/
 *.zip
 .fallow/
 coverage/
+.superpowers/
