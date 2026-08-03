@@ -45,11 +45,10 @@ export function buildMarkup(target?: Element | string | null): ICursorRefs {
   return {
     root,
     follower: ref(root, 'follower', !built),
-    label: ref(root, 'label', !built),
+    hint: ref(root, 'hint', !built),
     // Optional sub-slots — no warning when an adopter's label lacks them.
-    labelText: ref(root, 'label-text', false),
-    labelIcon: ref(root, 'label-icon', false),
-    icon: ref(root, 'icon', !built),
+    hintText: ref(root, 'hint-text', false),
+    hintIcon: ref(root, 'hint-icon', false),
     built
   }
 }
@@ -134,8 +133,7 @@ function createTree(): HTMLElement {
     arrow('right', 'horizontal'),
     arrow('down', 'vertical'),
     arrow('left', 'horizontal'),
-    label(),
-    div('arts-cursor__icon', { [EL_ATTR]: 'icon' }),
+    hint(),
     div('arts-cursor__dot'),
     spinner()
   )
@@ -146,11 +144,11 @@ function createTree(): HTMLElement {
 /** The label: an inline-flex row with a text slot and an icon slot, so a payload
     icon renders before/after the text and the pill (or circle) auto-sizes to fit
     both. The engine ships no icon — the slot is filled per payload. */
-function label(): HTMLElement {
-  const el = div('arts-cursor__label', { [EL_ATTR]: 'label' })
+function hint(): HTMLElement {
+  const el = div('arts-cursor__hint', { [EL_ATTR]: 'hint' })
   el.append(
-    div('arts-cursor__label-text', { [EL_ATTR]: 'label-text' }),
-    div('arts-cursor__label-icon', { [EL_ATTR]: 'label-icon' })
+    div('arts-cursor__hint-text', { [EL_ATTR]: 'hint-text' }),
+    div('arts-cursor__hint-icon', { [EL_ATTR]: 'hint-icon' })
   )
   return el
 }

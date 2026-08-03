@@ -38,8 +38,7 @@ describe('buildMarkup', () => {
     expect(refs.root.id).toBe(CURSOR_ID)
     expect(refs.root.parentElement).toBe(document.body)
     expect(refs.follower).not.toBeNull()
-    expect(refs.label).not.toBeNull()
-    expect(refs.icon).not.toBeNull()
+    expect(refs.hint).not.toBeNull()
   })
 
   /** Adoption is what lets a theme print its own markup and keep it. */
@@ -57,12 +56,12 @@ describe('buildMarkup', () => {
   })
 
   it('adopts the element a selector names', () => {
-    document.body.innerHTML = `<div class="mine"><div ${EL_ATTR}="label"></div></div>`
+    document.body.innerHTML = `<div class="mine"><div ${EL_ATTR}="hint"></div></div>`
     const refs = buildMarkup('.mine')
 
     expect(refs.built).toBe(false)
     expect(refs.root).toBe(document.querySelector('.mine'))
-    expect(refs.label).toBe(document.querySelector(`[${EL_ATTR}="label"]`))
+    expect(refs.hint).toBe(document.querySelector(`[${EL_ATTR}="hint"]`))
   })
 
   it('adopts an element handed over directly', () => {
@@ -80,8 +79,7 @@ describe('buildMarkup', () => {
     const refs = buildMarkup()
 
     expect(refs.follower).not.toBeNull()
-    expect(refs.label).toBeNull()
-    expect(refs.icon).toBeNull()
+    expect(refs.hint).toBeNull()
   })
 
   it('builds a tree when the selector matches nothing', () => {

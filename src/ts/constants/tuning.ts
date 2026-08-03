@@ -15,13 +15,15 @@ export const BASE_SIZE_FALLBACK = 60
 /** Grace over the CSS transition before hidden content is cleared. */
 export const CLEAR_DELAY_PAD_MS = 120
 export const IDLE_FALLBACK_MS = 50
-/** Gap (px each side) the label keeps from the ring edge when the ring
+/** Gap (px each side) the hint keeps from the ring edge when the ring
     auto-grows to contain it. */
-export const LABEL_FIT_MARGIN = 4
-/** Auto nudge (px, upward) applied while a label or icon is shown so its content
-    clears the OS cursor; an explicit payload `offset` overrides it. */
-export const CONTENT_OFFSET_Y = -28
-/** Fallback padding (px) the filled pill keeps around the label on each axis,
+export const HINT_FIT_MARGIN = 4
+/** Auto nudge (px, CSS convention: +x right, +y down) applied while a hint is
+    shown so its content clears the OS cursor; an explicit payload
+    `offset` overrides it. No horizontal shift by default, -28 lifts upward. */
+export const HINT_OFFSET_X = 0
+export const HINT_OFFSET_Y = -28
+/** Fallback padding (px) the filled pill keeps around its content on each axis,
     used when the tunable CSS vars aren't readable (e.g. no stylesheet in tests). */
 export const PILL_PAD_X = 18
 export const PILL_PAD_Y = 8

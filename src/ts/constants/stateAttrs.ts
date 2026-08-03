@@ -8,13 +8,12 @@
  */
 export const VISIBLE_ATTR = 'data-cursor-visible'
 export const HIGHLIGHT_ATTR = 'data-cursor-highlight'
-export const LABEL_ATTR = 'data-cursor-label'
-export const LABEL_ICON_ATTR = 'data-cursor-label-icon'
-/** Which of the three icon forms filled the label's icon slot, since each needs
+export const HINT_ATTR = 'data-cursor-hint'
+export const HINT_ICON_ATTR = 'data-cursor-hint-icon'
+/** Which of the three icon forms filled the hint's icon slot, since each needs
     different styling: injected markup sizes itself, a glyph rides font-size, and
     a masked URL needs a box to mask. */
 export const ICON_KIND_ATTR = 'data-cursor-icon-kind'
-export const ICON_ATTR = 'data-cursor-icon'
 export const ARROWS_ATTR = 'data-cursor-arrows'
 export const ARROWS_POSITION_ATTR = 'data-cursor-arrows-position'
 /** Press-dot eligibility: the stylesheet scales the dot up only while this AND

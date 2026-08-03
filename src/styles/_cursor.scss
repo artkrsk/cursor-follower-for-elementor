@@ -29,8 +29,8 @@
   // arrows-only style raises no label attribute, but its chevrons deserve the
   // same treatment as wording. Same element as the base blend above, +1
   // attribute of specificity, so it wins whenever either is up.
-  .arts-cursor:is([data-cursor-label], [data-cursor-shape='pill']) {
-    mix-blend-mode: var(--arts-cursor-label-blend-mode, normal);
+  .arts-cursor:is([data-cursor-hint], [data-cursor-shape='pill']) {
+    mix-blend-mode: var(--arts-cursor-hint-blend-mode, normal);
   }
 
   html.has-cursor-follower .arts-cursor {
@@ -89,33 +89,56 @@
       calc(var(--arts-cursor-border-width, 1px) / max(var(--arts-cursor-scale, 1), 0.25))
       var(--arts-cursor-border-color, var(--arts-cursor-background-color, #808080));
     background-color: var(--arts-cursor-background-color, transparent);
+    // The var carries the whole filter value, not a radius: unset resolves to
+    // `none` — the initial value, so no backdrop root and nothing to composite.
+    // `blur(var(--x, 0px))` would instead leave a real zero-radius filter behind
+    // on every cursor, on every site, whether or not anyone asked for one.
+    // Prefixed first (Safari < 18); nothing in the build autoprefixes.
+    -webkit-backdrop-filter: var(--arts-cursor-backdrop-filter, none);
+    backdrop-filter: var(--arts-cursor-backdrop-filter, none);
     scale: calc(var(--arts-cursor-scale) * var(--arts-cursor-scale-pressed));
     transition:
       scale tokens.$motion,
       width tokens.$motion,
       height tokens.$motion,
       background-color tokens.$motion,
-      box-shadow tokens.$motion;
+      box-shadow tokens.$motion,
+      -webkit-backdrop-filter tokens.$motion,
+      backdrop-filter tokens.$motion;
   }
 
-  // Filled label pill: its fill and border come from the Labels controls
-  // (--arts-cursor-label-*), each falling back to the cursor's own var — so the
-  // free-roam circle keeps its look while the pill can be a distinct chip. With
-  // no label border set it follows the fill (no stray ring), like the circle.
-  .arts-cursor[data-cursor-shape='pill'] .arts-cursor__follower {
+  // Filled content state: a stadium pill, or a circle grown around text or an
+  // icon. Fill, border and blur come from the hint controls
+  // (--arts-cursor-hint-*), each falling back to the cursor's own var — so the
+  // free-roam ring can stay a bare outline while content reads as a distinct
+  // chip. With no label border set it follows the fill (no stray ring), like the
+  // circle. Same states as the label blend mode above, for the same reason: an
+  // arrows-only pill raises no label attribute but is still a filled shape.
+  .arts-cursor:is([data-cursor-hint], [data-cursor-shape='pill']) .arts-cursor__follower {
     background-color: var(
-      --arts-cursor-label-background,
+      --arts-cursor-hint-background,
       var(--arts-cursor-background-color, transparent)
     );
     box-shadow: inset 0 0 0
-      calc(var(--arts-cursor-border-width, 1px) / max(var(--arts-cursor-scale, 1), 0.25))
+      calc(
+        var(--arts-cursor-hint-border-width, var(--arts-cursor-border-width, 1px)) /
+          max(var(--arts-cursor-scale, 1), 0.25)
+      )
       var(
-        --arts-cursor-label-border-color,
+        --arts-cursor-hint-border-color,
         var(
-          --arts-cursor-label-background,
+          --arts-cursor-hint-background,
           var(--arts-cursor-border-color, var(--arts-cursor-background-color, #808080))
         )
       );
+    -webkit-backdrop-filter: var(
+      --arts-cursor-hint-backdrop-filter,
+      var(--arts-cursor-backdrop-filter, none)
+    );
+    backdrop-filter: var(
+      --arts-cursor-hint-backdrop-filter,
+      var(--arts-cursor-backdrop-filter, none)
+    );
   }
 
   // While the loading spinner shows, the circle itself steps aside.
@@ -129,7 +152,7 @@
   // (data-cursor-shape-axis, written with the shape): a horizontal pill
   // presses by width, a vertical stadium by height, and the cross axis holds
   // so its snug-fitted arrows/dot never get pinched. Both clamps bound the
-  // clickScale shrink to ±½ a padX (the long axis owns the wide padding in
+  // pressScale shrink to ±½ a padX (the long axis owns the wide padding in
   // both orientations) — each end keeps at least ¾ of its padding — and
   // dropping scale-pressed leaves the plain circle pressing as before.
   .arts-cursor[data-cursor-shape='pill'][data-cursor-pressed] .arts-cursor__follower {

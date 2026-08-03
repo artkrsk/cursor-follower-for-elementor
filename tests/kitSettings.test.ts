@@ -1,9 +1,9 @@
 import {
-  DEFAULT_CLICK_FACTOR,
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
+  DEFAULT_PRESS_FACTOR,
   DEFAULT_TRAILING
 } from '@ts/constants'
 import { mapKitSettings } from '@ts/kitSettings'
@@ -17,18 +17,20 @@ import { describe, expect, it } from 'vitest'
  */
 
 describe('switchers', () => {
-  it("enables a section only on the literal 'yes'", () => {
+  it("turns a section off only once it has been saved off, not on any non-'yes'", () => {
     expect(mapKitSettings({ arts_cursor_elastic_enabled: 'yes' }).elastic).not.toBe(false)
     expect(mapKitSettings({ arts_cursor_elastic_enabled: '' }).elastic).toBe(false)
-    expect(mapKitSettings({}).elastic).toBe(false)
   })
 
-  it('treats every section as off in an empty settings bag', () => {
+  /** The asymmetry that matters: an absent key is a never-saved kit, and the
+      controls declare 'default' => 'yes'. Reading it as off would show the
+      editor preview a disabled section the front end renders enabled. */
+  it('keeps every section on in an empty settings bag, matching the load path', () => {
     const options = mapKitSettings({})
 
-    expect(options.elastic).toBe(false)
-    expect(options.highlight).toBe(false)
-    expect(options.clickScale).toBe(false)
+    expect(options.elastic).not.toBe(false)
+    expect(options.highlight).not.toBe(false)
+    expect(options.pressScale).not.toBe(false)
   })
 
   it('is not fooled by truthy non-yes values', () => {
@@ -126,13 +128,13 @@ describe('section mapping', () => {
   it('wraps the click scale as a factor of the cursor size', () => {
     expect(
       mapKitSettings({
-        arts_cursor_click_enabled: 'yes',
-        arts_cursor_click_scale: { size: 0.9, unit: 'px' }
-      }).clickScale
+        arts_cursor_press_enabled: 'yes',
+        arts_cursor_press_scale: { size: 0.9, unit: 'px' }
+      }).pressScale
     ).toEqual({ scale: { ref: 'cursor', factor: 0.9 } })
 
-    expect(mapKitSettings({ arts_cursor_click_enabled: 'yes' }).clickScale).toEqual({
-      scale: { ref: 'cursor', factor: DEFAULT_CLICK_FACTOR }
+    expect(mapKitSettings({ arts_cursor_press_enabled: 'yes' }).pressScale).toEqual({
+      scale: { ref: 'cursor', factor: DEFAULT_PRESS_FACTOR }
     })
   })
 })

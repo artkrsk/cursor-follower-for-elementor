@@ -13,9 +13,9 @@ Requirements: WordPress 6.0+, PHP 8.0+, Elementor (free). Elementor Pro is not r
 
 All global configuration lives in Elementor's Site Settings: open any page **Edit with Elementor → ⚙ Site Settings → Cursor Follower** (the plugin's row on the Plugins screen deep-links there too). Changes preview live without saving.
 
-- **Cursor** — size, text color, background color, border width and color. These are the cursor's base look; per-state styling beyond that is plain CSS (see the [Developer Reference](/developers#css)).
+- **Cursor** — size, text color, background color, backdrop blur, border width and color. These are the cursor's base look; per-state styling beyond that is plain CSS (see the [Developer Reference](/developers#css)).
 - **Motion** — the trailing lag and the elastic squash-and-stretch, with strength tuning.
-- **Text Hints / Icon Hints** — typography and colors for the label pill the cursor grows over linked images, cards and slides.
+- **Hints** — typography, colors, backdrop blur and offset for the cursor whenever it's showing content: the pill over linked images, cards and slides, and the circle that grows around a word or an icon. Leave the Cursor section's background and blur empty and this section owns the entire filled look, so the free-roam cursor stays a bare ring.
 - **Highlight** — the grow-and-fade over links and buttons. On by default, and automatic: links need no setup.
 - **Magnetic** — global pull strength and release radius. Which elements magnetize is decided per widget, not here.
 - **Loading** — the spinner that takes over the cursor during loading states.

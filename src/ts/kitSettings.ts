@@ -1,9 +1,9 @@
 import {
-  DEFAULT_CLICK_FACTOR,
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
+  DEFAULT_PRESS_FACTOR,
   DEFAULT_TRAILING
 } from './constants'
 import type { ICursorOptions } from './interfaces'
@@ -17,7 +17,15 @@ import type { TKitSettings } from './types'
  * shape.
  */
 
-const isOn = (value: unknown): boolean => value === 'yes'
+/**
+ * Mirrors PHP `Options::is_on()`, and the distinction it makes is the point: a
+ * switcher stores '' once it has been touched and turned off, but a never-saved
+ * kit has no key at all. Collapsing both to false would disable a section in
+ * the editor preview that the front end — which reads the control's own
+ * `'default' => 'yes'` — renders enabled.
+ */
+const isOn = (value: unknown, fallback: boolean): boolean =>
+  value === undefined || value === null ? fallback : value === 'yes'
 
 /**
  * Mirrors PHP `is_numeric()` as Options::size_of uses it — and the part that
@@ -47,7 +55,7 @@ const sizeOf = (value: unknown, fallback: number): number => {
 export function mapKitSettings(settings: TKitSettings): ICursorOptions {
   return {
     trailing: sizeOf(settings.arts_cursor_trailing, DEFAULT_TRAILING),
-    elastic: isOn(settings.arts_cursor_elastic_enabled)
+    elastic: isOn(settings.arts_cursor_elastic_enabled, true)
       ? { strength: sizeOf(settings.arts_cursor_elastic_strength, DEFAULT_ELASTIC_STRENGTH) }
       : false,
     // Magnetic enable is per-widget now; the global option is always on.
@@ -55,14 +63,14 @@ export function mapKitSettings(settings: TKitSettings): ICursorOptions {
       strength: sizeOf(settings.arts_cursor_magnetic_strength, DEFAULT_MAGNETIC_STRENGTH),
       releaseRadius: sizeOf(settings.arts_cursor_magnetic_release, DEFAULT_MAGNETIC_RELEASE_RADIUS)
     },
-    highlight: isOn(settings.arts_cursor_highlight_enabled)
+    highlight: isOn(settings.arts_cursor_highlight_enabled, true)
       ? { scale: `${sizeOf(settings.arts_cursor_highlight_size, DEFAULT_HIGHLIGHT_SIZE_PX)}px` }
       : false,
-    clickScale: isOn(settings.arts_cursor_click_enabled)
+    pressScale: isOn(settings.arts_cursor_press_enabled, true)
       ? {
           scale: {
             ref: 'cursor',
-            factor: sizeOf(settings.arts_cursor_click_scale, DEFAULT_CLICK_FACTOR)
+            factor: sizeOf(settings.arts_cursor_press_scale, DEFAULT_PRESS_FACTOR)
           }
         }
       : false

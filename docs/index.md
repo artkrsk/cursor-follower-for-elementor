@@ -24,7 +24,7 @@ features:
     title: Link Highlight
     details: The cursor grows and fades over links and buttons. On by default, works everywhere.
   - icon: 💬
-    title: Text & Icon Hints
+    title: Hints
     details: A pill follows the cursor across linked images, cards and slides — custom wording or any Elementor icon.
   - icon: 👉
     title: Drag Hints

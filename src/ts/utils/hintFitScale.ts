@@ -4,7 +4,7 @@
  * diagonal is what must fit inside the circle. Pure: the caller measures the
  * label and passes its width/height.
  */
-export function labelFitScale(
+export function hintFitScale(
   width: number,
   height: number,
   baseSize: number,

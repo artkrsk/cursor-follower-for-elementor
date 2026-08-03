@@ -1,5 +1,5 @@
 import type { TScaleValue } from '../types/TScaleValue'
 
-export interface IClickScaleConfig {
+export interface IPressScaleConfig {
   scale: TScaleValue
 }

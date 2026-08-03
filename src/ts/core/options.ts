@@ -1,12 +1,12 @@
 import {
   DEFAULT_ANIMATION_DURATION,
   DEFAULT_ATTRIBUTE,
-  DEFAULT_CLICK_FACTOR,
   DEFAULT_ELASTIC_MAX,
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
+  DEFAULT_PRESS_FACTOR,
   DEFAULT_TRAILING
 } from '../constants'
 import type { ICursorOptions, IResolvedOptions } from '../interfaces'
@@ -38,12 +38,12 @@ export const resolveHighlight = (
 ): IResolvedOptions['highlight'] =>
   value === false ? false : { scale: value?.scale ?? `${DEFAULT_HIGHLIGHT_SIZE_PX}px` }
 
-export const resolveClickScale = (
-  value: ICursorOptions['clickScale']
-): IResolvedOptions['clickScale'] =>
+export const resolvePressScale = (
+  value: ICursorOptions['pressScale']
+): IResolvedOptions['pressScale'] =>
   value === false
     ? false
-    : { scale: value?.scale ?? { ref: 'cursor', factor: DEFAULT_CLICK_FACTOR } }
+    : { scale: value?.scale ?? { ref: 'cursor', factor: DEFAULT_PRESS_FACTOR } }
 
 export function resolveOptions(user: ICursorOptions = {}): IResolvedOptions {
   return {
@@ -51,7 +51,7 @@ export function resolveOptions(user: ICursorOptions = {}): IResolvedOptions {
     elastic: resolveElastic(user.elastic),
     magnetic: resolveMagnetic(user.magnetic),
     highlight: resolveHighlight(user.highlight),
-    clickScale: resolveClickScale(user.clickScale),
+    pressScale: resolvePressScale(user.pressScale),
     attribute: user.attribute ?? DEFAULT_ATTRIBUTE,
     targetScopes: user.targetScopes ?? [],
     animation: {
@@ -83,7 +83,7 @@ export function applyOptionPatch(options: IResolvedOptions, partial: ICursorOpti
   if (partial.highlight !== undefined) {
     options.highlight = resolveHighlight(partial.highlight)
   }
-  if (partial.clickScale !== undefined) {
-    options.clickScale = resolveClickScale(partial.clickScale)
+  if (partial.pressScale !== undefined) {
+    options.pressScale = resolvePressScale(partial.pressScale)
   }
 }

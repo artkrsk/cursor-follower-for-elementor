@@ -1,8 +1,8 @@
 import type { IAnimationConfig } from './IAnimationConfig'
-import type { IClickScaleConfig } from './IClickScaleConfig'
 import type { IElasticConfig } from './IElasticConfig'
 import type { IHighlightConfig } from './IHighlightConfig'
 import type { IMagneticConfig } from './IMagneticConfig'
+import type { IPressScaleConfig } from './IPressScaleConfig'
 import type { ITargetScope } from './ITargetScope'
 import type { ITickerAdapter } from './ITickerAdapter'
 
@@ -12,7 +12,7 @@ export interface ICursorOptions {
   elastic?: Partial<IElasticConfig> | false
   magnetic?: Partial<IMagneticConfig> | false
   highlight?: Partial<IHighlightConfig> | false
-  clickScale?: Partial<IClickScaleConfig> | false
+  pressScale?: Partial<IPressScaleConfig> | false
   /** Attribute holding per-item JSON payloads. */
   attribute?: string
   /** Declarative rules grouped by scope selector, resolved on hover (e.g. Elementor widget defaults). */

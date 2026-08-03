@@ -13,19 +13,20 @@ import {
   BORDER_COLOR_VAR,
   BORDER_WIDTH_VAR,
   CLEAR_DELAY_PAD_MS,
-  CONTENT_OFFSET_VAR,
-  CONTENT_OFFSET_Y,
   DISABLED_SELECTOR,
   DOT_ATTR,
   HIGHLIGHT_ATTR,
+  HINT_ATTR,
+  HINT_FIT_MARGIN,
+  HINT_ICON_ATTR,
+  HINT_OFFSET_X,
+  HINT_OFFSET_X_VAR,
+  HINT_OFFSET_Y,
+  HINT_OFFSET_Y_VAR,
   HTML_NO_NATIVE,
   HTML_PROGRESS,
-  ICON_ATTR,
   ICON_KIND_ATTR,
   ICON_MASK_VAR,
-  LABEL_ATTR,
-  LABEL_FIT_MARGIN,
-  LABEL_ICON_ATTR,
   LOADING_ATTR,
   NO_HIGHLIGHT_SELECTOR,
   OFFSET_X_VAR,
@@ -53,7 +54,7 @@ import type {
   IGeometryCache,
   IResolvedOptions
 } from '../interfaces'
-import { labelFitScale, resolveScale, usesTargetRef } from '../utils'
+import { hintFitScale, resolveScale, usesTargetRef } from '../utils'
 
 /**
  * Effect state, computed from LAYERS: the transient hover payload at the
@@ -66,9 +67,9 @@ import { labelFitScale, resolveScale, usesTargetRef } from '../utils'
  * All animation lives in CSS: this module only flips data-cursor-* attributes,
  * two document-level classes, and custom properties; transitions do the rest.
  * Everything that decides *what* to write is a pure module-scope function
- * taking explicit arguments; recompute() is the applier, with its label and
- * icon sections split out as module-scope sub-appliers (applyLabel, applyIcon)
- * that take their state explicitly.
+ * taking explicit arguments; recompute() is the applier, with its label
+ * section split out as a module-scope sub-applier (applyHint) that takes its
+ * state explicitly.
  *
  * Every element written to arrives through args — including `html`, so nothing
  * here resolves the document itself. That is not full independence from the
@@ -293,25 +294,25 @@ export const arrowOnlyPill = (
   return null
 }
 
-/** The auto nudge as a CSS value rather than a literal, so Site Settings can
-    retune the distance through the kit var while this module keeps deciding
-    when a nudge applies at all. The constant stays the fallback. */
-const CONTENT_OFFSET_CSS = `var(${CONTENT_OFFSET_VAR}, ${CONTENT_OFFSET_Y}px)`
+/** The auto nudge as CSS values rather than literals, so Site Settings can
+    retune both distances through the kit vars while this module keeps deciding
+    when a nudge applies at all. The constants stay the fallbacks. */
+const HINT_OFFSET_X_CSS = `var(${HINT_OFFSET_X_VAR}, ${HINT_OFFSET_X}px)`
+const HINT_OFFSET_Y_CSS = `var(${HINT_OFFSET_Y_VAR}, ${HINT_OFFSET_Y}px)`
 
-/** The pair that shifts the whole cluster off the pointer: an explicit payload
-    offset wins (in px), otherwise a label or icon auto-nudges up so its content
-    clears the OS cursor — skipped when the native cursor is hidden, since
-    there's nothing to clear. Null when the cluster sits on the pointer. */
+/** The pair that shifts the whole cluster off the pointer, signed CSS
+    convention (+x right, +y down): an explicit payload offset wins (in px),
+    otherwise a label or icon auto-nudges so its content clears the OS cursor —
+    the -28px Y fallback points up, a kit-var choice, not a mechanism. Skipped
+    when the native cursor is hidden, since there's nothing to clear. Null when
+    the cluster sits on the pointer. */
 export const offsetCss = (merged: ICursorPayload): [string, string] | null => {
   if (merged.offset) {
     return [`${merged.offset[0]}px`, `${merged.offset[1]}px`]
   }
-  const autoNudge =
-    (merged.label || merged.className || iconKind(merged)) && !merged.hideNativeCursor
-  return autoNudge ? ['0px', CONTENT_OFFSET_CSS] : null
+  const autoNudge = (merged.label || iconKind(merged)) && !merged.hideNativeCursor
+  return autoNudge ? [HINT_OFFSET_X_CSS, HINT_OFFSET_Y_CSS] : null
 }
-
-const classListOf = (className: string) => className.split(/\s+/).filter(Boolean)
 
 /** Clear content after the hide transition so it doesn't vanish mid-fade. */
 const clearAfterTransition = (el: HTMLElement, delayMs: number, clear: () => void) => {
@@ -365,16 +366,16 @@ export const iconKind = (merged: ICursorPayload): 'mask' | 'glyph' | 'markup' | 
     them falls back to text on the label itself, no icon. Markup is raw
     author-trusted HTML — set as innerHTML; a glyph becomes a real element so a
     class string never has to be escaped into markup. */
-const fillLabelSlots = (
+const fillHintSlots = (
   merged: ICursorPayload,
   refs: ICursorRefs,
   root: HTMLElement,
-  label: HTMLElement
+  hint: HTMLElement
 ) => {
-  const textEl = refs.labelText ?? label
+  const textEl = refs.hintText ?? hint
   textEl.textContent = merged.label ?? ''
   const kind = iconKind(merged)
-  const slot = refs.labelIcon
+  const slot = refs.hintIcon
   if (slot) {
     if (kind === 'glyph' && merged.iconClass) {
       const glyph = slot.ownerDocument.createElement('i')
@@ -386,26 +387,26 @@ const fillLabelSlots = (
     }
     setVar(slot, ICON_MASK_VAR, kind === 'mask' ? `url("${merged.iconUrl}")` : null)
   }
-  setAttr(root, LABEL_ICON_ATTR, kind ? (merged.iconPosition ?? 'after') : false)
+  setAttr(root, HINT_ICON_ATTR, kind ? (merged.iconPosition ?? 'after') : false)
   setAttr(root, ICON_KIND_ATTR, kind)
-  root.setAttribute(LABEL_ATTR, '')
+  root.setAttribute(HINT_ATTR, '')
 }
 
 /** Lower the label and clear its slots once the hide transition ends. */
-const retractLabel = (
+const retractHint = (
   refs: ICursorRefs,
   root: HTMLElement,
-  label: HTMLElement,
+  hint: HTMLElement,
   clearDelay: number
 ) => {
-  hideContent(root, label, LABEL_ATTR, clearDelay, () => {
-    const textEl = refs.labelText ?? label
+  hideContent(root, hint, HINT_ATTR, clearDelay, () => {
+    const textEl = refs.hintText ?? hint
     textEl.textContent = ''
-    if (refs.labelIcon) {
-      refs.labelIcon.innerHTML = ''
-      setVar(refs.labelIcon, ICON_MASK_VAR, null)
+    if (refs.hintIcon) {
+      refs.hintIcon.innerHTML = ''
+      setVar(refs.hintIcon, ICON_MASK_VAR, null)
     }
-    root.removeAttribute(LABEL_ICON_ATTR)
+    root.removeAttribute(HINT_ICON_ATTR)
     root.removeAttribute(ICON_KIND_ATTR)
   })
 }
@@ -424,7 +425,7 @@ const retractLabel = (
  * a label-less vertical pair: with nothing competing for width, the shape
  * commits to the vertical axis as a true vertical stadium.
  */
-export const applyLabel = (
+export const applyHint = (
   merged: ICursorPayload,
   refs: ICursorRefs,
   root: HTMLElement,
@@ -436,8 +437,8 @@ export const applyLabel = (
 ): { labelFit: number; pill: { width: number; height: number } | null } => {
   // An icon with no wording is content in its own right, so the pill has to
   // render for it — gating on the label alone left an icon-only payload invisible.
-  if ((merged.label || iconKind(merged)) && refs.label) {
-    fillLabelSlots(merged, refs, root, refs.label)
+  if ((merged.label || iconKind(merged)) && refs.hint) {
+    fillHintSlots(merged, refs, root, refs.hint)
     // NUL join so "a b" + "" can't collide with "a" + "b".
     const key = [merged.label, merged.icon, merged.iconClass, merged.iconUrl].join('\u0000')
     let box = labelBoxes.get(key)
@@ -446,7 +447,7 @@ export const applyLabel = (
       // root's elastic matrix don't distort them), so they read the intrinsic
       // label box — icon included, so the pill/circle sizes to fit both. One
       // layout flush, on a cache miss only — off the frame path.
-      box = { w: refs.label.offsetWidth, h: refs.label.offsetHeight }
+      box = { w: refs.hint.offsetWidth, h: refs.hint.offsetHeight }
       labelBoxes.set(key, box)
     }
     const r = arrowReservation(merged, arrowTheme)
@@ -462,48 +463,16 @@ export const applyLabel = (
       return { labelFit: 0, pill: pillGeometry(w, h, pad.x + r.x, pad.y + r.y) }
     }
     return {
-      labelFit: labelFitScale(w, h, baseSize, LABEL_FIT_MARGIN + Math.max(r.x, r.y)),
+      labelFit: hintFitScale(w, h, baseSize, HINT_FIT_MARGIN + Math.max(r.x, r.y)),
       pill: null
     }
   }
-  if (root.hasAttribute(LABEL_ATTR) && refs.label) {
-    retractLabel(refs, root, refs.label, clearDelay)
+  if (root.hasAttribute(HINT_ATTR) && refs.hint) {
+    retractHint(refs, root, refs.hint, clearDelay)
   }
-  // LABEL_ATTR stays down for an arrow-only pill: its styling keys on the
+  // HINT_ATTR stays down for an arrow-only pill: its styling keys on the
   // shape attr.
   return { labelFit: 0, pill: arrowOnlyPill(merged, pillPad, arrowTheme) }
-}
-
-/**
- * The standalone-icon section of a recompute: diff the class list in place
- * when an icon is shown, retract when one was up. Returns the class list now
- * on the element — the caller's persistent state. The no-op fallthrough
- * returns the previous list UNCHANGED; the caller reassigns unconditionally,
- * so anything else would clobber a pending retract's deferred removal.
- */
-export const applyIcon = (
-  merged: ICursorPayload,
-  refs: ICursorRefs,
-  root: HTMLElement,
-  prevIconClasses: string[],
-  clearDelay: number
-): string[] => {
-  if (merged.className && refs.icon) {
-    const next = classListOf(merged.className)
-    refs.icon.classList.remove(...prevIconClasses.filter((c) => !next.includes(c)))
-    refs.icon.classList.add(...next)
-    root.setAttribute(ICON_ATTR, '')
-    return next
-  }
-  if (root.hasAttribute(ICON_ATTR) && refs.icon) {
-    const el = refs.icon
-    const stale = prevIconClasses
-    hideContent(root, el, ICON_ATTR, clearDelay, () => {
-      el.classList.remove(...stale)
-    })
-    return []
-  }
-  return prevIconClasses
 }
 
 export function createEffectsSuite(args: {
@@ -560,8 +529,6 @@ export function createEffectsSuite(args: {
     return cachedArrowTheme
   }
 
-  let iconClasses: string[] = []
-
   // Last-written value per custom property, so a recompute that changes one
   // layer does not rewrite the rest — an identical setProperty still dirties
   // style. Var names are unique across root/follower, so the name is the key.
@@ -582,7 +549,7 @@ export function createEffectsSuite(args: {
     setVar(el, name, next)
   }
 
-  // Label box memo: refs.label.offsetWidth/Height is a forced synchronous layout,
+  // Label box memo: refs.hint.offsetWidth/Height is a forced synchronous layout,
   // and the same label recurs across a page's links. Cache the measured box keyed
   // by what changes it — the text and the icon markup; the icon side is `order`
   // only, so it reorders the flex row without changing the box. The pill/floor
@@ -600,7 +567,7 @@ export function createEffectsSuite(args: {
 
     // -- label (applied FIRST so its measured box sizes the pill / floors the
     //    circle scale below) --
-    const { labelFit, pill } = applyLabel(
+    const { labelFit, pill } = applyHint(
       merged,
       refs,
       root,
@@ -643,7 +610,6 @@ export function createEffectsSuite(args: {
     writeVar(root, OFFSET_Y_VAR, offsetY)
 
     // -- icon --
-    iconClasses = applyIcon(merged, refs, root, iconClasses, clearDelay())
 
     // -- arrows --
     setAttr(root, ARROWS_ATTR, merged.arrows)
@@ -687,10 +653,10 @@ export function createEffectsSuite(args: {
       }
     },
     handlePress(e) {
-      if (options.clickScale === false || !isLeftUnmodified(e)) {
+      if (options.pressScale === false || !isLeftUnmodified(e)) {
         return null
       }
-      const scale = resolveScale(options.clickScale.scale, baseSize) ?? 1
+      const scale = resolveScale(options.pressScale.scale, baseSize) ?? 1
       root.setAttribute(PRESSED_ATTR, '')
       setVar(follower, SCALE_PRESSED_VAR, scale)
       // Mirror onto the root (inheriting) so the arrows re-seat on the pressed

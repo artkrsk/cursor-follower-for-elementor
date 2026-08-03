@@ -1,12 +1,12 @@
 import {
   DEFAULT_ANIMATION_DURATION,
   DEFAULT_ATTRIBUTE,
-  DEFAULT_CLICK_FACTOR,
   DEFAULT_ELASTIC_MAX,
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
+  DEFAULT_PRESS_FACTOR,
   DEFAULT_TRAILING
 } from '@ts/constants'
 import { applyOptionPatch, resolveOptions } from '@ts/core/options'
@@ -22,7 +22,7 @@ describe('resolveOptions', () => {
         releaseRadius: DEFAULT_MAGNETIC_RELEASE_RADIUS
       },
       highlight: { scale: `${DEFAULT_HIGHLIGHT_SIZE_PX}px` },
-      clickScale: { scale: { ref: 'cursor', factor: DEFAULT_CLICK_FACTOR } },
+      pressScale: { scale: { ref: 'cursor', factor: DEFAULT_PRESS_FACTOR } },
       attribute: DEFAULT_ATTRIBUTE,
       targetScopes: [],
       animation: { duration: DEFAULT_ANIMATION_DURATION, easing: null }
@@ -34,12 +34,12 @@ describe('resolveOptions', () => {
       elastic: false,
       magnetic: false,
       highlight: false,
-      clickScale: false
+      pressScale: false
     })
     expect(options.elastic).toBe(false)
     expect(options.magnetic).toBe(false)
     expect(options.highlight).toBe(false)
-    expect(options.clickScale).toBe(false)
+    expect(options.pressScale).toBe(false)
   })
 
   it('fills only the gaps a partial section leaves', () => {
@@ -101,11 +101,11 @@ describe('applyOptionPatch', () => {
     expect(options.highlight).toEqual({ scale: `${DEFAULT_HIGHLIGHT_SIZE_PX}px` })
   })
 
-  it('takes a clickScale switch-off through the patch', () => {
+  it('takes a pressScale switch-off through the patch', () => {
     const options = resolveOptions()
-    applyOptionPatch(options, { clickScale: false })
+    applyOptionPatch(options, { pressScale: false })
 
-    expect(options.clickScale).toBe(false)
+    expect(options.pressScale).toBe(false)
   })
 
   it('can turn a section off and back on', () => {

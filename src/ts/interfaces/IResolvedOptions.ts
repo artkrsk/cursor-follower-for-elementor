@@ -1,8 +1,8 @@
 import type { IAnimationConfig } from './IAnimationConfig'
-import type { IClickScaleConfig } from './IClickScaleConfig'
 import type { IElasticConfig } from './IElasticConfig'
 import type { IHighlightConfig } from './IHighlightConfig'
 import type { IMagneticConfig } from './IMagneticConfig'
+import type { IPressScaleConfig } from './IPressScaleConfig'
 import type { ITargetScope } from './ITargetScope'
 
 /**
@@ -15,7 +15,7 @@ export interface IResolvedOptions {
   elastic: IElasticConfig | false
   magnetic: IMagneticConfig | false
   highlight: IHighlightConfig | false
-  clickScale: IClickScaleConfig | false
+  pressScale: IPressScaleConfig | false
   attribute: string
   targetScopes: ITargetScope[]
   animation: IAnimationConfig

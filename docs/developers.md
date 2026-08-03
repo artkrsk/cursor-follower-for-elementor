@@ -60,11 +60,10 @@ Parsed once per element, matched via delegation — elements added later (AJAX, 
 | `arrowsPosition` | `"inside"` \| `"outside"` | Arrows inside the ring or outside its edge |
 | `drag` | payload | A sub-payload pushed while a click-drag is held on the element (its own `drag` is ignored) |
 | `dot` | `true` | A filled dot scales up at the anchor while pressed; rides the press channel |
-| `highlight` | `true` \| `false` \| `{scale?, opacity?}` | Force, forbid, or tune the highlight for this element |
+| `highlight` | `true` \| `false` \| `{scale?}` | Force, forbid, or tune the highlight for this element |
 | `hideNativeCursor` | `true` | Hide the OS cursor over the element |
 | `backgroundColor` / `borderColor` / `borderWidth` / `textColor` | string / number | Per-element color and stroke overrides |
-| `offset` | `[x, y]` | Shift the whole cursor cluster off the pointer, in px |
-| `className` | string | Extra classes on the cursor root while hovered |
+| `offset` | `[x, y]` | Shift the whole cursor cluster off the pointer, in px — signed, `+x` right, `+y` down |
 | `showLoadingAnimation` / `showProgressCursor` | `true` | Enter the loading / progress state on hover |
 
 Two behaviors you get without any attribute: interactive elements (`a`, `button`, `[role="button"]`, `.has-cursor-highlight`) auto-highlight, and `.no-cursor-highlight` opts one out. Localization is yours and upstream of the wire: wrap `label` in your own `__()` when printing the attribute from PHP.
@@ -87,7 +86,7 @@ The grammar: `targetScopes` is a list of `{scope, rules}` groups. `scope` is the
 - **`labelVar` / `iconVar`** name a CSS custom property on the scope element that replaces the rule's `label`/icon per instance — the channel for per-widget wording (`url(…)` values are masked images; anything else is webfont classes). Named per rule so one rule's label can never leak onto its siblings.
 - Rules whose payload carries `highlight` drop out while the site-wide Highlight toggle is off.
 
-The same filter carries the tuning keys (`trailing`, `elastic`, `magnetic`, `highlight`, `clickScale`) if you need to override Site Settings programmatically.
+The same filter carries the tuning keys (`trailing`, `elastic`, `magnetic`, `highlight`, `pressScale`) if you need to override Site Settings programmatically.
 
 ## Runtime API
 
@@ -101,7 +100,7 @@ interface ICursorFollower {
   hideNativeCursor(): ICursorSession
   magnetize(opts: IMagnetizeOptions): ICursorSession
 
-  updateOptions(partial: ICursorOptions): void  // live-tune trailing/elastic/magnetic/highlight/clickScale
+  updateOptions(partial: ICursorOptions): void  // live-tune trailing/elastic/magnetic/highlight/pressScale
   warm(container?: ParentNode): void            // pre-measure hint after injecting large DOM
   remeasure(): void                             // re-sample measured theming vars after you change them
 
@@ -146,6 +145,19 @@ They are deliberately unregistered (no `@property`), so `var(--x, fallback)` cha
 ```css
 .arts-cursor { mix-blend-mode: difference; }
 ```
+
+**Frosted glass.** Two vars carry a whole `blur()` value rather than a radius, because unset they fall back to `none` and cost nothing. `--arts-cursor-hint-backdrop-filter` applies only while the cursor is showing content — a label, an icon, a pill — so the free-roam ring stays a bare outline and the frost fades in with the fill:
+
+```css
+.arts-cursor {
+  --arts-cursor-hint-backdrop-filter: blur(16px);
+  --arts-cursor-hint-background: rgb(255 255 255 / 0.25);
+}
+```
+
+`--arts-cursor-backdrop-filter` is the same thing without the state scoping — it frosts every state, free roam included. The content states are `.arts-cursor:is([data-cursor-hint], [data-cursor-shape='pill'])` if you want to hang your own rules off them. In WordPress all of this is controls: Site Settings → Cursor for the base, → Hints for the content ones.
+
+One incompatibility, from the CSS spec itself: a non-normal blend mode on `.arts-cursor` turns the cursor into its own backdrop root, so the blur has nothing to sample and silently does nothing. Pick one per site — frosted glass or `difference`, not both.
 
 ## Disabling per request
 

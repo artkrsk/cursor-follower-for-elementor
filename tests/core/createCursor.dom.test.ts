@@ -9,11 +9,11 @@ import {
   DURATION_VAR,
   EL_ATTR,
   HIGHLIGHT_ATTR,
+  HINT_ATTR,
   HTML_ACTIVE,
   HTML_INACTIVE,
   HTML_NO_NATIVE,
   HTML_PROGRESS,
-  LABEL_ATTR,
   LOADING_ATTR,
   MAGNETIC_ATTR,
   PRESSED_ATTR,
@@ -158,7 +158,7 @@ describe('hover wiring', () => {
     pointer(box, 'pointerover')
 
     pointer(box, 'pointerdown', { button: 0 })
-    // Default clickScale: { ref: 'cursor', factor: 0.8 }.
+    // Default pressScale: { ref: 'cursor', factor: 0.8 }.
     expect(box.style.scale).toBe('0.8')
 
     pointer(box, 'pointerup', { button: 0 })
@@ -245,13 +245,13 @@ describe('drag wiring', () => {
   it('clears the hover state when a drag releases over nothing', () => {
     boot(DRAG_MARKUP)
     startDrag()
-    expect((cursor.el as HTMLElement).hasAttribute(LABEL_ATTR)).toBe(true)
+    expect((cursor.el as HTMLElement).hasAttribute(HINT_ATTR)).toBe(true)
     pointer(at('#box'), 'pointerout', { relatedTarget: at('#plain') })
     pointer(at('#plain'), 'pointerover')
 
     pointer(window as unknown as Element, 'pointerup', { button: 0 })
 
-    expect((cursor.el as HTMLElement).hasAttribute(LABEL_ATTR)).toBe(false)
+    expect((cursor.el as HTMLElement).hasAttribute(HINT_ATTR)).toBe(false)
     expect((cursor.el as HTMLElement).hasAttribute(DRAGGING_ATTR)).toBe(false)
   })
 })
@@ -426,7 +426,7 @@ describe('the effective animation tokens', () => {
   it('times content clears from the measured duration, not the default', () => {
     stubVars({ [DURATION_VAR]: '1s' })
     boot()
-    const text = document.querySelector(`[${EL_ATTR}="label-text"]`) as HTMLElement
+    const text = document.querySelector(`[${EL_ATTR}="hint-text"]`) as HTMLElement
 
     releaseAndAdvancePastDefault()
     expect(text.textContent).toBe('Hi')
@@ -439,7 +439,7 @@ describe('the effective animation tokens', () => {
     const vars: Record<string, string> = { [DURATION_VAR]: '0.25s' }
     stubVars(vars)
     boot()
-    const text = document.querySelector(`[${EL_ATTR}="label-text"]`) as HTMLElement
+    const text = document.querySelector(`[${EL_ATTR}="hint-text"]`) as HTMLElement
 
     vars[DURATION_VAR] = '1s'
     cursor.remeasure()

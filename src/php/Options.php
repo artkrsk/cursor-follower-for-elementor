@@ -39,8 +39,8 @@ class Options {
 			? array( 'scale' => self::size_of( 'arts_cursor_highlight_size', 80 ) . 'px' )
 			: false;
 
-		$options['clickScale'] = self::is_on( 'arts_cursor_click_enabled', true )
-			? array( 'scale' => array( 'ref' => 'cursor', 'factor' => self::size_of( 'arts_cursor_click_scale', 0.8 ) ) )
+		$options['pressScale'] = self::is_on( 'arts_cursor_press_enabled', true )
+			? array( 'scale' => array( 'ref' => 'cursor', 'factor' => self::size_of( 'arts_cursor_press_scale', 0.8 ) ) )
 			: false;
 
 		// Zero-config Elementor widget rules, grouped by widget scope. Within a

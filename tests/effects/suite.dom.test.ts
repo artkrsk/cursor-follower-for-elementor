@@ -17,12 +17,11 @@ import {
   DEFAULT_ANIMATION_DURATION,
   DOT_ATTR,
   HIGHLIGHT_ATTR,
+  HINT_ATTR,
+  HINT_FIT_MARGIN,
+  HINT_ICON_ATTR,
   HTML_NO_NATIVE,
   HTML_PROGRESS,
-  ICON_ATTR,
-  LABEL_ATTR,
-  LABEL_FIT_MARGIN,
-  LABEL_ICON_ATTR,
   LOADING_ATTR,
   OFFSET_X_VAR,
   OFFSET_Y_VAR,
@@ -39,7 +38,7 @@ import {
   TEXT_COLOR_VAR
 } from '@ts/constants'
 import { resolveOptions } from '@ts/core/options'
-import { applyIcon, applyLabel, createEffectsSuite } from '@ts/effects/suite'
+import { applyHint, createEffectsSuite } from '@ts/effects/suite'
 import type { ICursorRefs, IGeometryCache, IGeometryEntry, IResolvedOptions } from '@ts/interfaces'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -73,13 +72,12 @@ const build = (options: IResolvedOptions = resolveOptions()) => {
   html = document.createElement('html')
   const root = document.createElement('div')
   const follower = document.createElement('div')
-  const label = document.createElement('div')
-  const labelText = document.createElement('div')
-  const labelIcon = document.createElement('div')
-  label.append(labelText, labelIcon)
-  const icon = document.createElement('div')
-  root.append(follower, label, icon)
-  refs = { root, follower, label, labelText, labelIcon, icon, built: true }
+  const hint = document.createElement('div')
+  const hintText = document.createElement('div')
+  const hintIcon = document.createElement('div')
+  hint.append(hintText, hintIcon)
+  root.append(follower, hint)
+  refs = { root, follower, hint, hintText, hintIcon, built: true }
   return createEffectsSuite({ refs, options, geometry: geometry(), html })
 }
 
@@ -109,17 +107,17 @@ describe('recompute — scale', () => {
   /** The floor is what makes the ring contain its own label. */
   it('lets a label floor a scale too small to contain it', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 120, 0)
+    sized(refs.hint as HTMLElement, 120, 0)
 
     suite.setHover({ label: 'View', scale: '10px' }, null)
 
-    // hypot(120, 0) + 2 * LABEL_FIT_MARGIN, over the 60px base.
+    // hypot(120, 0) + 2 * HINT_FIT_MARGIN, over the 60px base.
     expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(String(128 / BASE_SIZE_FALLBACK))
   })
 
   it('leaves a scale that already contains the label alone', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 10, 0)
+    sized(refs.hint as HTMLElement, 10, 0)
 
     suite.setHover({ label: 'View', scale: `${BASE_SIZE_FALLBACK * 3}px` }, null)
 
@@ -138,7 +136,7 @@ describe('recompute — scale', () => {
 describe('recompute — pill shape', () => {
   it('sizes the follower box to the label and skips the circle floor', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     suite.setHover({ shape: 'pill', label: 'View Project' }, null)
 
@@ -158,7 +156,7 @@ describe('recompute — pill shape', () => {
     const styles = vi.fn(() => ({ getPropertyValue: (name: string) => vars[name] ?? '' }))
     vi.stubGlobal('getComputedStyle', styles)
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     suite.setHover({ shape: 'pill', label: 'View' }, null)
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('140px')
@@ -170,7 +168,7 @@ describe('recompute — pill shape', () => {
 
   it('clears the shape vars when the shape returns to a circle', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
     suite.setHover({ shape: 'pill', label: 'View Project' }, null)
 
     suite.setHover({ label: 'View Project' }, null)
@@ -194,7 +192,7 @@ describe('recompute — arrows reserve room in the shape', () => {
 
   it('widens a labeled pill on the horizontal axis when arrows go active', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
     suite.setHover({ shape: 'pill', label: 'Drag' }, null)
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('136px')
 
@@ -208,14 +206,14 @@ describe('recompute — arrows reserve room in the shape', () => {
       nor circle, so the shape falls back to the ring and the floor takes over. */
   it('demotes a labeled pill to the circle for a vertical-only inside pair', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     suite.setHover({ shape: 'pill', label: 'Drag', arrows: 'vertical' }, null)
 
     expect(refs.root.hasAttribute(SHAPE_ATTR)).toBe(false)
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('')
     expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(
-      String((Math.hypot(100, 14) + 2 * (LABEL_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK)
+      String((Math.hypot(100, 14) + 2 * (HINT_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK)
     )
   })
 
@@ -223,19 +221,19 @@ describe('recompute — arrows reserve room in the shape', () => {
       nor circle, same call as the vertical demotion. */
   it('demotes a labeled pill to the circle for an "all" pair', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     suite.setHover({ shape: 'pill', label: 'Drag', arrows: 'all' }, null)
 
     expect(refs.root.hasAttribute(SHAPE_ATTR)).toBe(false)
     expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(
-      String((Math.hypot(100, 14) + 2 * (LABEL_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK)
+      String((Math.hypot(100, 14) + 2 * (HINT_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK)
     )
   })
 
   it('leaves a labeled pill untouched when the pair seats outside the edge', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     suite.setHover(
       { shape: 'pill', label: 'Drag', arrows: 'horizontal', arrowsPosition: 'outside' },
@@ -288,7 +286,7 @@ describe('recompute — arrows reserve room in the shape', () => {
       suite marks which axis that is together with the shape itself. */
   it('marks a horizontal pill with axis x and a vertical stadium with axis y', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     suite.setHover({ shape: 'pill', label: 'Drag' }, null)
     expect(refs.root.getAttribute(SHAPE_AXIS_ATTR)).toBe('x')
@@ -302,7 +300,7 @@ describe('recompute — arrows reserve room in the shape', () => {
 
   it('drops the axis mark whenever no pill is up', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
     suite.setHover({ shape: 'pill', label: 'Drag' }, null)
     expect(refs.root.hasAttribute(SHAPE_AXIS_ATTR)).toBe(true)
 
@@ -314,12 +312,12 @@ describe('recompute — arrows reserve room in the shape', () => {
 
   /** The pill styling keys on data-cursor-shape alone — the label stays inert,
       so nothing fades an empty text slot in or out. */
-  it('keeps LABEL_ATTR unraised for an arrows-only pill', () => {
+  it('keeps HINT_ATTR unraised for an arrows-only pill', () => {
     const suite = build()
 
     suite.setHover({ shape: 'pill', arrows: 'horizontal' }, null)
 
-    expect(refs.root.hasAttribute(LABEL_ATTR)).toBe(false)
+    expect(refs.root.hasAttribute(HINT_ATTR)).toBe(false)
   })
 
   it('keeps falling back to the circle for a bare pill shape with no label and no arrows', () => {
@@ -333,25 +331,25 @@ describe('recompute — arrows reserve room in the shape', () => {
 
   it('retracts a previously shown label when an arrows-only pill takes over', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
     suite.setHover({ shape: 'pill', label: 'Drag' }, null)
-    expect(refs.root.hasAttribute(LABEL_ATTR)).toBe(true)
+    expect(refs.root.hasAttribute(HINT_ATTR)).toBe(true)
 
     suite.setHover({ shape: 'pill', arrows: 'horizontal' }, null)
 
-    expect(refs.root.hasAttribute(LABEL_ATTR)).toBe(false)
+    expect(refs.root.hasAttribute(HINT_ATTR)).toBe(false)
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe(`${2 * (18 + RES)}px`)
   })
 
   it('floors a labeled circle bigger to clear an active inside arrow pair', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 30, 16)
+    sized(refs.hint as HTMLElement, 30, 16)
 
     suite.setHover({ label: 'View', arrows: 'horizontal', scale: '10px' }, null)
 
     expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(
       String(
-        (Math.hypot(30, Math.max(16, BREADTH)) + 2 * (LABEL_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK
+        (Math.hypot(30, Math.max(16, BREADTH)) + 2 * (HINT_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK
       )
     )
   })
@@ -367,7 +365,7 @@ describe('recompute — arrows reserve room in the shape', () => {
 
   it('does not inflate the circle floor when the pair seats outside', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 30, 16)
+    sized(refs.hint as HTMLElement, 30, 16)
 
     suite.setHover(
       { label: 'View', arrows: 'horizontal', arrowsPosition: 'outside', scale: '10px' },
@@ -381,7 +379,7 @@ describe('recompute — arrows reserve room in the shape', () => {
       CSS reach calc prefers the shape vars; locks that precedence contract. */
   it('keeps writing the arrow radius var even while a pill shape is active', () => {
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     suite.setHover({ shape: 'pill', label: 'Drag', arrows: 'horizontal' }, null)
 
@@ -394,7 +392,7 @@ describe('recompute — arrows reserve room in the shape', () => {
     const styles = vi.fn(() => ({ getPropertyValue: (name: string) => vars[name] ?? '' }))
     vi.stubGlobal('getComputedStyle', styles)
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     suite.setHover({ shape: 'pill', label: 'Drag', arrows: 'horizontal' }, null)
     // Depth 4 + 24×⅓ = 12: width 100 + 2×(18+12), height max(14, 24×⅔) + 2×8.
@@ -411,7 +409,7 @@ describe('recompute — arrows reserve room in the shape', () => {
       getPropertyValue: (name: string) => vars[name] ?? ''
     }))
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
     suite.setHover({ shape: 'pill', label: 'Drag', arrows: 'horizontal' }, null)
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('160px')
 
@@ -480,9 +478,10 @@ describe('recompute — offset', () => {
     const suite = build()
 
     suite.setHover({ label: 'View' }, null)
-    // A var reference, not a literal: the kit control owns the distance, the
-    // constant is only its fallback.
-    expect(cssVar(refs.root, OFFSET_Y_VAR)).toBe('var(--arts-cursor-content-offset, -28px)')
+    // Var references, not literals: the kit controls own both distances, the
+    // constants are only their fallbacks.
+    expect(cssVar(refs.root, OFFSET_X_VAR)).toBe('var(--arts-cursor-hint-offset-x, 0px)')
+    expect(cssVar(refs.root, OFFSET_Y_VAR)).toBe('var(--arts-cursor-hint-offset-y, -28px)')
 
     suite.setHover({}, null)
     expect(cssVar(refs.root, OFFSET_X_VAR)).toBe('')
@@ -505,8 +504,8 @@ describe('recompute — label and icon', () => {
 
     suite.setHover({ label: 'View' }, null)
 
-    expect(refs.root.hasAttribute(LABEL_ATTR)).toBe(true)
-    expect(refs.label?.textContent).toBe('View')
+    expect(refs.root.hasAttribute(HINT_ATTR)).toBe(true)
+    expect(refs.hint?.textContent).toBe('View')
   })
 
   /** The text has to survive the hide transition, or it vanishes mid-fade. */
@@ -516,8 +515,8 @@ describe('recompute — label and icon', () => {
 
     suite.clearHover()
 
-    expect(refs.root.hasAttribute(LABEL_ATTR)).toBe(false)
-    expect(refs.label?.textContent).toBe('View')
+    expect(refs.root.hasAttribute(HINT_ATTR)).toBe(false)
+    expect(refs.hint?.textContent).toBe('View')
   })
 
   it('injects the payload icon into its slot and flags the side', () => {
@@ -525,31 +524,20 @@ describe('recompute — label and icon', () => {
 
     suite.setHover({ label: 'Visit', icon: '<svg></svg>', iconPosition: 'before' }, null)
 
-    expect(refs.labelText?.textContent).toBe('Visit')
-    expect(refs.labelIcon?.querySelector('svg')).toBeTruthy()
-    expect(refs.root.getAttribute(LABEL_ICON_ATTR)).toBe('before')
+    expect(refs.hintText?.textContent).toBe('Visit')
+    expect(refs.hintIcon?.querySelector('svg')).toBeTruthy()
+    expect(refs.root.getAttribute(HINT_ICON_ATTR)).toBe('before')
   })
 
   it('defaults the icon after the label and clears it when the icon is dropped', () => {
     const suite = build()
     suite.setHover({ label: 'Visit', icon: '<svg></svg>' }, null)
-    expect(refs.root.getAttribute(LABEL_ICON_ATTR)).toBe('after')
+    expect(refs.root.getAttribute(HINT_ICON_ATTR)).toBe('after')
 
     suite.setHover({ label: 'Visit' }, null)
 
-    expect(refs.labelIcon?.querySelector('svg')).toBeNull()
-    expect(refs.root.hasAttribute(LABEL_ICON_ATTR)).toBe(false)
-  })
-
-  it('swaps icon classes without leaving the previous set behind', () => {
-    const suite = build()
-
-    suite.setHover({ className: 'icon-a icon-shared' }, null)
-    expect([...(refs.icon?.classList ?? [])]).toEqual(['icon-a', 'icon-shared'])
-
-    suite.setHover({ className: 'icon-b icon-shared' }, null)
-    expect([...(refs.icon?.classList ?? [])]).toEqual(['icon-shared', 'icon-b'])
-    expect(refs.root.hasAttribute(ICON_ATTR)).toBe(true)
+    expect(refs.hintIcon?.querySelector('svg')).toBeNull()
+    expect(refs.root.hasAttribute(HINT_ICON_ATTR)).toBe(false)
   })
 })
 
@@ -570,9 +558,9 @@ describe('recompute — content retract completes after the transition', () => {
     suite.clearHover()
     vi.runOnlyPendingTimers()
 
-    expect(refs.labelText?.textContent).toBe('')
-    expect(refs.labelIcon?.innerHTML).toBe('')
-    expect(refs.root.hasAttribute(LABEL_ICON_ATTR)).toBe(false)
+    expect(refs.hintText?.textContent).toBe('')
+    expect(refs.hintIcon?.innerHTML).toBe('')
+    expect(refs.root.hasAttribute(HINT_ICON_ATTR)).toBe(false)
   })
 
   it('keeps a re-shown label when the stale hide transition fires', () => {
@@ -583,8 +571,8 @@ describe('recompute — content retract completes after the transition', () => {
 
     vi.runOnlyPendingTimers()
 
-    expect(refs.root.hasAttribute(LABEL_ATTR)).toBe(true)
-    expect(refs.labelText?.textContent).toBe('View')
+    expect(refs.root.hasAttribute(HINT_ATTR)).toBe(true)
+    expect(refs.hintText?.textContent).toBe('View')
   })
 
   /** Both finish routes fire on a real retract — transitionend, then the
@@ -594,22 +582,12 @@ describe('recompute — content retract completes after the transition', () => {
     suite.setHover({ label: 'View' }, null)
     suite.clearHover()
 
-    ;(refs.label as HTMLElement).dispatchEvent(new Event('transitionend'))
-    expect(refs.labelText?.textContent).toBe('')
-    ;(refs.labelText as HTMLElement).textContent = 'sentinel'
+    ;(refs.hint as HTMLElement).dispatchEvent(new Event('transitionend'))
+    expect(refs.hintText?.textContent).toBe('')
+    ;(refs.hintText as HTMLElement).textContent = 'sentinel'
     vi.runOnlyPendingTimers()
 
-    expect(refs.labelText?.textContent).toBe('sentinel')
-  })
-
-  it('drops the icon classes once its transition backstop fires', () => {
-    const suite = build()
-    suite.setHover({ className: 'icon-a icon-shared' }, null)
-
-    suite.setHover({}, null)
-    vi.runOnlyPendingTimers()
-
-    expect([...(refs.icon?.classList ?? [])]).toEqual([])
+    expect(refs.hintText?.textContent).toBe('sentinel')
   })
 })
 
@@ -631,10 +609,10 @@ describe('recompute — clear delay follows the live duration', () => {
     options.animation.duration = 1
     suite.clearHover()
     vi.advanceTimersByTime(DEFAULT_ANIMATION_DURATION * 1000 + CLEAR_DELAY_PAD_MS + 1)
-    expect(refs.labelText?.textContent).toBe('View')
+    expect(refs.hintText?.textContent).toBe('View')
 
     vi.advanceTimersByTime(1000)
-    expect(refs.labelText?.textContent).toBe('')
+    expect(refs.hintText?.textContent).toBe('')
   })
 })
 
@@ -646,19 +624,18 @@ describe('recompute — adopted markup without a follower', () => {
   const buildNoFollower = () => {
     html = document.createElement('html')
     const root = document.createElement('div')
-    const label = document.createElement('div')
-    const labelText = document.createElement('div')
-    const labelIcon = document.createElement('div')
-    label.append(labelText, labelIcon)
-    const icon = document.createElement('div')
-    root.append(label, icon)
-    refs = { root, follower: null, label, labelText, labelIcon, icon, built: false }
+    const hint = document.createElement('div')
+    const hintText = document.createElement('div')
+    const hintIcon = document.createElement('div')
+    hint.append(hintText, hintIcon)
+    root.append(hint)
+    refs = { root, follower: null, hint, hintText, hintIcon, built: false }
     return createEffectsSuite({ refs, options: resolveOptions(), geometry: geometry(), html })
   }
 
   it('sizes a pill and a scaled border off the constants when there is no follower', () => {
     const suite = buildNoFollower()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
 
     expect(() => suite.setHover({ shape: 'pill', label: 'Go', scale: '30px' }, null)).not.toThrow()
     expect(refs.root.getAttribute(SHAPE_ATTR)).toBe('pill')
@@ -697,9 +674,9 @@ describe('recompute — adopted markup without label slots', () => {
     html = document.createElement('html')
     const root = document.createElement('div')
     const follower = document.createElement('div')
-    const label = document.createElement('div')
-    root.append(follower, label)
-    refs = { root, follower, label, labelText: null, labelIcon: null, icon: null, built: false }
+    const hint = document.createElement('div')
+    root.append(follower, hint)
+    refs = { root, follower, hint, hintText: null, hintIcon: null, built: false }
     return createEffectsSuite({ refs, options: resolveOptions(), geometry: geometry(), html })
   }
 
@@ -708,8 +685,8 @@ describe('recompute — adopted markup without label slots', () => {
 
     suite.setHover({ label: 'View', icon: '<svg></svg>' }, null)
 
-    expect(refs.root.hasAttribute(LABEL_ATTR)).toBe(true)
-    expect(refs.label?.textContent).toBe('View')
+    expect(refs.root.hasAttribute(HINT_ATTR)).toBe(true)
+    expect(refs.hint?.textContent).toBe('View')
   })
 
   it('clears the fallback text once the retract transition ends', () => {
@@ -719,7 +696,7 @@ describe('recompute — adopted markup without label slots', () => {
     suite.clearHover()
     vi.runOnlyPendingTimers()
 
-    expect(refs.label?.textContent).toBe('')
+    expect(refs.hint?.textContent).toBe('')
   })
 })
 
@@ -733,14 +710,14 @@ describe('recompute — label box memo', () => {
   /** Counting getter on the label box — each miss reads offsetWidth once. */
   const countMeasures = () => {
     let reads = 0
-    Object.defineProperty(refs.label as HTMLElement, 'offsetWidth', {
+    Object.defineProperty(refs.hint as HTMLElement, 'offsetWidth', {
       configurable: true,
       get: () => {
         reads++
         return 100
       }
     })
-    Object.defineProperty(refs.label as HTMLElement, 'offsetHeight', {
+    Object.defineProperty(refs.hint as HTMLElement, 'offsetHeight', {
       configurable: true,
       get: () => 14
     })
@@ -866,7 +843,7 @@ describe('remeasure', () => {
     const vars: Record<string, string> = { [PILL_PAD_X_VAR]: '20', [PILL_PAD_Y_VAR]: '10' }
     stubVars(vars)
     const suite = build()
-    sized(refs.label as HTMLElement, 100, 14)
+    sized(refs.hint as HTMLElement, 100, 14)
     suite.setHover({ shape: 'pill', label: 'View' }, null)
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('140px')
 
@@ -879,14 +856,14 @@ describe('remeasure', () => {
   it('clears the label box memo so the next pass measures against fresh styles', () => {
     const suite = build()
     let reads = 0
-    Object.defineProperty(refs.label as HTMLElement, 'offsetWidth', {
+    Object.defineProperty(refs.hint as HTMLElement, 'offsetWidth', {
       configurable: true,
       get: () => {
         reads++
         return 100
       }
     })
-    Object.defineProperty(refs.label as HTMLElement, 'offsetHeight', {
+    Object.defineProperty(refs.hint as HTMLElement, 'offsetHeight', {
       configurable: true,
       get: () => 14
     })
@@ -901,15 +878,14 @@ describe('remeasure', () => {
   it('is inert without a follower', () => {
     html = document.createElement('html')
     const root = document.createElement('div')
-    const label = document.createElement('div')
-    root.append(label)
+    const hint = document.createElement('div')
+    root.append(hint)
     refs = {
       root,
       follower: null,
-      label,
-      labelText: null,
-      labelIcon: null,
-      icon: null,
+      hint,
+      hintText: null,
+      hintIcon: null,
       built: false
     }
     const suite = createEffectsSuite({
@@ -1049,13 +1025,13 @@ describe('press', () => {
   it('reports the applied ratio and the lifting release', () => {
     const suite = build()
 
-    // Default clickScale: { ref: 'cursor', factor: 0.8 } → ratio of the base.
+    // Default pressScale: { ref: 'cursor', factor: 0.8 } → ratio of the base.
     expect(suite.handlePress(press())).toBe(0.8)
     expect(suite.handleRelease(press())).toBe(true)
   })
 
   it('reports nothing when the click scale is off or the press is gated', () => {
-    const off = build(resolveOptions({ clickScale: false }))
+    const off = build(resolveOptions({ pressScale: false }))
     expect(off.handlePress(press())).toBeNull()
 
     const suite = build()
@@ -1096,8 +1072,8 @@ describe('press', () => {
     expect(refs.root.hasAttribute(PRESSED_ATTR)).toBe(true)
   })
 
-  it('does nothing at all while clickScale is switched off', () => {
-    const suite = build(resolveOptions({ clickScale: false }))
+  it('does nothing at all while pressScale is switched off', () => {
+    const suite = build(resolveOptions({ pressScale: false }))
 
     suite.handlePress(press())
 
@@ -1107,7 +1083,7 @@ describe('press', () => {
   /** A click scale that names 'target' can't resolve without a hovered element,
       so the press falls back to a unit scale rather than writing nothing. */
   it('falls back to a unit press scale when the click scale cannot resolve', () => {
-    const suite = build(resolveOptions({ clickScale: { scale: 'target' } }))
+    const suite = build(resolveOptions({ pressScale: { scale: 'target' } }))
 
     suite.handlePress(press())
 
@@ -1140,21 +1116,11 @@ describe('dispose', () => {
 })
 
 describe('the section appliers', () => {
-  /** recompute() reassigns its icon state from the return value every pass, so
-      the no-op fallthrough must hand back the caller's list untouched — a fresh
-      array here would strip a pending retract's deferred removal. */
-  it('applyIcon returns the previous class list unchanged when nothing shows or retracts', () => {
+  it('applyHint reports pill geometry without flooring the circle scale', () => {
     build()
-    const prev = ['icon-a']
+    sized(refs.hint as HTMLElement, 100, 14)
 
-    expect(applyIcon({}, refs, refs.root, prev, 100)).toBe(prev)
-  })
-
-  it('applyLabel reports pill geometry without flooring the circle scale', () => {
-    build()
-    sized(refs.label as HTMLElement, 100, 14)
-
-    const out = applyLabel(
+    const out = applyHint(
       { label: 'View', shape: 'pill' },
       refs,
       refs.root,

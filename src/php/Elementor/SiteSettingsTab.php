@@ -46,8 +46,7 @@ class SiteSettingsTab extends Tab_Base {
 	protected function register_tab_controls(): void {
 		$this->add_section_cursor();
 		$this->add_section_motion();
-		$this->add_section_text_hints();
-		$this->add_section_icon_hints();
+		$this->add_section_hints();
 		$this->add_section_highlight();
 		$this->add_section_magnetic();
 		$this->add_section_loading();
@@ -102,6 +101,29 @@ class SiteSettingsTab extends Tab_Base {
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
 					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		// The var carries the whole `blur(...)` value, not a radius: unset, the
+		// stylesheet falls back to `none` and the property costs nothing. Frosts
+		// every state — for content only, use the hint sections' own blur.
+		$this->add_control(
+			'arts_cursor_backdrop_blur',
+			array(
+				'label'       => esc_html__( 'Backdrop Blur', 'cursor-follower-for-elementor' ),
+				'description' => esc_html__( 'Empty applies no blur.', 'cursor-follower-for-elementor' ),
+				'type'        => Controls_Manager::SLIDER,
+				'size_units'  => array( 'px' ),
+				'range'       => array(
+					'px' => array(
+						'min'  => 0,
+						'max'  => 40,
+						'step' => 1,
+					),
+				),
+				'selectors'   => array(
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-backdrop-filter: blur({{SIZE}}{{UNIT}});',
 				),
 			)
 		);
@@ -179,11 +201,11 @@ class SiteSettingsTab extends Tab_Base {
 		$this->end_controls_section();
 	}
 
-	private function add_section_text_hints(): void {
+	private function add_section_hints(): void {
 		$this->start_controls_section(
-			'arts_cursor_section_text_hints',
+			'arts_cursor_section_hints',
 			array(
-				'label' => esc_html__( 'Text Hints', 'cursor-follower-for-elementor' ),
+				'label' => esc_html__( 'Hints', 'cursor-follower-for-elementor' ),
 				'tab'   => $this->get_id(),
 			)
 		);
@@ -193,38 +215,39 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_group_control(
 			Group_Control_Typography::get_type(),
 			array(
-				'name'     => 'arts_cursor_label_typography',
-				'selector' => '{{WRAPPER}} .arts-cursor__label',
+				'name'     => 'arts_cursor_hint_typography',
+				'selector' => '{{WRAPPER}} .arts-cursor__hint',
 			)
 		);
 
 		$this->add_control(
-			'arts_cursor_label_text_color',
+			'arts_cursor_hint_text_color',
 			array(
 				'label'     => esc_html__( 'Text Color', 'cursor-follower-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-label-color: {{VALUE}};',
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-color: {{VALUE}};',
 				),
 			)
 		);
 
 		$this->add_control(
-			'arts_cursor_label_background_color',
+			'arts_cursor_hint_background_color',
 			array(
 				'label'     => esc_html__( 'Background Color', 'cursor-follower-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-label-background: {{VALUE}};',
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-background: {{VALUE}};',
 				),
 			)
 		);
 
-		// Scoped to the pill shape rather than a text-only attribute — like the
-		// label colour vars, this governs every pill: drag and card hints included.
-		// Empty emits nothing, so the base Border Width stands until one is set.
+		// Its own var, like the label colours: the stylesheet reads it only while
+		// the cursor shows content, so this governs every hint — pill, circle
+		// grown around text, drag and card hints alike. Empty emits nothing, so
+		// the base Border Width stands until one is set.
 		$this->add_control(
-			'arts_cursor_label_border_width',
+			'arts_cursor_hint_border_width',
 			array(
 				'label'      => esc_html__( 'Border Width', 'cursor-follower-for-elementor' ),
 				'type'       => Controls_Manager::SLIDER,
@@ -237,24 +260,46 @@ class SiteSettingsTab extends Tab_Base {
 					),
 				),
 				'selectors'  => array(
-					'{{WRAPPER}} .arts-cursor[data-cursor-shape="pill"]' => '--arts-cursor-border-width: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-border-width: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_control(
-			'arts_cursor_label_border_color',
+			'arts_cursor_hint_border_color',
 			array(
 				'label'     => esc_html__( 'Border Color', 'cursor-follower-for-elementor' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-label-border-color: {{VALUE}};',
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-border-color: {{VALUE}};',
+				),
+			)
+		);
+
+		// Frosts the shape only while a hint shows, so the free-roam ring can stay
+		// a bare outline. Transitions in and out with the fill.
+		$this->add_control(
+			'arts_cursor_hint_backdrop_blur',
+			array(
+				'label'       => esc_html__( 'Backdrop Blur', 'cursor-follower-for-elementor' ),
+				'description' => esc_html__( 'Empty uses the base Backdrop Blur.', 'cursor-follower-for-elementor' ),
+				'type'        => Controls_Manager::SLIDER,
+				'size_units'  => array( 'px' ),
+				'range'       => array(
+					'px' => array(
+						'min'  => 0,
+						'max'  => 40,
+						'step' => 1,
+					),
+				),
+				'selectors'   => array(
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-backdrop-filter: blur({{SIZE}}{{UNIT}});',
 				),
 			)
 		);
 
 		$this->add_control(
-			'arts_cursor_label_blend_mode',
+			'arts_cursor_hint_blend_mode',
 			array(
 				'label'                => esc_html__( 'Blend Mode', 'cursor-follower-for-elementor' ),
 				'type'                 => Controls_Manager::SELECT,
@@ -272,57 +317,13 @@ class SiteSettingsTab extends Tab_Base {
 					'exclusion'  => 'exclusion',
 				),
 				'selectors'            => array(
-					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-label-blend-mode: {{VALUE}};',
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-blend-mode: {{VALUE}};',
 				),
-			)
-		);
-
-		// Authored as a positive distance and negated here: the engine nudges
-		// upward, but a -80..0 slider reads badly. The engine emits this var as
-		// its auto-nudge value, so it only ever applies where a nudge applies.
-		$this->add_control(
-			'arts_cursor_label_offset',
-			array(
-				'label'      => esc_html__( 'Distance Above Pointer', 'cursor-follower-for-elementor' ),
-				'type'       => Controls_Manager::SLIDER,
-				'size_units' => array( 'px' ),
-				'range'      => array(
-					'px' => array(
-						'min'  => 0,
-						'max'  => 80,
-						'step' => 1,
-					),
-				),
-				'default'    => array(
-					'unit' => 'px',
-					'size' => 28,
-				),
-				'selectors'  => array(
-					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-content-offset: calc(-1 * {{SIZE}}{{UNIT}});',
-				),
-			)
-		);
-
-		$this->end_controls_section();
-	}
-
-	/**
-	 * Mirrors the Text Hints section for the other hint form. Only the SIZE needs a
-	 * var of its own; the colours re-point the cursor's existing ones scoped to the
-	 * icon state attribute, the way Highlight and the magnetic pair do — so the
-	 * whole section stays inside kit CSS and updates live.
-	 */
-	private function add_section_icon_hints(): void {
-		$this->start_controls_section(
-			'arts_cursor_section_icon_hints',
-			array(
-				'label' => esc_html__( 'Icon Hints', 'cursor-follower-for-elementor' ),
-				'tab'   => $this->get_id(),
 			)
 		);
 
 		$this->add_control(
-			'arts_cursor_icon_size',
+			'arts_cursor_hint_icon_size',
 			array(
 				'label'       => esc_html__( 'Icon Size', 'cursor-follower-for-elementor' ),
 				'description' => esc_html__( 'Empty matches the text hint size, so an icon sits where a word would.', 'cursor-follower-for-elementor' ),
@@ -336,18 +337,7 @@ class SiteSettingsTab extends Tab_Base {
 					),
 				),
 				'selectors'   => array(
-					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-icon-size: {{SIZE}}{{UNIT}};',
-				),
-			)
-		);
-
-		$this->add_control(
-			'arts_cursor_icon_color',
-			array(
-				'label'     => esc_html__( 'Icon Color', 'cursor-follower-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'selectors' => array(
-					'{{WRAPPER}} .arts-cursor[data-cursor-icon-kind]' => '--arts-cursor-label-color: {{VALUE}};',
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-icon-size: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);
@@ -360,7 +350,7 @@ class SiteSettingsTab extends Tab_Base {
 		// the cursor is nowhere in that element's ancestry, so a value scoped to the
 		// cursor would never be visible to the read.
 		$this->add_control(
-			'arts_cursor_icon_cursor_size',
+			'arts_cursor_hint_cursor_size',
 			array(
 				'label'       => esc_html__( 'Cursor Size', 'cursor-follower-for-elementor' ),
 				'description' => esc_html__( 'How big the cursor grows around an icon. Empty hugs it, as it does a text hint.', 'cursor-follower-for-elementor' ),
@@ -374,100 +364,63 @@ class SiteSettingsTab extends Tab_Base {
 					),
 				),
 				'selectors'   => array(
-					'{{WRAPPER}}' => '--arts-cursor-icon-scale: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}}' => '--arts-cursor-hint-cursor-size: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
+		// Signed, CSS convention (+x right, +y down). The engine emits these
+		// vars as its auto-nudge values, so they only ever apply where a nudge
+		// applies; the -28 default keeps the label lifted above the pointer.
 		$this->add_control(
-			'arts_cursor_icon_background_color',
+			'arts_cursor_hint_offset_x',
 			array(
-				'label'     => esc_html__( 'Background Color', 'cursor-follower-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'selectors' => array(
-					'{{WRAPPER}} .arts-cursor[data-cursor-icon-kind]' => '--arts-cursor-background-color: {{VALUE}};',
-				),
-			)
-		);
-
-		$this->add_control(
-			'arts_cursor_icon_border_width',
-			array(
-				'label'      => esc_html__( 'Border Width', 'cursor-follower-for-elementor' ),
+				'label'      => esc_html__( 'Offset X', 'cursor-follower-for-elementor' ),
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px' ),
 				'range'      => array(
 					'px' => array(
-						'min'  => 0,
-						'max'  => 10,
+						'min'  => -150,
+						'max'  => 150,
 						'step' => 1,
 					),
+				),
+				'default'    => array(
+					'unit' => 'px',
+					'size' => 0,
 				),
 				'selectors'  => array(
-					'{{WRAPPER}} .arts-cursor[data-cursor-icon-kind]' => '--arts-cursor-border-width: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-offset-x: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->add_control(
-			'arts_cursor_icon_border_color',
+			'arts_cursor_hint_offset_y',
 			array(
-				'label'     => esc_html__( 'Border Color', 'cursor-follower-for-elementor' ),
-				'type'      => Controls_Manager::COLOR,
-				'selectors' => array(
-					'{{WRAPPER}} .arts-cursor[data-cursor-icon-kind]' => '--arts-cursor-border-color: {{VALUE}};',
-				),
-			)
-		);
-
-		$this->add_control(
-			'arts_cursor_icon_blend_mode',
-			array(
-				'label'                => esc_html__( 'Blend Mode', 'cursor-follower-for-elementor' ),
-				'type'                 => Controls_Manager::SELECT,
-				'options'              => array(
-					'inherit'    => esc_html__( 'Inherit', 'cursor-follower-for-elementor' ),
-					'normal'     => esc_html__( 'Normal', 'cursor-follower-for-elementor' ),
-					'difference' => esc_html__( 'Difference', 'cursor-follower-for-elementor' ),
-					'exclusion'  => esc_html__( 'Exclusion', 'cursor-follower-for-elementor' ),
-				),
-				'default'              => 'normal',
-				'selectors_dictionary' => array(
-					'inherit'    => 'var(--arts-cursor-blend-mode, normal)',
-					'normal'     => 'normal',
-					'difference' => 'difference',
-					'exclusion'  => 'exclusion',
-				),
-				'selectors'            => array(
-					'{{WRAPPER}} .arts-cursor[data-cursor-icon-kind]' => '--arts-cursor-label-blend-mode: {{VALUE}};',
-				),
-			)
-		);
-
-		// Reuses the text hint's nudge var, scoped to the icon state — the engine
-		// emits a reference to it, so a value set here wins while an icon is showing.
-		$this->add_control(
-			'arts_cursor_icon_offset',
-			array(
-				'label'       => esc_html__( 'Distance Above Pointer', 'cursor-follower-for-elementor' ),
-				'description' => esc_html__( 'Empty uses the Text Hints distance.', 'cursor-follower-for-elementor' ),
-				'type'        => Controls_Manager::SLIDER,
-				'size_units'  => array( 'px' ),
-				'range'       => array(
+				'label'      => esc_html__( 'Offset Y', 'cursor-follower-for-elementor' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'px' ),
+				'range'      => array(
 					'px' => array(
-						'min'  => 0,
-						'max'  => 80,
+						'min'  => -150,
+						'max'  => 150,
 						'step' => 1,
 					),
 				),
-				'selectors'   => array(
-					'{{WRAPPER}} .arts-cursor[data-cursor-icon-kind]' => '--arts-cursor-content-offset: calc(-1 * {{SIZE}}{{UNIT}});',
+				'default'    => array(
+					'unit' => 'px',
+					'size' => -28,
+				),
+				'selectors'  => array(
+					'{{WRAPPER}} .arts-cursor' => '--arts-cursor-hint-offset-y: {{SIZE}}{{UNIT}};',
 				),
 			)
 		);
 
 		$this->end_controls_section();
 	}
+
 
 	private function add_section_motion(): void {
 		$this->start_controls_section(
@@ -559,9 +512,9 @@ class SiteSettingsTab extends Tab_Base {
 		);
 
 		$this->add_control(
-			'arts_cursor_click_enabled',
+			'arts_cursor_press_enabled',
 			array(
-				'label'       => esc_html__( 'Click Feedback', 'cursor-follower-for-elementor' ),
+				'label'       => esc_html__( 'Press Feedback', 'cursor-follower-for-elementor' ),
 				'description' => esc_html__( 'The cursor scales while the mouse button is pressed.', 'cursor-follower-for-elementor' ),
 				'type'        => Controls_Manager::SWITCHER,
 				'default'     => 'yes',
@@ -571,7 +524,7 @@ class SiteSettingsTab extends Tab_Base {
 		);
 
 		$this->add_control(
-			'arts_cursor_click_scale',
+			'arts_cursor_press_scale',
 			array(
 				'label'      => esc_html__( 'Press Scale', 'cursor-follower-for-elementor' ),
 				'type'       => Controls_Manager::SLIDER,
@@ -587,7 +540,7 @@ class SiteSettingsTab extends Tab_Base {
 					'unit' => 'x',
 					'size' => 0.8,
 				),
-				'condition'  => $this->condition_effect( 'arts_cursor_click_enabled' ),
+				'condition'  => $this->condition_effect( 'arts_cursor_press_enabled' ),
 				'frontend_available' => true,
 			)
 		);

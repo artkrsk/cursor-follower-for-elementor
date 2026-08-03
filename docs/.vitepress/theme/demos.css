@@ -12,7 +12,7 @@
    by the stylesheet's own fallback design — no stray ring to hide — and the
    text flips light only inside the pill, so bare labels keep currentColor. */
 .arts-cursor[data-cursor-shape='pill'] {
-  --arts-cursor-label-background: #181818;
+  --arts-cursor-hint-background: #181818;
   --arts-cursor-text-color: #ffffff;
 }
 

@@ -2,26 +2,20 @@
 
 @layer arts-cursor {
   // Content parts sit directly on the 0×0 wrapper anchor and center
-  // themselves — label/icon fold the slide offset into the same translate,
+  // themselves — the label folds the slide offset into the same translate,
   // arrows center via margin so `translate` stays free for the slide.
 
-  // Label & icon: the label slides up from below, the icon down from above;
-  // both settle centered on the anchor.
-  .arts-cursor__label,
-  .arts-cursor__icon {
+  // The label slides up from below and settles centered on the anchor.
+  .arts-cursor__hint {
     position: absolute;
     top: 0;
     left: 0;
     line-height: 1;
-    color: var(--arts-cursor-text-color, currentColor);
     opacity: 0;
     transition:
       opacity tokens.$motion,
       translate tokens.$motion,
       color tokens.$motion;
-  }
-
-  .arts-cursor__label {
     translate: -50% calc(-50% + 20px);
     display: inline-flex;
     align-items: center;
@@ -29,7 +23,7 @@
     // The label's own colour (Labels controls), falling back to the shared text
     // colour — the inline icon inherits it via currentColor. Typography (font
     // family/size/…) is printed straight onto this element by the kit control.
-    color: var(--arts-cursor-label-color, var(--arts-cursor-text-color, currentColor));
+    color: var(--arts-cursor-hint-color, var(--arts-cursor-text-color, currentColor));
     font-size: 14px;
     white-space: nowrap;
   }
@@ -37,14 +31,14 @@
   // With no wording the text slot is still a flex item — zero-width, but the gap
   // between the two slots survives, pushing a lone icon off-centre by half of it.
   // Taking the empty slot out of layout removes the gap with it.
-  .arts-cursor__label-text:empty {
+  .arts-cursor__hint-text:empty {
     display: none;
   }
 
-  // Icon slot: hidden until a payload icon sets data-cursor-label-icon. The
+  // Icon slot: hidden until a payload icon sets data-cursor-hint-icon. The
   // injected SVG defaults to the text colour (an SVG carrying its own fills keeps
   // them); `before` flips it ahead of the text.
-  .arts-cursor__label-icon {
+  .arts-cursor__hint-icon {
     display: none;
 
     svg {
@@ -55,36 +49,36 @@
       // aspect ratio (needs a viewBox); 1em is the pre-`cap` fallback.
       width: auto;
       height: 1em;
-      height: var(--arts-cursor-icon-size, 1cap);
+      height: var(--arts-cursor-hint-icon-size, 1cap);
       fill: currentColor;
     }
   }
 
-  .arts-cursor[data-cursor-label-icon] .arts-cursor__label-icon {
+  .arts-cursor[data-cursor-hint-icon] .arts-cursor__hint-icon {
     display: inline-flex;
   }
 
-  .arts-cursor[data-cursor-label-icon='before'] .arts-cursor__label-icon {
+  .arts-cursor[data-cursor-hint-icon='before'] .arts-cursor__hint-icon {
     order: -1;
   }
 
   // A glyph is a webfont character rather than a box, so it sizes with font-size
   // and takes the label's colour the way the text does. Sized to cap height so it
   // matches the capitals, like the injected-SVG case above.
-  .arts-cursor[data-cursor-icon-kind='glyph'] .arts-cursor__label-icon {
+  .arts-cursor[data-cursor-icon-kind='glyph'] .arts-cursor__hint-icon {
     font-size: 1em;
-    font-size: var(--arts-cursor-icon-size, 1cap);
+    font-size: var(--arts-cursor-hint-icon-size, 1cap);
     line-height: 1;
   }
 
   // A masked URL has no content at all, so unlike the other two forms it needs a
   // box of its own to mask, and it shows the fill BEHIND the mask — which is what
   // makes it the only icon form that can be recoloured to match the cursor.
-  .arts-cursor[data-cursor-icon-kind='mask'] .arts-cursor__label-icon {
+  .arts-cursor[data-cursor-icon-kind='mask'] .arts-cursor__hint-icon {
     width: 1em;
-    width: var(--arts-cursor-icon-size, 1cap);
+    width: var(--arts-cursor-hint-icon-size, 1cap);
     height: 1em;
-    height: var(--arts-cursor-icon-size, 1cap);
+    height: var(--arts-cursor-hint-icon-size, 1cap);
     background-color: currentColor;
     -webkit-mask-image: var(--arts-cursor-icon-mask);
     mask-image: var(--arts-cursor-icon-mask);
@@ -96,13 +90,7 @@
     mask-size: contain;
   }
 
-  .arts-cursor__icon {
-    translate: -50% calc(-50% - 20px);
-    font-size: 28px;
-  }
-
-  .arts-cursor[data-cursor-label] .arts-cursor__label,
-  .arts-cursor[data-cursor-icon] .arts-cursor__icon {
+  .arts-cursor[data-cursor-hint] .arts-cursor__hint {
     opacity: 1;
     translate: -50% -50%;
   }
@@ -217,16 +205,16 @@
   }
 
   // Riding a pill, the chevrons are hint chrome like the wording, so they
-  // follow the Labels colour chain the text uses (Text Hints → Text Color) —
-  // on the bare ring they keep the shared text colour above.
+  // follow the hint colour chain the text uses (Hints → Text Color) — on the
+  // bare ring they keep the shared text colour above.
   .arts-cursor[data-cursor-shape='pill'] .arts-cursor__arrow {
-    color: var(--arts-cursor-label-color, var(--arts-cursor-text-color, currentColor));
+    color: var(--arts-cursor-hint-color, var(--arts-cursor-text-color, currentColor));
   }
 
   // Press dot: a filled point scaling up at the anchor while an ELIGIBLE
   // payload (data-cursor-dot) is pressed. data-cursor-pressed spans the whole
   // press-drag gesture, so this one rule covers click and drag alike — and it
-  // rides the press channel, so a site that disables clickScale never shows it.
+  // rides the press channel, so a site that disables pressScale never shows it.
   // Pairs with drag.hideNativeCursor: the dot marks the pointer once the OS
   // cursor hides.
   .arts-cursor__dot {
@@ -243,12 +231,12 @@
   }
 
   // Same hint-chrome rule as the arrows: on a pill the dot slots into the
-  // Labels colour chain (its own var still winning), so the whole hint —
-  // wording, chevrons, dot — recolours from the one Text Hints control.
+  // hint colour chain (its own var still winning), so the whole hint —
+  // wording, chevrons, dot — recolours from the one Hints control.
   .arts-cursor[data-cursor-shape='pill'] .arts-cursor__dot {
     background-color: var(
       --arts-cursor-dot-color,
-      var(--arts-cursor-label-color, var(--arts-cursor-text-color, currentColor))
+      var(--arts-cursor-hint-color, var(--arts-cursor-text-color, currentColor))
     );
   }
 

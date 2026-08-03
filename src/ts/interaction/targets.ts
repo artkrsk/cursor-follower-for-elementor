@@ -1,4 +1,4 @@
-import { ICON_SCALE_VAR, INTERACTIVE_SELECTOR, NO_TARGET_SELECTOR } from '../constants'
+import { HINT_CURSOR_SIZE_VAR, INTERACTIVE_SELECTOR, NO_TARGET_SELECTOR } from '../constants'
 import { createEmitter } from '../core/emitter'
 import { accepts } from '../core/input'
 import type {
@@ -173,7 +173,7 @@ export const withCssContent = (rule: ICompiledRule, scopeEl: Element): ICursorPa
     // Sized by the host rather than by the rule, since how big a cursor should
     // grow for an icon is a site-wide look. floorScale treats it as a floor, so
     // it never clips an icon larger than the size asked for.
-    const size = readCssLabel(scopeEl, ICON_SCALE_VAR)
+    const size = readCssLabel(scopeEl, HINT_CURSOR_SIZE_VAR)
     if (size) {
       payload.scale = size
     }

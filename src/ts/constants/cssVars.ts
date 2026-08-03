@@ -4,12 +4,15 @@
  *
  * Deliberately absent, because JS never touches them — contracts between
  * src/styles and Elementor kit CSS, not between src/styles and this engine:
- * `--arts-cursor-loading-color`, `--arts-cursor-blend-mode`, the label family
- * (`--arts-cursor-label-color/-background/-border-color/-blend-mode`), the
+ * `--arts-cursor-loading-color`, `--arts-cursor-blend-mode`,
+ * `--arts-cursor-backdrop-filter` (the whole `blur(...)` value, not a radius —
+ * unset falls back to `none`, which costs nothing), the hint family
+ * (`--arts-cursor-hint-color/-background/-border-color/-border-width/
+ * -backdrop-filter/-blend-mode`, read only while the cursor shows content), the
  * press dot pair (`--arts-cursor-dot-color/-size`), and
- * `--arts-cursor-icon-size` — the label glyph's box, NOT this file's
- * ICON_SCALE_VAR (`--arts-cursor-icon-scale`), which is how big the cursor
- * itself grows for an icon hint. Near-identical names, different vars.
+ * `--arts-cursor-hint-icon-size` — the glyph's own box, as distinct from this
+ * file's HINT_CURSOR_SIZE_VAR (`--arts-cursor-hint-cursor-size`), which is how
+ * big the CURSOR grows around an icon hint. Each name says what it sizes.
  */
 
 /** Public theming vars (CLAUDE.md), set by kit CSS from Site Settings and
@@ -38,12 +41,14 @@ export const SCALE_PRESSED_VAR = '--arts-cursor-scale-pressed'
 export const ARROW_RADIUS_VAR = '--arts-cursor-arrow-radius'
 export const OFFSET_X_VAR = '--arts-cursor-offset-x'
 export const OFFSET_Y_VAR = '--arts-cursor-offset-y'
-/** How far the auto nudge lifts a label off the pointer — kit-set, and the one
-    var here JS never writes: it emits a `var()` REFERENCE to it as the offset
-    value, so Site Settings owns the distance while JS keeps owning when to apply
-    it. A control couldn't target OFFSET_Y_VAR directly — that one is written
-    inline on the root, and inline beats any stylesheet. */
-export const CONTENT_OFFSET_VAR = '--arts-cursor-content-offset'
+/** How far the auto nudge shifts a hint off the pointer (signed, CSS
+    convention) — kit-set, and the two vars here JS never writes: it emits
+    `var()` REFERENCES to them as the offset values, so Site Settings owns both
+    distances while JS keeps owning when a nudge applies. A control couldn't
+    target OFFSET_X/Y_VAR directly — those are written inline on the root, and
+    inline beats any stylesheet. */
+export const HINT_OFFSET_X_VAR = '--arts-cursor-hint-offset-x'
+export const HINT_OFFSET_Y_VAR = '--arts-cursor-hint-offset-y'
 /** The press scale mirrored onto the ROOT as a plain (inheriting) var so the
     arrow siblings can track the pressed ring — the follower's registered
     `--arts-cursor-scale-pressed` is inherits:false and unreadable by them. */
@@ -53,7 +58,7 @@ export const PRESS_VAR = '--arts-cursor-press'
     (inheriting) so the follower morphs from a circle to a stadium by animating
     its own box; absent (→ the circle's --arts-cursor-size) collapses it back.
     The two padding vars run the other way: set in CSS (tunable), READ once by
-    the suite to size the pill around the label. */
+    the suite to size the pill around its hint content. */
 export const SHAPE_WIDTH_VAR = '--arts-cursor-shape-width'
 export const SHAPE_HEIGHT_VAR = '--arts-cursor-shape-height'
 export const PILL_PAD_X_VAR = '--arts-cursor-pill-padding-x'
@@ -70,11 +75,11 @@ export const ARROW_GAP_VAR = '--arts-cursor-arrow-gap'
     to reach the payload rather than CSS, because the circle sizes itself to its
     content through a scale this engine computes — and `floorScale` then treats
     this as a floor, so it can grow the cursor but never clip the icon. */
-export const ICON_SCALE_VAR = '--arts-cursor-icon-scale'
+export const HINT_CURSOR_SIZE_VAR = '--arts-cursor-hint-cursor-size'
 
-/** The image masked into the label's icon slot, written by effects/suite.ts from
+/** The image masked into the hint's icon slot, written by effects/suite.ts from
     a payload `iconUrl` — a mask rather than a background so the icon takes the
-    cursor's text colour like the label does. */
+    cursor's text colour like the hint text does. */
 export const ICON_MASK_VAR = '--arts-cursor-icon-mask'
 
 /** Animation tokens, written once at init by applyAnimationTokens (core/markup.ts)

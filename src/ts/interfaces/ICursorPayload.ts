@@ -1,4 +1,5 @@
 import type { TArrowAxis } from '../types/TArrowAxis'
+import type { TDragPayload } from '../types/TDragPayload'
 import type { TScaleValue } from '../types/TScaleValue'
 import type { IHighlightConfig } from './IHighlightConfig'
 
@@ -12,7 +13,7 @@ export interface ICursorPayload {
   arrowsPosition?: 'inside' | 'outside'
   /** Scale up a filled dot at the anchor while this target is pressed (the
       whole press-drag gesture). Rides the press channel, so a site that
-      disables clickScale never shows it. The dot replaces the pointer: a
+      disables pressScale never shows it. The dot replaces the pointer: a
       stylesheet :has() rule hides the native cursor from the first press —
       keep drag.hideNativeCursor alongside as the fallback for engines
       without :has(), where the hide starts at the drag threshold. */
@@ -22,11 +23,10 @@ export interface ICursorPayload {
   /** Ring stroke width. Rendered optically constant under the cursor's scale —
       the stylesheet divides the width var by the scale var. */
   borderWidth?: number | string
-  className?: string
   /** A cursor sub-state pushed as a session while a click-drag is in progress on
       this target — e.g. a carousel that hovers a "Drag" pill and shows arrows
-      while dragging. Its own nested `drag` is ignored. */
-  drag?: ICursorPayload
+      while dragging. */
+  drag?: TDragPayload
   textColor?: string
   hideNativeCursor?: boolean
   highlight?: boolean | Partial<IHighlightConfig>

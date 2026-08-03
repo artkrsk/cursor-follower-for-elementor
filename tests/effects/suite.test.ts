@@ -1,4 +1,4 @@
-import { CONTENT_OFFSET_VAR, CONTENT_OFFSET_Y } from '@ts/constants'
+import { HINT_OFFSET_X, HINT_OFFSET_X_VAR, HINT_OFFSET_Y, HINT_OFFSET_Y_VAR } from '@ts/constants'
 import {
   arrowOnlyPill,
   arrowRadiusCss,
@@ -398,16 +398,17 @@ describe('arrowOnlyPill', () => {
 })
 
 describe('offsetCss', () => {
-  /** The nudge is emitted as a var reference, not a literal, so Site Settings
-      owns the distance — the constant is only the fallback inside it. */
-  const NUDGE = `var(${CONTENT_OFFSET_VAR}, ${CONTENT_OFFSET_Y}px)`
+  /** The nudge is emitted as var references, not literals, so Site Settings
+      owns both distances — the constants are only the fallbacks inside them. */
+  const NUDGE_X = `var(${HINT_OFFSET_X_VAR}, ${HINT_OFFSET_X}px)`
+  const NUDGE_Y = `var(${HINT_OFFSET_Y_VAR}, ${HINT_OFFSET_Y}px)`
 
   it('nudges a label clear of the OS cursor', () => {
-    expect(offsetCss({ label: 'View' })).toEqual(['0px', NUDGE])
+    expect(offsetCss({ label: 'View' })).toEqual([NUDGE_X, NUDGE_Y])
   })
 
   it('nudges an icon clear of the OS cursor too — it also settles centered', () => {
-    expect(offsetCss({ className: 'icon-star' })).toEqual(['0px', NUDGE])
+    expect(offsetCss({ iconClass: 'icon-star' })).toEqual([NUDGE_X, NUDGE_Y])
   })
 
   it('lets an explicit payload offset win over the label nudge', () => {
