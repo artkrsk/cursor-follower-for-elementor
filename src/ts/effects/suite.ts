@@ -17,12 +17,15 @@ import {
   DOT_ATTR,
   HIGHLIGHT_ATTR,
   HINT_ATTR,
-  HINT_FIT_MARGIN,
   HINT_ICON_ATTR,
   HINT_OFFSET_X,
   HINT_OFFSET_X_VAR,
   HINT_OFFSET_Y,
   HINT_OFFSET_Y_VAR,
+  HINT_PAD_X,
+  HINT_PAD_X_VAR,
+  HINT_PAD_Y,
+  HINT_PAD_Y_VAR,
   HTML_NO_NATIVE,
   HTML_PROGRESS,
   ICON_KIND_ATTR,
@@ -31,10 +34,6 @@ import {
   NO_HIGHLIGHT_SELECTOR,
   OFFSET_X_VAR,
   OFFSET_Y_VAR,
-  PILL_PAD_X,
-  PILL_PAD_X_VAR,
-  PILL_PAD_Y,
-  PILL_PAD_Y_VAR,
   PRESS_VAR,
   PRESSED_ATTR,
   SCALE_PRESSED_VAR,
@@ -73,7 +72,7 @@ import { hintFitScale, resolveScale, usesTargetRef } from '../utils'
  *
  * Every element written to arrives through args — including `html`, so nothing
  * here resolves the document itself. That is not full independence from the
- * environment: pillPad reads getComputedStyle, clearAfterTransition
+ * environment: hintPad reads getComputedStyle, clearAfterTransition
  * uses setTimeout, and the label-box memo clears on ownerDocument.fonts.ready — so
  * the module still needs a DOM.
  */
@@ -275,7 +274,7 @@ export const arrowReservation = (
     "equal sides IS the circle" floor. Pure. */
 export const arrowOnlyPill = (
   merged: ICursorPayload,
-  pillPad: () => { x: number; y: number },
+  hintPad: () => { x: number; y: number },
   arrowTheme: () => { gap: number; size: number }
 ): { width: number; height: number } | null => {
   if (merged.shape !== 'pill') {
@@ -283,11 +282,11 @@ export const arrowOnlyPill = (
   }
   const r = arrowReservation(merged, arrowTheme)
   if (r.x && !r.y) {
-    const pad = pillPad()
+    const pad = hintPad()
     return pillGeometry(r.floorW, r.floorH, pad.x + r.x, pad.y + r.y)
   }
   if (r.y && !r.x) {
-    const pad = pillPad()
+    const pad = hintPad()
     const t = pillGeometry(0, r.floorW, pad.x + r.y, pad.y)
     return { width: t.height, height: t.width }
   }
@@ -430,7 +429,7 @@ export const applyHint = (
   refs: ICursorRefs,
   root: HTMLElement,
   labelBoxes: Map<string, { w: number; h: number }>,
-  pillPad: () => { x: number; y: number },
+  hintPad: () => { x: number; y: number },
   arrowTheme: () => { gap: number; size: number },
   baseSize: number,
   clearDelay: number
@@ -453,17 +452,23 @@ export const applyHint = (
     const r = arrowReservation(merged, arrowTheme)
     const w = Math.max(box.w, r.floorW)
     const h = Math.max(box.h, r.floorH)
+    const pad = hintPad()
     // Any vertical reservation on a LABELED pill is the demotion case: width
     // stays text-driven while height grows arrow-driven, and the near-square
     // (or rounded-square, for 'all') result reads as neither pill nor circle —
     // the circle floor below sizes the ring to contain label + arrows instead.
     if (merged.shape === 'pill' && r.y === 0) {
       // Pill hugs the label instead of growing the circle, so labelFit stays 0.
-      const pad = pillPad()
       return { labelFit: 0, pill: pillGeometry(w, h, pad.x + r.x, pad.y + r.y) }
     }
+    // The circle fits the PADDED box, not the bare one — the same two knobs the
+    // pill pads its stadium with. Padding the box rather than the radius is what
+    // makes it read as padding on a wide label: the ring has to contain the
+    // box's diagonal, and for a wide short label that diagonal is essentially
+    // its width, so a radial margin would land almost entirely on the axis that
+    // already had room to spare and none on the one that looked cramped.
     return {
-      labelFit: hintFitScale(w, h, baseSize, HINT_FIT_MARGIN + Math.max(r.x, r.y)),
+      labelFit: hintFitScale(w + 2 * pad.x, h + 2 * pad.y, baseSize, Math.max(r.x, r.y)),
       pill: null
     }
   }
@@ -472,7 +477,7 @@ export const applyHint = (
   }
   // HINT_ATTR stays down for an arrow-only pill: its styling keys on the
   // shape attr.
-  return { labelFit: 0, pill: arrowOnlyPill(merged, pillPad, arrowTheme) }
+  return { labelFit: 0, pill: arrowOnlyPill(merged, hintPad, arrowTheme) }
 }
 
 export function createEffectsSuite(args: {
@@ -500,15 +505,17 @@ export function createEffectsSuite(args: {
   let hover: { payload: ICursorPayload; element: Element | null } | null = null
   const sessions: ICursorPayload[] = []
 
-  // Pill padding: the tunable CSS vars, read once (same lazy pattern) so the pill
-  // can be sized in JS. Falls back to constants when there's no stylesheet.
+  // Hint padding: the tunable CSS vars, read once (same lazy pattern) so both
+  // shapes can be sized in JS — the pill pads its stadium with them, the circle
+  // grows until the padded box fits. Falls back to constants when there's no
+  // stylesheet.
   let cachedPad: { x: number; y: number } | null = null
-  const pillPad = () => {
+  const hintPad = () => {
     if (cachedPad === null) {
       const cs = follower ? getComputedStyle(follower) : null
       cachedPad = {
-        x: readPxVar(cs, PILL_PAD_X_VAR, PILL_PAD_X),
-        y: readPxVar(cs, PILL_PAD_Y_VAR, PILL_PAD_Y)
+        x: readPxVar(cs, HINT_PAD_X_VAR, HINT_PAD_X),
+        y: readPxVar(cs, HINT_PAD_Y_VAR, HINT_PAD_Y)
       }
     }
     return cachedPad
@@ -572,7 +579,7 @@ export function createEffectsSuite(args: {
       refs,
       root,
       labelBoxes,
-      pillPad,
+      hintPad,
       arrowTheme,
       baseSize,
       clearDelay()

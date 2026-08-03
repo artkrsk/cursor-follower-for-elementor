@@ -4,7 +4,7 @@
 // 1. The SCSS-language layer — deliberately this small:
 //    three $values, one selector function, one mixin. Compile-time only.
 // 2. The runtime knobs: two registered state vars, then every tunable custom
-//    property JS samples once per style epoch (motion tokens, pill paddings,
+//    property JS samples once per style epoch (motion tokens, hint paddings,
 //    arrow box + gap) — declared together so the JS↔CSS contract has one home.
 //    _cursor.scss owns the root's layout block; _parts.scss derives the arrow
 //    seat calcs from the knobs declared here.
@@ -67,9 +67,11 @@ $carousel-widgets: 'image-carousel', 'media-carousel', 'testimonial-carousel', '
     // whole transition — bezier works everywhere.
     --arts-cursor-duration: 0.25s;
     --arts-cursor-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
-    // Tunable padding the filled pill keeps around the label (read once by JS).
-    --arts-cursor-pill-padding-x: 18px;
-    --arts-cursor-pill-padding-y: 8px;
+    // Tunable padding the hint keeps around its content, read once by JS and
+    // honoured by BOTH shapes: the pill pads its stadium, the circle grows
+    // until the padded box fits inside the ring.
+    --arts-cursor-hint-padding-x: 18px;
+    --arts-cursor-hint-padding-y: 8px;
     // Tunable arrow theme knobs, px-only — JS samples the raw token (see
     // ARROW_SIZE_VAR/ARROW_GAP_VAR in constants/cssVars.ts); the seat calcs
     // deriving from them live in _parts.scss.

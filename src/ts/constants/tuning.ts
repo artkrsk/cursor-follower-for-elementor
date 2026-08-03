@@ -15,18 +15,17 @@ export const BASE_SIZE_FALLBACK = 60
 /** Grace over the CSS transition before hidden content is cleared. */
 export const CLEAR_DELAY_PAD_MS = 120
 export const IDLE_FALLBACK_MS = 50
-/** Gap (px each side) the hint keeps from the ring edge when the ring
-    auto-grows to contain it. */
-export const HINT_FIT_MARGIN = 4
 /** Auto nudge (px, CSS convention: +x right, +y down) applied while a hint is
     shown so its content clears the OS cursor; an explicit payload
     `offset` overrides it. No horizontal shift by default, -28 lifts upward. */
 export const HINT_OFFSET_X = 0
 export const HINT_OFFSET_Y = -28
-/** Fallback padding (px) the filled pill keeps around its content on each axis,
-    used when the tunable CSS vars aren't readable (e.g. no stylesheet in tests). */
-export const PILL_PAD_X = 18
-export const PILL_PAD_Y = 8
+/** Fallback padding (px) the hint keeps around its content on each axis, used
+    when the tunable CSS vars aren't readable (e.g. no stylesheet in tests). The
+    pill applies it as the stadium's own padding; the circle grows until the
+    PADDED content box fits inside it — one pair of knobs, either shape. */
+export const HINT_PAD_X = 18
+export const HINT_PAD_Y = 8
 /** Chevron glyph geometry as RATIOS of the arrow box (path `M4 14 L12 6 L20 14`
     in a 24² viewBox, core/markup.ts — the viewBox scales with the box, so only
     the ratios are fixed): the tip juts box×¼ past the box center toward the

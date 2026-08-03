@@ -160,6 +160,8 @@ They are deliberately unregistered (no `@property`), so `var(--x, fallback)` cha
 
 One incompatibility, from the CSS spec itself: a non-normal blend mode on `.arts-cursor` turns the cursor into its own backdrop root, so the blur has nothing to sample and silently does nothing. Pick one per site — frosted glass or `difference`, not both.
 
+**Hint padding.** `--arts-cursor-hint-padding-x` / `-y` (18px / 8px) set the breathing room around whatever the cursor is showing, and both shapes honour them: the pill pads its stadium, and the circle grows until the padded box fits inside the ring. Sampled once per style epoch rather than per frame, so set them in a stylesheet, not inline per element.
+
 ## Disabling per request
 
 Conditional loading enqueues nothing (the engine arrives through an inline gate), so there is no script handle to dequeue. The supported switch:

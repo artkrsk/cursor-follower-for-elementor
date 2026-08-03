@@ -1,8 +1,9 @@
 /**
  * Minimum cursor scale (a ratio of the base size) for the ring to fully contain
- * a label of the given rendered box plus a px margin on every side — the
- * diagonal is what must fit inside the circle. Pure: the caller measures the
- * label and passes its width/height.
+ * a box of the given size plus a px margin on every side — the diagonal is what
+ * must fit inside the circle. Pure: the caller measures the hint, adds its own
+ * padding to the box it passes, and keeps `margin` for clearance that is radial
+ * by nature (the room an inside arrow pair reserves).
  */
 export function hintFitScale(
   width: number,

@@ -58,12 +58,13 @@ export const PRESS_VAR = '--arts-cursor-press'
     (inheriting) so the follower morphs from a circle to a stadium by animating
     its own box; absent (→ the circle's --arts-cursor-size) collapses it back.
     The two padding vars run the other way: set in CSS (tunable), READ once by
-    the suite to size the pill around its hint content. */
+    the suite to size EITHER shape around its hint content — the pill's own
+    padding, and the box the circle has to grow to contain. */
 export const SHAPE_WIDTH_VAR = '--arts-cursor-shape-width'
 export const SHAPE_HEIGHT_VAR = '--arts-cursor-shape-height'
-export const PILL_PAD_X_VAR = '--arts-cursor-pill-padding-x'
-export const PILL_PAD_Y_VAR = '--arts-cursor-pill-padding-y'
-/** Same READ direction as the pill paddings: the theme's arrow box size and
+export const HINT_PAD_X_VAR = '--arts-cursor-hint-padding-x'
+export const HINT_PAD_Y_VAR = '--arts-cursor-hint-padding-y'
+/** Same READ direction as the hint paddings: the theme's arrow box size and
     breathing room (declared in _tokens.scss, px only), sampled once by the
     suite to size the room an inside arrow pair reserves in the shape — never
     written by JS. The size var is the one arrow knob: the CSS box, the glyph

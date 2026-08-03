@@ -18,15 +18,16 @@ import {
   DOT_ATTR,
   HIGHLIGHT_ATTR,
   HINT_ATTR,
-  HINT_FIT_MARGIN,
   HINT_ICON_ATTR,
+  HINT_PAD_X,
+  HINT_PAD_X_VAR,
+  HINT_PAD_Y,
+  HINT_PAD_Y_VAR,
   HTML_NO_NATIVE,
   HTML_PROGRESS,
   LOADING_ATTR,
   OFFSET_X_VAR,
   OFFSET_Y_VAR,
-  PILL_PAD_X_VAR,
-  PILL_PAD_Y_VAR,
   PRESS_VAR,
   PRESSED_ATTR,
   SCALE_PRESSED_VAR,
@@ -111,8 +112,10 @@ describe('recompute — scale', () => {
 
     suite.setHover({ label: 'View', scale: '10px' }, null)
 
-    // hypot(120, 0) + 2 * HINT_FIT_MARGIN, over the 60px base.
-    expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(String(128 / BASE_SIZE_FALLBACK))
+    // The PADDED box is what has to fit: hypot(120 + 2x, 0 + 2y) over the 60px base.
+    expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(
+      String(Math.hypot(120 + 2 * HINT_PAD_X, 2 * HINT_PAD_Y) / BASE_SIZE_FALLBACK)
+    )
   })
 
   it('leaves a scale that already contains the label alone', () => {
@@ -152,7 +155,7 @@ describe('recompute — pill shape', () => {
   /** With a stylesheet present the pads come from the tunable vars — and the
       style read happens once, however many pills a page hovers. */
   it('reads the pill padding from the computed vars, once', () => {
-    const vars: Record<string, string> = { [PILL_PAD_X_VAR]: '20', [PILL_PAD_Y_VAR]: '10' }
+    const vars: Record<string, string> = { [HINT_PAD_X_VAR]: '20', [HINT_PAD_Y_VAR]: '10' }
     const styles = vi.fn(() => ({ getPropertyValue: (name: string) => vars[name] ?? '' }))
     vi.stubGlobal('getComputedStyle', styles)
     const suite = build()
@@ -164,6 +167,29 @@ describe('recompute — pill shape', () => {
 
     suite.setHover({ shape: 'pill', label: 'Other' }, null)
     expect(styles).toHaveBeenCalledOnce()
+  })
+
+  /** The same two knobs govern the circle, which is the whole point of naming
+      them for the hint rather than for the pill. A wide label is the case that
+      exposes it: the ring has to contain the box's DIAGONAL, and for a short
+      wide label that diagonal is essentially its width — so with the padding
+      left out of the box the text sits flush against the ring however roomy
+      the pill next to it looks. */
+  it('grows the circle by the same hint padding the pill uses', () => {
+    const vars: Record<string, string> = { [HINT_PAD_X_VAR]: '20', [HINT_PAD_Y_VAR]: '10' }
+    vi.stubGlobal('getComputedStyle', () => ({
+      getPropertyValue: (name: string) => vars[name] ?? ''
+    }))
+    const suite = build()
+    sized(refs.hint as HTMLElement, 104, 14)
+
+    suite.setHover({ label: 'SCROLL DOWN' }, null)
+
+    const diameter = Number(cssVar(refs.follower as HTMLElement, SCALE_VAR)) * BASE_SIZE_FALLBACK
+    expect(diameter).toBeCloseTo(Math.hypot(104 + 40, 14 + 20), 10)
+    // What that buys on the axis that looked cramped: a side gap of the padding
+    // asked for, not of whatever the diagonal happened to leave over.
+    expect((diameter - 104) / 2).toBeGreaterThanOrEqual(20)
   })
 
   it('clears the shape vars when the shape returns to a circle', () => {
@@ -213,7 +239,7 @@ describe('recompute — arrows reserve room in the shape', () => {
     expect(refs.root.hasAttribute(SHAPE_ATTR)).toBe(false)
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('')
     expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(
-      String((Math.hypot(100, 14) + 2 * (HINT_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK)
+      String((Math.hypot(100 + 2 * HINT_PAD_X, 14 + 2 * HINT_PAD_Y) + 2 * RES) / BASE_SIZE_FALLBACK)
     )
   })
 
@@ -227,7 +253,7 @@ describe('recompute — arrows reserve room in the shape', () => {
 
     expect(refs.root.hasAttribute(SHAPE_ATTR)).toBe(false)
     expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(
-      String((Math.hypot(100, 14) + 2 * (HINT_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK)
+      String((Math.hypot(100 + 2 * HINT_PAD_X, 14 + 2 * HINT_PAD_Y) + 2 * RES) / BASE_SIZE_FALLBACK)
     )
   })
 
@@ -349,7 +375,8 @@ describe('recompute — arrows reserve room in the shape', () => {
 
     expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(
       String(
-        (Math.hypot(30, Math.max(16, BREADTH)) + 2 * (HINT_FIT_MARGIN + RES)) / BASE_SIZE_FALLBACK
+        (Math.hypot(30 + 2 * HINT_PAD_X, Math.max(16, BREADTH) + 2 * HINT_PAD_Y) + 2 * RES) /
+          BASE_SIZE_FALLBACK
       )
     )
   })
@@ -372,7 +399,9 @@ describe('recompute — arrows reserve room in the shape', () => {
       null
     )
 
-    expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(String(42 / BASE_SIZE_FALLBACK))
+    expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(
+      String(Math.hypot(30 + 2 * HINT_PAD_X, 16 + 2 * HINT_PAD_Y) / BASE_SIZE_FALLBACK)
+    )
   })
 
   /** The radius var stays written under a pill — inert there purely because the
@@ -840,14 +869,14 @@ describe('remeasure', () => {
   })
 
   it('re-reads the pill padding', () => {
-    const vars: Record<string, string> = { [PILL_PAD_X_VAR]: '20', [PILL_PAD_Y_VAR]: '10' }
+    const vars: Record<string, string> = { [HINT_PAD_X_VAR]: '20', [HINT_PAD_Y_VAR]: '10' }
     stubVars(vars)
     const suite = build()
     sized(refs.hint as HTMLElement, 100, 14)
     suite.setHover({ shape: 'pill', label: 'View' }, null)
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('140px')
 
-    vars[PILL_PAD_X_VAR] = '30'
+    vars[HINT_PAD_X_VAR] = '30'
     suite.remeasure()
 
     expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('160px')

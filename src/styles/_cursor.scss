@@ -161,17 +161,17 @@
 
   .arts-cursor[data-cursor-shape-axis='x'][data-cursor-pressed] .arts-cursor__follower {
     width: clamp(
-      calc(var(--arts-cursor-shape-width) - var(--arts-cursor-pill-padding-x) * 0.5),
+      calc(var(--arts-cursor-shape-width) - var(--arts-cursor-hint-padding-x) * 0.5),
       calc(var(--arts-cursor-shape-width) * var(--arts-cursor-scale-pressed)),
-      calc(var(--arts-cursor-shape-width) + var(--arts-cursor-pill-padding-x) * 0.5)
+      calc(var(--arts-cursor-shape-width) + var(--arts-cursor-hint-padding-x) * 0.5)
     );
   }
 
   .arts-cursor[data-cursor-shape-axis='y'][data-cursor-pressed] .arts-cursor__follower {
     height: clamp(
-      calc(var(--arts-cursor-shape-height) - var(--arts-cursor-pill-padding-x) * 0.5),
+      calc(var(--arts-cursor-shape-height) - var(--arts-cursor-hint-padding-x) * 0.5),
       calc(var(--arts-cursor-shape-height) * var(--arts-cursor-scale-pressed)),
-      calc(var(--arts-cursor-shape-height) + var(--arts-cursor-pill-padding-x) * 0.5)
+      calc(var(--arts-cursor-shape-height) + var(--arts-cursor-hint-padding-x) * 0.5)
     );
   }
 }
