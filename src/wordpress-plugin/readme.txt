@@ -98,9 +98,11 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Screenshots ==
 
-1. The cursor in motion: link highlight, magnetic pull and a drag hint over a carousel.
-2. The Cursor Follower tab in Elementor Site Settings.
-3. The Cursor Effects section inside a widget's panel.
+1. The Cursor Follower tab sits with Elementor's own Site Settings, next to Lightbox and Custom CSS.
+2. Site Settings: cursor size, background and border colors, border width and blend mode, with a section per visual state below.
+3. Slides: magnetic arrows and dots, a drag hint set to the arrows-only style, and a magnetic pull on the slide button.
+4. Media Carousel: a "Drag" text hint for the gesture, plus a separate icon hint for slides that open a lightbox or a link.
+5. Portfolio: a "View Project" pill following the cursor across a card, live in the editor preview.
 
 == Changelog ==
 
