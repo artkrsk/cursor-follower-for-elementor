@@ -26,28 +26,28 @@ Live demos and developer documentation: https://artkrsk.github.io/cursor-followe
 * **Link highlight.** The cursor grows and fades over links and buttons. On by default, works everywhere.
 * **Magnetic hover.** Buttons, icons and carousel arrows pull the cursor onto themselves. Switched on per widget, tuned globally. No HTML classes to hand-edit, and none of it is paywalled.
 * **Text and icon hints.** A pill follows the cursor across linked images, portfolio cards and slides. Change the wording per widget, or swap the text for any Elementor icon, SVG included.
-* **Drag hints for carousels.** Three styles: a text pill, text that grows arrows while you drag, or arrows only with a dot that stands in for the native cursor during the gesture.
+* **Drag hints for carousels.** Three styles: a text pill that grows arrows as you drag, the same pill with its arrows always out, or arrows only with a dot that stands in for the native cursor once you press.
 * **Elastic squash and click feedback.** The cursor stretches along its own movement and dips when pressed. Both optional, both tunable.
 * **Blend modes.** Difference and exclusion, per state, so the cursor stays readable over photos and dark sections.
-* **Loading state.** A spinner takes over the cursor while something is in flight, with a progress API for developers.
+* **Loading state.** A spinner takes over the cursor while something is in flight. Developers can toggle it from JavaScript, along with a busy-pointer state.
 
 = Built for Elementor, not "compatible with page builders" =
 
 Most cursor plugins ship one global effect and tell you to add CSS classes. This one plugs into Elementor itself:
 
-* A Cursor Follower tab in Site Settings covers the whole design: size, colors, borders, blend modes, hint typography, and per-state overrides for highlight, magnetic, hints and loading. Changes apply live in the editor.
+* A Cursor Follower tab in Site Settings covers the whole cursor: size, colors, borders, blend modes, hint typography, follow smoothing and transition timing, plus per-state overrides for highlight, magnetic and hints, and the loading spinner's color. Changes apply live in the editor.
 * A Cursor Effects section appears inside the widgets themselves: Button, Icon, Icon Box, Image, Image Box, Social Icons, Call to Action, Flip Box, Slides, Portfolio, and every carousel including the new nested Carousel. Each widget only shows the effects that make sense for it.
-* The defaults already work. Carousel arrows and dots become magnetic, sliders get a drag hint, linked images get a Zoom hint, and the Elementor Lightbox gets magnetic navigation, before you touch a single setting.
+* The defaults already work. Carousel arrows and dots become magnetic, carousels get a drag hint, portfolio cards get a "View Project" pill, and the Elementor Lightbox gets magnetic navigation, before you touch a single setting.
 * Elementor Free and Pro widgets are both covered.
 
 = Performance, in numbers =
 
 Every cursor plugin calls itself lightweight. Here are actual numbers:
 
-* Visitors get a ~1 KB inline loader and nothing else up front. The engine, under 20 KB gzipped including its CSS, loads on the first mouse movement.
-* Phones and tablets never produce that movement, so touch devices download zero bytes of engine code.
+* Visitors get one inline block — the loader plus your settings, about 1.7 KB gzipped — and nothing else up front. The engine, around 13 KB gzipped including its CSS, loads on the first mouse movement.
+* Phones and tablets never produce that movement, so they download zero bytes of engine code.
 * No jQuery. No dependencies.
-* The animation itself runs as GPU-composited CSS transitions. The JavaScript goes to sleep whenever the cursor is at rest.
+* The cursor moves by writing a single transform per frame, and its state changes are CSS transitions. The JavaScript goes to sleep whenever the cursor is at rest.
 * Caching and optimizer plugins are accounted for: the loader carries the standard opt-out markers so Autoptimize, WP Rocket and similar tools leave it alone.
 
 == Installation ==
@@ -62,7 +62,7 @@ Or press Live Preview on this page and try it without installing anything.
 
 = Will it slow down my site? =
 
-Visitors download a ~1 KB loader. The engine itself, under 20 KB gzipped, only loads after the first mouse movement, and touch devices never load it at all. The animation runs in CSS, and the JavaScript sleeps while the cursor is idle.
+Visitors download one inline block of about 1.7 KB gzipped — the loader plus your settings. The engine itself, around 13 KB gzipped, only loads after the first mouse movement, and phones and tablets never load it at all. The JavaScript sleeps while the cursor is idle.
 
 = What happens on phones and tablets? =
 
@@ -70,7 +70,7 @@ Nothing, on purpose. There is no mouse to follow, so the engine never downloads 
 
 = Does it replace my visitor's real cursor? =
 
-No. The follower draws alongside the native cursor, so pointing stays precise. The one exception is the arrows-only drag style, which hides the native cursor during the drag gesture and brings it back after.
+No. The follower draws alongside the native cursor, so pointing stays precise. The one exception is the arrows-only drag style, which hides the native cursor while you're pressing and brings it back when you let go.
 
 = Does it need Elementor Pro? =
 
