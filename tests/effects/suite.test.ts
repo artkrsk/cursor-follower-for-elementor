@@ -230,6 +230,9 @@ describe('floorScale', () => {
   it('leaves the scale alone when no label is shown', () => {
     expect(floorScale(0.4, 0)).toBe(0.4)
     expect(floorScale(null, 0)).toBeNull()
+    // The button collapse: 0 is a resolved scale, not an absent one, so it has
+    // to survive the floor as 0 for the collapse state to be detectable.
+    expect(floorScale(0, 0)).toBe(0)
   })
 
   it('raises a scale too small to contain the label', () => {

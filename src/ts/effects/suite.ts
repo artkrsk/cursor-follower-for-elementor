@@ -13,6 +13,7 @@ import {
   BORDER_COLOR_VAR,
   BORDER_WIDTH_VAR,
   CLEAR_DELAY_PAD_MS,
+  COLLAPSED_ATTR,
   DISABLED_SELECTOR,
   DOT_ATTR,
   HIGHLIGHT_ATTR,
@@ -589,6 +590,10 @@ export function createEffectsSuite(args: {
     const appearance = resolveAppearance(merged, element, geometry, baseSize, options.highlight)
     const scale = floorScale(appearance.scale, labelFit)
     root.toggleAttribute(HIGHLIGHT_ATTR, appearance.highlight)
+    // Exactly 0, not <= 0: the scale grammar never produces a negative, and a
+    // label floors its own payload above zero, so a labeled pill — which never
+    // collapses to a point anyway — correctly never trips this.
+    root.toggleAttribute(COLLAPSED_ATTR, scale === 0)
     writeVar(follower, SCALE_VAR, scale)
     // Live ring radius the arrows seat against (plain, inheriting — see _parts).
     // Written every pass, pill included: under a pill it is inert purely because

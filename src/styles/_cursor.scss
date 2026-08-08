@@ -48,13 +48,23 @@
     height: 0;
     scale: 0;
     translate: var(--arts-cursor-offset-x, 0) var(--arts-cursor-offset-y, 0);
+    // This rule IS the collapsed state, so it owns the hide leg: scale rides the
+    // flattened curve, which is the only way the whole cluster doesn't mirror
+    // itself back into view on the way out. translate keeps the back-out — it
+    // has no zero crossing to guard. Both rules restate the full shorthand
+    // rather than patching transition-timing-function, whose value is a
+    // positional list matched against transition-property: one value there would
+    // silently take translate with it.
     transition:
-      scale tokens.$motion,
+      scale tokens.$motion-collapse,
       translate tokens.$motion;
   }
 
   .arts-cursor[data-cursor-visible] .arts-cursor__wrapper {
     scale: 1;
+    transition:
+      scale tokens.$motion,
+      translate tokens.$motion;
   }
 
   // The visible shape: a circle that morphs to a stadium on a shape:'pill' label
@@ -99,6 +109,24 @@
     scale: calc(var(--arts-cursor-scale) * var(--arts-cursor-scale-pressed));
     transition:
       scale tokens.$motion,
+      width tokens.$motion,
+      height tokens.$motion,
+      background-color tokens.$motion,
+      box-shadow tokens.$motion,
+      -webkit-backdrop-filter tokens.$motion,
+      backdrop-filter tokens.$motion;
+  }
+
+  // The shrink half of the same deal as the wrapper, except the collapsed state
+  // arrives as a NUMBER in --arts-cursor-scale (the button-collapse rule in
+  // Options.php resolves to 0) and no selector can read a custom property's
+  // value — so effects/suite.ts raises this attribute alongside the var. One
+  // attribute of specificity over the base rule, so it governs while set; the
+  // recompute that resolves a non-zero scale drops it in the same pass, handing
+  // the grow leg back to the back-out.
+  .arts-cursor[data-cursor-collapsed] .arts-cursor__follower {
+    transition:
+      scale tokens.$motion-collapse,
       width tokens.$motion,
       height tokens.$motion,
       background-color tokens.$motion,

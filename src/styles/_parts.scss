@@ -227,7 +227,10 @@
     border-radius: 50%;
     background-color: var(--arts-cursor-dot-color, var(--arts-cursor-text-color, currentColor));
     scale: 0;
-    transition: scale tokens.$motion;
+    // Collapsed state is the base rule here, same split as the wrapper in
+    // _cursor.scss — the flattened curve on the way out, the back-out restored
+    // on the pressed rule below.
+    transition: scale tokens.$motion-collapse;
   }
 
   // Same hint-chrome rule as the arrows: on a pill the dot slots into the
@@ -242,6 +245,7 @@
 
   .arts-cursor[data-cursor-dot][data-cursor-pressed] .arts-cursor__dot {
     scale: 1;
+    transition: scale tokens.$motion;
   }
 
   // Loading spinner: one self-centering SVG, visible on [data-cursor-loading].

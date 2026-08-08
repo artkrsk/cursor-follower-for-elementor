@@ -14,6 +14,7 @@ import {
   BG_VAR,
   BORDER_WIDTH_VAR,
   CLEAR_DELAY_PAD_MS,
+  COLLAPSED_ATTR,
   DEFAULT_ANIMATION_DURATION,
   DOT_ATTR,
   HIGHLIGHT_ATTR,
@@ -133,6 +134,26 @@ describe('recompute — scale', () => {
     suite.setHover({ scale: `${BASE_SIZE_FALLBACK * 2}px` }, null)
 
     expect(cssVar(refs.root, ARROW_RADIUS_VAR)).toBe(`${BASE_SIZE_FALLBACK}px`)
+  })
+
+  /** The signal _cursor.scss needs to ease the collapse without mirroring. */
+  it('marks the root collapsed only while the resolved scale is exactly zero', () => {
+    const suite = build()
+
+    suite.setHover({ scale: '0px' }, null)
+    expect(refs.root.hasAttribute(COLLAPSED_ATTR)).toBe(true)
+
+    suite.setHover({ scale: `${BASE_SIZE_FALLBACK}px` }, null)
+    expect(refs.root.hasAttribute(COLLAPSED_ATTR)).toBe(false)
+  })
+
+  it('never marks a scale the label has floored above zero', () => {
+    const suite = build()
+    sized(refs.hint as HTMLElement, 120, 0)
+
+    suite.setHover({ label: 'View', scale: '0px' }, null)
+
+    expect(refs.root.hasAttribute(COLLAPSED_ATTR)).toBe(false)
   })
 })
 

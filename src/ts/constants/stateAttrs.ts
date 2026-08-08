@@ -8,6 +8,13 @@
  */
 export const VISIBLE_ATTR = 'data-cursor-visible'
 export const HIGHLIGHT_ATTR = 'data-cursor-highlight'
+/** The applied scale resolved to exactly 0 (the magnetic button-collapse rule
+    in Options.php). Raised purely so _cursor.scss has something to select on:
+    the back-out ease overshoots past its target, and `scale` has no clamp, so a
+    transition down to 0 goes negative and mirrors the ring back into view.
+    Dropped by the same recompute that resolves a non-zero scale, which is what
+    leaves the grow leg on the normal curve. */
+export const COLLAPSED_ATTR = 'data-cursor-collapsed'
 export const HINT_ATTR = 'data-cursor-hint'
 export const HINT_ICON_ATTR = 'data-cursor-hint-icon'
 /** Which of the three icon forms filled the hint's icon slot, since each needs
