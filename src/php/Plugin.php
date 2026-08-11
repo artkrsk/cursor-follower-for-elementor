@@ -31,7 +31,9 @@ class Plugin {
 		// scripts — so the gate sits after the meta/styles where a loader
 		// belongs instead of above the page's own title.
 		add_action( 'wp_head', array( $this, 'print_gate' ), 99 );
-		add_filter( 'language_attributes', array( $this, 'filter_language_attributes' ) );
+		// Last on the filter so every other plugin's attributes are already in
+		// the string by the time we merge into them — see the callback.
+		add_filter( 'language_attributes', array( $this, 'filter_language_attributes' ), PHP_INT_MAX );
 		add_action( 'elementor/loaded', array( $this, 'init_elementor' ) );
 
 		// Only the standalone plugin has a Plugins-page row to attach a link
@@ -209,14 +211,37 @@ class Plugin {
 	 * resolved by then, so filter callbacks can branch on is_checkout() and
 	 * friends.
 	 *
+	 * Merged, never appended: this filter is the only route to an <html> class
+	 * (core has no body_class() equivalent for it), so other plugins pile onto
+	 * it too, and a second class attribute is a parse error — the browser keeps
+	 * the first and silently drops the rest, which is how the class contract
+	 * breaks with no error anywhere. The tag processor writes into whichever
+	 * attribute the browser will actually read and handles the quoting and
+	 * escaping; the synthetic <html> wrapper is ours, hence the fixed substr.
+	 *
+	 * Front end only: _wp_admin_html_begin() hardcodes class="wp-toolbar" on
+	 * the admin <html> in markup this filter never sees, so merging is
+	 * impossible there and anything we add is a duplicate attribute the browser
+	 * drops. The class is a front-end contract anyway — the gate rides wp_head,
+	 * which admin screens don't fire.
+	 *
 	 * @param string $output
 	 */
 	public function filter_language_attributes( string $output ): string {
-		if ( $this->is_enabled() ) {
+		if ( is_admin() || $this->is_enabled() ) {
 			return $output;
 		}
 
-		return $output . ' class="no-cursor-follower"';
+		$tags = new \WP_HTML_Tag_Processor( '<html ' . $output . '>' );
+
+		// Nothing to merge into: $output didn't parse as attributes at all.
+		if ( ! $tags->next_tag() ) {
+			return $output . ' class="no-cursor-follower"';
+		}
+
+		$tags->add_class( 'no-cursor-follower' );
+
+		return substr( $tags->get_updated_html(), 6, -1 );
 	}
 
 	/**
