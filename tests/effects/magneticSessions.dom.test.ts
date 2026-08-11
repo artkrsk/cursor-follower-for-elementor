@@ -49,6 +49,7 @@ beforeEach(() => {
   stopStream = vi.fn()
   geometry = {
     resolve: vi.fn(() => entry),
+    measure: vi.fn(() => entry),
     stream: vi.fn(() => stopStream)
   } as unknown as IGeometryCache
   suite = { addSession: vi.fn(() => vi.fn()) } as unknown as IEffectsSuite
@@ -85,13 +86,25 @@ describe('engageHover', () => {
     expect(stopStream).toHaveBeenCalledOnce()
   })
 
+  /** A cached page-space rect is stale for a fixed or stuck-sticky element by
+      the whole scroll delta (sticky headers) — the first frames would render
+      toward the old position. Engage must measure, never trust the cache. */
+  it('measures the anchor at engage instead of trusting the cache', () => {
+    const sessions = build()
+
+    sessions.engageHover(el, { magnetic: true }, el)
+
+    expect(geometry.measure).toHaveBeenCalledWith(el)
+    expect(geometry.resolve).not.toHaveBeenCalled()
+  })
+
   /** The trigger's rect is the zone the trap holds inside — the
       hover boundary owns release there, so the trap must know its bounds. */
-  it('resolves the trigger zone and hands its rect to the trap', () => {
+  it('measures the trigger zone and hands its rect to the trap', () => {
     const zoneEl = document.createElement('div')
     const zoneEntry: IGeometryEntry = { pageX: 0, pageY: 0, w: 800, h: 100 }
     geometry = {
-      resolve: vi.fn((target: Element) => (target === zoneEl ? zoneEntry : entry)),
+      measure: vi.fn((target: Element) => (target === zoneEl ? zoneEntry : entry)),
       stream: vi.fn(() => stopStream)
     } as unknown as IGeometryCache
     const sessions = build()

@@ -58,13 +58,16 @@ export function createMagneticSessions(args: {
       if (options.magnetic === false || live) {
         return
       }
-      const entry = geometry.resolve(element)
-      // The trigger's rect is the zone the trap holds inside; the
+      // Measured fresh, not served from cache: a fixed or stuck-sticky element
+      // (sticky headers) keeps its client rect while the page scrolls, so its
+      // cached page coordinates are stale by the whole scroll delta — the first
+      // frames would render toward the old position and inflate the release
+      // radius. The trigger's rect is the zone the trap holds inside; the
       // anchor entry doubles as the zone when the zone IS the effect element.
-      // Resolved once at engage, not streamed — a stale rect during an
-      // entrance animation just falls back to the radius release and
-      // self-heals on the next revalidation.
-      const zone = trigger === element ? entry : geometry.resolve(trigger)
+      // The zone is measured once at engage, not streamed — a rect that moves
+      // during an entrance animation just falls back to the radius release.
+      const entry = geometry.measure(element)
+      const zone = trigger === element ? entry : geometry.measure(trigger)
       stopStream?.()
       stopStream = geometry.stream(element)
       const strength =

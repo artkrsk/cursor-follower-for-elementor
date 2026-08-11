@@ -8,7 +8,10 @@ import type { IGeometryCache, IGeometryEntry } from '../interfaces'
  * - revalidated per hover via a shared IntersectionObserver (its
  *   boundingClientRect is served from already-computed geometry — flush-free)
  * - sizes maintained by a shared ResizeObserver
- * - page-space coordinates are scroll-invariant, so scrolling never stales them
+ * - page-space coordinates are scroll-invariant for elements in normal flow,
+ *   so scrolling never stales them; a fixed or stuck-sticky element's page
+ *   coordinates DO move with scroll, which is why engage-time consumers call
+ *   measure() instead of trusting resolve()'s cache, and stream while engaged
  * - detached elements are evicted when seen: an IO record that comes back
  *   detached drops the entry, and warm() (the post-navigation hint) and resize
  *   both sweep the tracked set. `tracked` is the only durable strong reference to page
@@ -128,23 +131,26 @@ export function createGeometryCache(): IGeometryCache {
   }
   window.addEventListener('resize', onResize, { passive: true })
 
+  /** One synchronous read — resolve()'s cold path and the engage-time escape
+      hatch for elements whose cached page coordinates scroll carried away. */
+  const measure = (el: Element) => {
+    const entry = writeEntry(
+      entries,
+      el,
+      el.getBoundingClientRect(),
+      window.scrollX,
+      window.scrollY
+    )
+    track(el)
+    return entry
+  }
+
   return {
     resolve(el) {
-      const cached = entries.get(el)
-      if (cached) {
-        return cached
-      }
       // Cold element (added after warm): one synchronous read, then tracked.
-      const entry = writeEntry(
-        entries,
-        el,
-        el.getBoundingClientRect(),
-        window.scrollX,
-        window.scrollY
-      )
-      track(el)
-      return entry
+      return entries.get(el) ?? measure(el)
     },
+    measure,
     stream(el) {
       if (disposed) {
         return () => {}

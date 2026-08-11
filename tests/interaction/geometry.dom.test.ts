@@ -109,6 +109,32 @@ describe('resolve', () => {
   })
 })
 
+describe('measure', () => {
+  /** A fixed-position element keeps its client rect while the page scrolls, so
+      its cached page coordinate drifts by the scroll delta. Engage-time reads
+      re-measure instead of trusting the cache. */
+  it('re-measures a cached element whose page position scroll carried away', () => {
+    const el = elementAt({ left: 10, top: 20, width: 100, height: 50 })
+    const cached = cache.resolve(el)
+
+    setScroll(0, 300)
+    const measured = cache.measure(el)
+
+    expect(measured).toBe(cached)
+    expect(measured).toEqual({ pageX: 10, pageY: 320, w: 100, h: 50 })
+  })
+
+  it('reads and tracks a cold element once', () => {
+    const el = elementAt({ left: 3, top: 4 })
+
+    cache.measure(el)
+    cache.measure(el)
+
+    expect(ro.observed).toEqual([el])
+    expect(cache.resolve(el)).toEqual({ pageX: 3, pageY: 4, w: 0, h: 0 })
+  })
+})
+
 describe('revalidation through the intersection observer', () => {
   /** The flush-free refresh: the record's boundingClientRect is served from
       geometry the browser already computed, so no layout is forced. */
