@@ -1,0 +1,148 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Supersede in-flight runs for the same ref so pushes don't pile up on the
+# single self-hosted runner.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # The zip is ~0.065 MB today. This leaves room to grow while still catching
+  # an accidental blowup (a leaked sourcemap, the full vendor/ tree).
+  MAX_ZIP_SIZE_MB: '0.25'
+
+jobs:
+  quality:
+    name: Code Quality
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v6
+
+      # The runner host already has node 24 (nvm), corepack-shimmed pnpm that
+      # honours packageManager, PHP 8.4 and composer on PATH. These only fire
+      # if the job is ever moved to a GitHub-hosted runner.
+      - uses: pnpm/action-setup@v4
+        if: runner.environment == 'github-hosted'
+
+      - uses: actions/setup-node@v6
+        if: runner.environment == 'github-hosted'
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: shivammathur/setup-php@v2
+        if: runner.environment == 'github-hosted'
+        with:
+          php-version: '8.4'
+          tools: composer
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: composer install --prefer-dist --no-progress
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: PHPStan
+        run: pnpm phpstan
+
+  plugin-check:
+    name: WordPress.org Plugin Check
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        if: runner.environment == 'github-hosted'
+
+      - uses: actions/setup-node@v6
+        if: runner.environment == 'github-hosted'
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: shivammathur/setup-php@v2
+        if: runner.environment == 'github-hosted'
+        with:
+          php-version: '8.4'
+          tools: composer
+
+      - run: pnpm install --frozen-lockfile
+
+      # The staged plugin needs vendor/autoload.php, which the build copies out
+      # of the repo's own vendor/ (project.config.js sets vendor.autoloaderOnly).
+      - run: composer install --prefer-dist --no-progress
+
+      - name: Build plugin
+        run: pnpm build
+
+      - name: Validate ZIP size
+        run: |
+          ZIP_FILE="dist/cursor-follower-for-elementor.zip"
+          SIZE_BYTES=$(stat -f%z "$ZIP_FILE" 2>/dev/null || stat -c%s "$ZIP_FILE")
+          SIZE_MB=$(echo "scale=2; $SIZE_BYTES / 1024 / 1024" | bc)
+
+          if (( $(echo "$SIZE_MB > $MAX_ZIP_SIZE_MB" | bc -l) )); then
+            echo "ZIP too large: ${SIZE_MB} MB (max ${MAX_ZIP_SIZE_MB} MB)"
+            exit 1
+          fi
+
+          echo "ZIP size: ${SIZE_MB} MB"
+
+      - name: Acquire cross-repo wp-env lock
+        # This host runs wp-env-based CI for several repos, each on its own
+        # self-hosted runner service, so they can execute concurrently.
+        # GitHub's `concurrency:` key only serializes within this repo -- it
+        # can't stop another repo's wp-env from colliding with this job's
+        # Docker resources. See .github/scripts/wp-env-host-lock.sh.
+        run: bash .github/scripts/wp-env-host-lock.sh acquire
+
+      - name: Clean up stale wp-env Docker resources
+        run: |
+          # The plugin-check action generates its own hashed .wp-env.json, so a prior
+          # run's containers can orphan under a hash `wp-env destroy` won't match and
+          # keep 8880/8881 bound. Remove them by project name and published port.
+          # The unquoted expansions are deliberate: docker ps -aq emits one ID per
+          # line and each has to reach docker rm as its own argument.
+          # shellcheck disable=SC2046
+          docker rm -f $(docker ps -aq --filter "name=wp-env-cursor-follower-for-elementor") 2>/dev/null || true
+          # shellcheck disable=SC2046
+          docker rm -f $(docker ps -aq --filter "publish=8880" --filter "publish=8881") 2>/dev/null || true
+          # No `wp-env destroy` counterpart here: this repo commits no .wp-env.json
+          # and doesn't depend on @wordpress/env, so the only wp-env instance that
+          # ever exists is the one the action spins up, and it is removed above.
+          # The action's hashed wp-env dirs are populated via Docker (root-owned), so a
+          # stale file from a prior run causes EACCES on re-setup and a plain rm can't
+          # remove it. Delete them from inside a container as root.
+          docker run --rm -v "$HOME/.wp-env:/wp-env" alpine \
+            sh -c 'rm -rf /wp-env/wp-env-cursor-follower-for-elementor-*' 2>/dev/null || true
+
+      - name: Run WordPress Plugin Check
+        uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: './dist/cursor-follower-for-elementor'
+          wp-version: 'latest'
+          # The plugin's prefixes (Arts\CursorFollower, ARTS_CURSOR_FOLLOWER_*,
+          # the arts_cursor_follower/* filters) are deliberate and consistent, but they
+          # don't derive from the slug, which is all this sniff accepts.
+          ignore-codes: |
+            WordPress.NamingConventions.PrefixAllGlobals.InvalidPrefixPassed
+
+      - name: Release cross-repo wp-env lock
+        if: always()
+        run: bash .github/scripts/wp-env-host-lock.sh release

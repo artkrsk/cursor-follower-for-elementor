@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <pattern id="ps3" width="80" height="80" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#2AA9B5" stroke-width="1.5">
+        <circle cx="0" cy="0" r="26" opacity="0.5"/>
+        <circle cx="80" cy="0" r="26" opacity="0.5"/>
+        <circle cx="0" cy="80" r="26" opacity="0.5"/>
+        <circle cx="80" cy="80" r="26" opacity="0.5"/>
+        <circle cx="40" cy="40" r="26" opacity="0.28"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="1200" height="800" fill="#0B0B0D"/>
+  <rect width="1200" height="800" fill="url(#ps3)"/>
+</svg>

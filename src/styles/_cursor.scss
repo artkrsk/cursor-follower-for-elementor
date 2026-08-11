@@ -1,0 +1,205 @@
+@use 'tokens';
+
+@layer arts-cursor {
+  // Root: fixed at the viewport origin, moved exclusively via a JS-written
+  // `transform`: translate + one symmetric matrix folding the elastic squash
+  // and its counter-rotation together (see follower/transformWriter.ts) — the whole
+  // frame path writes this single element. Pre-promoted so the first
+  // pointermove doesn't pay layer-promotion jank.
+  .arts-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10000;
+    pointer-events: none;
+    visibility: hidden;
+    contain: layout style size;
+    will-change: transform;
+    // Kit-only var (dot-type cursors: solid fill + difference). Must
+    // live on the ROOT: `contain` makes this element a stacking context, so
+    // a follower-level blend would blend against the transparent root, not
+    // the page. Label/icon inherit the inversion — the intended look.
+    mix-blend-mode: var(--arts-cursor-blend-mode, normal);
+  }
+
+  // A label is content to read, not a dot to invert: while one shows the blend
+  // drops to `normal`, unless the site opts the label back into the global mode
+  // (Labels → Blend Mode → Inherit) — e.g. a transparent pill with light text
+  // that reads well inverted. The pill shape counts as content too: the
+  // arrows-only style raises no label attribute, but its chevrons deserve the
+  // same treatment as wording. Same element as the base blend above, +1
+  // attribute of specificity, so it wins whenever either is up.
+  .arts-cursor:is([data-cursor-hint], [data-cursor-shape='pill']) {
+    mix-blend-mode: var(--arts-cursor-hint-blend-mode, normal);
+  }
+
+  html.has-cursor-follower .arts-cursor {
+    visibility: visible;
+  }
+
+  // Wrapper: a 0×0 anchor point at the follower position. Carries the reveal
+  // (scale 0→1) plus the per-state offset that lifts the cluster off the pointer
+  // (JS sets --arts-cursor-offset-* on the root; they inherit here). Both are
+  // individual transform properties, composed with the root's per-frame matrix
+  // — no per-frame JS writes land here.
+  .arts-cursor__wrapper {
+    position: relative;
+    width: 0;
+    height: 0;
+    scale: 0;
+    translate: var(--arts-cursor-offset-x, 0) var(--arts-cursor-offset-y, 0);
+    // This rule IS the collapsed state, so it owns the hide leg: scale rides the
+    // flattened curve, which is the only way the whole cluster doesn't mirror
+    // itself back into view on the way out. translate keeps the back-out — it
+    // has no zero crossing to guard. Both rules restate the full shorthand
+    // rather than patching transition-timing-function, whose value is a
+    // positional list matched against transition-property: one value there would
+    // silently take translate with it.
+    transition:
+      scale tokens.$motion-collapse,
+      translate tokens.$motion;
+  }
+
+  .arts-cursor[data-cursor-visible] .arts-cursor__wrapper {
+    scale: 1;
+    transition:
+      scale tokens.$motion,
+      translate tokens.$motion;
+  }
+
+  // The visible shape: a circle that morphs to a stadium on a shape:'pill' label
+  // by animating its own width/height — border-radius 999px clamps to a perfect
+  // circle at square size and a perfect stadium when wider/shorter, so one
+  // element and one border carry the whole morph (no distortion, no seams).
+  // --arts-cursor-scale/-scale-pressed are @property-registered and set
+  // on this element by effects; --arts-cursor-shape-width/-height are set on the
+  // root and inherit here (absent → the circle's --arts-cursor-size).
+  .arts-cursor__follower {
+    position: absolute;
+    top: 0;
+    left: 0;
+    translate: -50% -50%;
+    width: var(--arts-cursor-shape-width, var(--arts-cursor-size, #{tokens.$size-fallback}));
+    height: var(--arts-cursor-shape-height, var(--arts-cursor-size, #{tokens.$size-fallback}));
+    border-radius: 999px;
+    // Border colour defaults to the FILL (so a filled shape — pill or dot — has
+    // no stray ring), then to #808080 when there's no fill — a neutral grey
+    // rather than currentColor, which renders invisible on dark themes. An
+    // explicit payload borderColor overrides both.
+    // The width divides by the scale so the stroke stays optically constant while
+    // the circle grows. The registered var flips instantly (nothing transitions
+    // it), so box-shadow interpolates between settled endpoints — the max() floors
+    // the scale-0 endpoint (button collapse), which would otherwise sit at
+    // calc-infinity and flood the ring solid for the whole shrink/grow transition.
+    // Below 0.25 the cursor is too small for the thickness error to read.
+    // Compensating HERE rather than in the engine is what lets kit CSS re-declare
+    // the width var per state — an engine-written inline value would beat every
+    // kit rule.
+    box-shadow: inset 0 0 0
+      calc(var(--arts-cursor-border-width, 1px) / max(var(--arts-cursor-scale, 1), 0.25))
+      var(--arts-cursor-border-color, var(--arts-cursor-background-color, #808080));
+    background-color: var(--arts-cursor-background-color, transparent);
+    // The var carries the whole filter value, not a radius: unset resolves to
+    // `none` — the initial value, so no backdrop root and nothing to composite.
+    // `blur(var(--x, 0px))` would instead leave a real zero-radius filter behind
+    // on every cursor, on every site, whether or not anyone asked for one.
+    // Prefixed first (Safari < 18); nothing in the build autoprefixes.
+    -webkit-backdrop-filter: var(--arts-cursor-backdrop-filter, none);
+    backdrop-filter: var(--arts-cursor-backdrop-filter, none);
+    scale: calc(var(--arts-cursor-scale) * var(--arts-cursor-scale-pressed));
+    transition:
+      scale tokens.$motion,
+      width tokens.$motion,
+      height tokens.$motion,
+      background-color tokens.$motion,
+      box-shadow tokens.$motion,
+      -webkit-backdrop-filter tokens.$motion,
+      backdrop-filter tokens.$motion;
+  }
+
+  // The shrink half of the same deal as the wrapper, except the collapsed state
+  // arrives as a NUMBER in --arts-cursor-scale (the button-collapse rule in
+  // Options.php resolves to 0) and no selector can read a custom property's
+  // value — so effects/suite.ts raises this attribute alongside the var. One
+  // attribute of specificity over the base rule, so it governs while set; the
+  // recompute that resolves a non-zero scale drops it in the same pass, handing
+  // the grow leg back to the back-out.
+  .arts-cursor[data-cursor-collapsed] .arts-cursor__follower {
+    transition:
+      scale tokens.$motion-collapse,
+      width tokens.$motion,
+      height tokens.$motion,
+      background-color tokens.$motion,
+      box-shadow tokens.$motion,
+      -webkit-backdrop-filter tokens.$motion,
+      backdrop-filter tokens.$motion;
+  }
+
+  // Filled content state: a stadium pill, or a circle grown around text or an
+  // icon. Fill, border and blur come from the hint controls
+  // (--arts-cursor-hint-*), each falling back to the cursor's own var — so the
+  // free-roam ring can stay a bare outline while content reads as a distinct
+  // chip. With no label border set it follows the fill (no stray ring), like the
+  // circle. Same states as the label blend mode above, for the same reason: an
+  // arrows-only pill raises no label attribute but is still a filled shape.
+  .arts-cursor:is([data-cursor-hint], [data-cursor-shape='pill']) .arts-cursor__follower {
+    background-color: var(
+      --arts-cursor-hint-background,
+      var(--arts-cursor-background-color, transparent)
+    );
+    box-shadow: inset 0 0 0
+      calc(
+        var(--arts-cursor-hint-border-width, var(--arts-cursor-border-width, 1px)) /
+          max(var(--arts-cursor-scale, 1), 0.25)
+      )
+      var(
+        --arts-cursor-hint-border-color,
+        var(
+          --arts-cursor-hint-background,
+          var(--arts-cursor-border-color, var(--arts-cursor-background-color, #808080))
+        )
+      );
+    -webkit-backdrop-filter: var(
+      --arts-cursor-hint-backdrop-filter,
+      var(--arts-cursor-backdrop-filter, none)
+    );
+    backdrop-filter: var(
+      --arts-cursor-hint-backdrop-filter,
+      var(--arts-cursor-backdrop-filter, none)
+    );
+  }
+
+  // While the loading spinner shows, the circle itself steps aside.
+  .arts-cursor[data-cursor-loading] .arts-cursor__follower {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 var(--arts-cursor-border-width, 1px) transparent;
+  }
+
+  // Pressed pill: press via the box, not a uniform scale, so the sides never
+  // collapse onto the content — and ONLY along the pill's own long axis
+  // (data-cursor-shape-axis, written with the shape): a horizontal pill
+  // presses by width, a vertical stadium by height, and the cross axis holds
+  // so its snug-fitted arrows/dot never get pinched. Both clamps bound the
+  // pressScale shrink to ±½ a padX (the long axis owns the wide padding in
+  // both orientations) — each end keeps at least ¾ of its padding — and
+  // dropping scale-pressed leaves the plain circle pressing as before.
+  .arts-cursor[data-cursor-shape='pill'][data-cursor-pressed] .arts-cursor__follower {
+    scale: var(--arts-cursor-scale);
+  }
+
+  .arts-cursor[data-cursor-shape-axis='x'][data-cursor-pressed] .arts-cursor__follower {
+    width: clamp(
+      calc(var(--arts-cursor-shape-width) - var(--arts-cursor-hint-padding-x) * 0.5),
+      calc(var(--arts-cursor-shape-width) * var(--arts-cursor-scale-pressed)),
+      calc(var(--arts-cursor-shape-width) + var(--arts-cursor-hint-padding-x) * 0.5)
+    );
+  }
+
+  .arts-cursor[data-cursor-shape-axis='y'][data-cursor-pressed] .arts-cursor__follower {
+    height: clamp(
+      calc(var(--arts-cursor-shape-height) - var(--arts-cursor-hint-padding-x) * 0.5),
+      calc(var(--arts-cursor-shape-height) * var(--arts-cursor-scale-pressed)),
+      calc(var(--arts-cursor-shape-height) + var(--arts-cursor-hint-padding-x) * 0.5)
+    );
+  }
+}

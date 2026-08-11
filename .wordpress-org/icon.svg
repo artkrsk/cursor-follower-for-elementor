@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Cursor Follower for Elementor">
+<title>Cursor Follower for Elementor</title>
+<style>
+/* One 8.6s loop, five states, no script. Same structure as before: holds are
+   keyframe PAIRS with identical values, the morph happens between a pair's end
+   and the next pair's start, so the ease sits on the keyframe that CLOSES each
+   hold.
+
+   Nothing in this stylesheet may contain a literal angle bracket or ampersand.
+   Served as an image the file is parsed as XML, where style contents are NOT raw
+   text, so a bare bracket opens a phantom element and the whole SVG fails to
+   parse — silently, as a broken image.
+
+   The ease is the engine's --arts-cursor-ease. It rules out SMIL: keySplines
+   clamps control points to 0..1 and this curve overshoots to 1.56. That
+   overshoot is also why both the fill and the border ride OPACITY and never
+   stroke-width: an opacity clamps at either end, a stroke width driven
+   negative does not. The stroke width is therefore constant, and every
+   geometry value below is the path box — the free-roam ring renders 7px
+   wider, half the stroke each side. The stroke is white and the fill is not,
+   which costs nothing: the border is only ever visible in that one state. */
+
+.shape, .arrow, .dot, .chev {
+  animation-duration: 8.6s;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+/* Declarative bbox-centre origin, so scaling never drifts off centre. */
+.arrow, .dot, .chev { transform-box: fill-box; transform-origin: center; }
+
+.shape { fill: #181818; stroke: #fff; stroke-width: 7 }
+.dot   { fill: #fff }
+.arrow, .chev { fill: none; stroke: #fff; stroke-width: 2.4;
+                stroke-linecap: round; stroke-linejoin: round }
+
+.shape  { animation-name: k-shape }
+.arrow  { animation-name: k-arrow }
+.dot    { animation-name: k-dot }
+.chev-l { animation-name: k-chev-l }
+.chev-r { animation-name: k-chev-r }
+
+/* rx = height/2 makes the rect a pill; width === height makes that same pill a
+   circle. The whole morph is this one rect — no path interpolation anywhere.
+   The two opacities carry the three tones the engine really produces: a
+   free-roam ring (transparent fill, border only), a highlight (bordered off,
+   fill at 0.3), and a content chip (solid), which is exactly when the real
+   cursor fills too. */
+@keyframes k-shape {
+  0%,15.12%   { x:71px;  y:71px;  width:114px; height:114px; rx:57px;  fill-opacity:0;  stroke-opacity:1; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  20%,35.12%  { x:48px;  y:48px;  width:160px; height:160px; rx:80px;  fill-opacity:.45; stroke-opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  40%,55.12%  { x:44px;  y:44px;  width:168px; height:168px; rx:84px;  fill-opacity:1;  stroke-opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  60%,75.12%  { x:33px;  y:82px;  width:190px; height:92px;  rx:46px;  fill-opacity:1;  stroke-opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  80%,95.12%  { x:52px;  y:91px;  width:152px; height:74px;  rx:37px;  fill-opacity:1;  stroke-opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  100%        { x:71px;  y:71px;  width:114px; height:114px; rx:57px;  fill-opacity:0;  stroke-opacity:1 }
+}
+
+@keyframes k-arrow {
+  0%,15.12%   { transform:scale(2); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  20%,35.12%  { transform:scale(2); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  40%,55.12%  { transform:scale(4.6); opacity:1; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  60%,75.12%  { transform:scale(2); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  80%,95.12%  { transform:scale(2); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  100%        { transform:scale(2); opacity:0 }
+}
+
+@keyframes k-dot {
+  0%,15.12%   { transform:scale(0); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  20%,35.12%  { transform:scale(0); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  40%,55.12%  { transform:scale(0); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  60%,75.12%  { transform:scale(0); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  80%,95.12%  { transform:scale(1); opacity:1; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  100%        { transform:scale(0); opacity:0 }
+}
+
+@keyframes k-chev-l {
+  0%,15.12%   { transform:translate(108px,128px) scale(.6); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  20%,35.12%  { transform:translate(108px,128px) scale(.6); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  40%,55.12%  { transform:translate(108px,128px) scale(.6); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  60%,75.12%  { transform:translate(62px,128px) scale(1); opacity:1; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  80%,95.12%  { transform:translate(75px,128px) scale(.8); opacity:1; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  100%        { transform:translate(108px,128px) scale(.6); opacity:0 }
+}
+
+@keyframes k-chev-r {
+  0%,15.12%   { transform:translate(148px,128px) scale(.6); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  20%,35.12%  { transform:translate(148px,128px) scale(.6); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  40%,55.12%  { transform:translate(148px,128px) scale(.6); opacity:0; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  60%,75.12%  { transform:translate(194px,128px) scale(1); opacity:1; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  80%,95.12%  { transform:translate(181px,128px) scale(.8); opacity:1; animation-timing-function:cubic-bezier(.34,1.56,.64,1) }
+  100%        { transform:translate(148px,128px) scale(.6); opacity:0 }
+}
+</style>
+
+<defs>
+  <linearGradient id="g" x1="0" y1="256" x2="256" y2="0" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#2EA3BF"/>
+    <stop offset="1" stop-color="#31337A"/>
+  </linearGradient>
+</defs>
+
+<rect width="256" height="256" rx="48" fill="url(#g)"/>
+<rect class="shape" x="71" y="71" width="114" height="114" rx="57" fill-opacity="0"/>
+
+<g transform="translate(128,128)"><path class="arrow" d="M-5 5L5 -5M-1 -5H5V1"/></g>
+<circle class="dot" cx="128" cy="128" r="13"/>
+<path class="chev chev-l" d="M8 -16L-8 0L8 16" stroke-width="10"/>
+<path class="chev chev-r" d="M-8 -16L8 0L-8 16" stroke-width="10"/>
+</svg>

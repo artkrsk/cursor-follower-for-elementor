@@ -1,0 +1,91 @@
+@use 'tokens';
+
+@layer arts-cursor {
+  // The one place this stylesheet touches HOST markup rather than the cursor's
+  // own tree. Magnetic engagement is hover-driven, so a control the pointer has
+  // to land on precisely engages late — an 8px pagination dot barely grabs at
+  // all. These pseudo-elements widen the HOVER target without moving anything:
+  // a pseudo doesn't enter its host's border box, so getBoundingClientRect() is
+  // unchanged and the magnet still anchors to the real control at its real size.
+  //
+  // Each is gated on the same marker class its rule is gated on (see
+  // Options::build), so switching the effect off in Cursor Effects takes the
+  // enlarged area with it. Note this widens the CLICK target too — worth it for
+  // dots, and ~6px per side for arrows.
+
+  // Square, not the icon's own box: the cursor is a circle, so the area it
+  // engages from should read the same in both axes. `aspect-ratio` with a
+  // minimum on each side resolves to a square at whichever minimum is larger.
+  //
+  // The % tracks the widget's own Arrows Size control at any unit, and the floor
+  // keeps the area from ever being smaller than the cursor that has to cover it
+  // — small arrows are exactly where 1.5× isn't enough. The size var is emitted
+  // on the kit wrapper, so it inherits down here.
+  //
+  // 150% and not 200%: the arrows live inside `.swiper`, which is
+  // overflow:hidden, seated 10px from its edge — and clipping removes hit
+  // testing, not just paint. At a typical 25px arrow 1.5× stays inside that
+  // budget where 2× would spill past it. The floor can spill outward on small
+  // arrows; the clip only ever trims that one edge, leaving the inward and
+  // vertical reach — the directions a pointer actually arrives from — intact.
+  //
+  // Testimonial Carousel seats its arrows flush at 0px rather than 10px (Pro's
+  // own widget-carousel-module-base.css), so there the outward half is clipped
+  // whatever the size — which is exactly the trim described above, just always.
+  //
+  // Nested Carousel (`n-carousel`) also seats them at 0px, but renders them as
+  // SIBLINGS of the `.swiper` instead of children — so nothing clips them there
+  // and the whole square survives, which is the one case this budget isn't
+  // spent against.
+  #{tokens.carousel-selectors(':not(.arts-cursor-arrows-off)', '.elementor-swiper-button')} {
+    &::before {
+      @include tokens.square-hit-area;
+    }
+  }
+
+  // Dots grow by exactly the gap Elementor writes for them. The gap is a margin
+  // on EACH side, so neighbours sit two gaps apart and one gap per side makes
+  // adjacent areas meet without ever overlapping — no ambiguity about which dot
+  // a hover belongs to, at any spacing the widget is set to. Bullets are square,
+  // so an even inset keeps the area square for the circular cursor.
+  #{tokens.carousel-selectors(':not(.arts-cursor-dots-off)', '.swiper-pagination-bullet')} {
+    // Swiper leaves bullets static; without this the pseudo would resolve
+    // against .swiper-pagination — the whole row — instead of the dot.
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: calc(-1 * var(--swiper-pagination-bullet-horizontal-gap, 4px));
+    }
+  }
+
+  // Magnetic icons, same reasoning as the arrows and the same square-with-a-floor
+  // sizing. Each selector mirrors the polarity its own rule is gated on: the icon
+  // box defaults ON so it excludes `-off`, a bare icon defaults OFF so it requires
+  // `-on`. `a.` because only a linked icon has an effect to reach for.
+  //
+  // No z-index, and specifically NOT a negative one: an absolutely positioned
+  // pseudo already paints above in-flow content, while a negative z-index drops it
+  // below its own ancestors' boxes — which are hit-testable whether or not they
+  // paint anything — so they intercept the pointer and the area does nothing at
+  // all. Tried and measured, not theorised.
+  //
+  // An icon box lays its icon and its content out as flex siblings separated by
+  // nothing but the widget's own Spacing, so a square this size can reach the
+  // title, and the pseudo wins there. Clicks are unaffected: the widget has ONE
+  // link and prints it on both the icon and the title, so both anchors carry the
+  // same href (and with no link both render as <span>, which `a.` skips entirely).
+  // What the covered strip does lose is the title's own :hover styling and text
+  // selection — accepted, since the alternative costs the whole effect.
+  .elementor-widget-icon-box:not(.arts-cursor-magnetic-off) a.elementor-icon,
+  .elementor-widget-icon.arts-cursor-magnetic-on a.elementor-icon {
+    // .elementor-icon is static, so the pseudo would otherwise resolve against
+    // whatever positioned ancestor it finds instead of the icon.
+    position: relative;
+
+    &::before {
+      @include tokens.square-hit-area;
+    }
+  }
+}

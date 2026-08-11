@@ -1,0 +1,98 @@
+@use 'sass:list';
+
+// Two halves, one contract file:
+// 1. The SCSS-language layer — deliberately this small:
+//    three $values, one selector function, one mixin. Compile-time only.
+// 2. The runtime knobs: two registered state vars, then every tunable custom
+//    property JS samples once per style epoch (motion tokens, hint paddings,
+//    arrow box + gap) — declared together so the JS↔CSS contract has one home.
+//    _cursor.scss owns the root's layout block; _parts.scss derives the arrow
+//    seat calcs from the knobs declared here.
+
+// Mirrors BASE_SIZE_FALLBACK in src/ts/constants/tuning.ts — the size used
+// wherever --arts-cursor-size is unset.
+$size-fallback: 60px;
+
+// The motion pair every transition rides; the two vars stay the runtime knobs.
+$motion: var(--arts-cursor-duration) var(--arts-cursor-ease);
+
+// The same pair for a `scale` whose target is exactly 0 — see the curve below.
+// A transition takes its timing function from the AFTER-CHANGE style, so
+// putting this on the collapsed rule and $motion on the expanded one makes the
+// curve direction-aware for free: shrinking lands on whichever rule matches the
+// settled post-flip state, growing lands on the other. No JS timing logic.
+$motion-collapse: var(--arts-cursor-duration) var(--arts-cursor-collapse-ease);
+
+// The slider widgets whose controls get enlarged hover areas in
+// _integrations.scss — mirrors the rule set in Options::build. n-carousel is
+// Pro's Nested Carousel: its root class overrides get_html_wrapper_class().
+$carousel-widgets: 'image-carousel', 'media-carousel', 'testimonial-carousel', 'slides',
+  'n-carousel';
+
+// One selector per slider widget: .elementor-widget-<w><marker> <inner>.
+@function carousel-selectors($marker, $inner) {
+  $out: ();
+  @each $w in $carousel-widgets {
+    $out: list.append($out, '.elementor-widget-#{$w}#{$marker} #{$inner}', comma);
+  }
+  @return $out;
+}
+
+// The square hover-target enlargement shared by slider arrows and magnetic
+// icons — sizing rationale lives with the call sites in _integrations.scss.
+@mixin square-hit-area {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  aspect-ratio: 1;
+  min-width: max(150%, var(--arts-cursor-size, #{$size-fallback}));
+  min-height: max(150%, var(--arts-cursor-size, #{$size-fallback}));
+}
+
+// Internal state vars — registered so they are typed and non-inheriting.
+// JS sets them directly on the elements that consume them.
+@property --arts-cursor-scale {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@property --arts-cursor-scale-pressed {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@layer arts-cursor {
+  .arts-cursor {
+    // Motion tokens: JS overrides these inline from options.animation.
+    // The default ease is the canonical back-out curve (≈ GSAP back.out(1.7)).
+    // Deliberately cubic-bezier, not linear(): an unsupported easing arriving
+    // through var() is invalid at computed-value time and silently kills the
+    // whole transition — bezier works everywhere.
+    --arts-cursor-duration: 0.25s;
+    --arts-cursor-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+    // Same x-timing, y flattened from 1.56 to 1 — the back-out with the back
+    // removed. A cubic Bezier is bounded by the convex hull of its own control
+    // points, so with y in {0, 1, 1, 1} this can never exceed 1, while the curve
+    // above peaks at ~1.098. That matters only where the target is a hard zero:
+    // interpolating S -> 0 yields S * (1 - f(t)), which goes NEGATIVE the moment
+    // f(t) > 1, and `scale` — unlike opacity or width — has no clamp, so a
+    // negative value mirrors the element into view instead of hiding it.
+    // Not reachable through options.animation.easing: that retargets the
+    // signature curve, this one only keeps the zero endpoint sign-safe.
+    --arts-cursor-collapse-ease: cubic-bezier(0.34, 1, 0.64, 1);
+    // Tunable padding the hint keeps around its content, read once by JS and
+    // honoured by BOTH shapes: the pill pads its stadium, the circle grows
+    // until the padded box fits inside the ring.
+    --arts-cursor-hint-padding-x: 18px;
+    --arts-cursor-hint-padding-y: 8px;
+    // Tunable arrow theme knobs, px-only — JS samples the raw token (see
+    // ARROW_SIZE_VAR/ARROW_GAP_VAR in constants/cssVars.ts); the seat calcs
+    // deriving from them live in _parts.scss.
+    --arts-cursor-arrow-size: 16px;
+    --arts-cursor-arrow-gap: 8px;
+  }
+}

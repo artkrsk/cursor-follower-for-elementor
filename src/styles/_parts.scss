@@ -1,0 +1,285 @@
+@use 'tokens';
+
+@layer arts-cursor {
+  // Content parts sit directly on the 0×0 wrapper anchor and center
+  // themselves — the label folds the slide offset into the same translate,
+  // arrows center via margin so `translate` stays free for the slide.
+
+  // The label slides up from below and settles centered on the anchor.
+  .arts-cursor__hint {
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 1;
+    opacity: 0;
+    transition:
+      opacity tokens.$motion,
+      translate tokens.$motion,
+      color tokens.$motion;
+    translate: -50% calc(-50% + 20px);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    // The label's own colour (Labels controls), falling back to the shared text
+    // colour — the inline icon inherits it via currentColor. Typography (font
+    // family/size/…) is printed straight onto this element by the kit control.
+    color: var(--arts-cursor-hint-color, var(--arts-cursor-text-color, currentColor));
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  // With no wording the text slot is still a flex item — zero-width, but the gap
+  // between the two slots survives, pushing a lone icon off-centre by half of it.
+  // Taking the empty slot out of layout removes the gap with it.
+  .arts-cursor__hint-text:empty {
+    display: none;
+  }
+
+  // Icon slot: hidden until a payload icon sets data-cursor-hint-icon. The
+  // injected SVG defaults to the text colour (an SVG carrying its own fills keeps
+  // them); `before` flips it ahead of the text.
+  .arts-cursor__hint-icon {
+    display: none;
+
+    svg {
+      display: block;
+      // Cap height by default, so the icon matches the capitals rather than the
+      // taller em box, with the kit Icons size overriding that when a site wants
+      // it independent of the text. Width auto so non-square icons keep their
+      // aspect ratio (needs a viewBox); 1em is the pre-`cap` fallback.
+      width: auto;
+      height: 1em;
+      height: var(--arts-cursor-hint-icon-size, 1cap);
+      fill: currentColor;
+    }
+  }
+
+  .arts-cursor[data-cursor-hint-icon] .arts-cursor__hint-icon {
+    display: inline-flex;
+  }
+
+  .arts-cursor[data-cursor-hint-icon='before'] .arts-cursor__hint-icon {
+    order: -1;
+  }
+
+  // A glyph is a webfont character rather than a box, so it sizes with font-size
+  // and takes the label's colour the way the text does. Sized to cap height so it
+  // matches the capitals, like the injected-SVG case above.
+  .arts-cursor[data-cursor-icon-kind='glyph'] .arts-cursor__hint-icon {
+    font-size: 1em;
+    font-size: var(--arts-cursor-hint-icon-size, 1cap);
+    line-height: 1;
+  }
+
+  // A masked URL has no content at all, so unlike the other two forms it needs a
+  // box of its own to mask, and it shows the fill BEHIND the mask — which is what
+  // makes it the only icon form that can be recoloured to match the cursor.
+  .arts-cursor[data-cursor-icon-kind='mask'] .arts-cursor__hint-icon {
+    width: 1em;
+    width: var(--arts-cursor-hint-icon-size, 1cap);
+    height: 1em;
+    height: var(--arts-cursor-hint-icon-size, 1cap);
+    background-color: currentColor;
+    -webkit-mask-image: var(--arts-cursor-icon-mask);
+    mask-image: var(--arts-cursor-icon-mask);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+  }
+
+  .arts-cursor[data-cursor-hint] .arts-cursor__hint {
+    opacity: 1;
+    translate: -50% -50%;
+  }
+
+  // Arrows: four chevron SVGs sliding out to the live shape edge. The radius var
+  // is written by JS (base size × current scale ÷ 2); the gap and the
+  // inside/outside sign are pure CSS, so the arrows re-seat as the ring scales
+  // with no JS on the frame path. `--arts-cursor-arrow-radius` falls back to the
+  // default half-size until the first recompute writes it.
+  //
+  // The seat is per AXIS, because the shape isn't always a circle: a pill is far
+  // wider than it is tall, so horizontal arrows have to clear its width while
+  // vertical ones clear its height — one radius would park the horizontal pair
+  // inside the stadium. `--arts-cursor-shape-width/-height` are written on the
+  // root only while a pill is up, so absent they fall back to the ring diameter
+  // and the circle behaves exactly as before.
+  //
+  // The room itself is reserved upstream: while an INSIDE pair is active,
+  // effects/suite.ts (arrowReservation) has already grown the shape vars — and
+  // the circle's floor — before these calcs run. This file only ever seats
+  // against whatever edge it is handed; nothing here knows about reservation.
+  //
+  // Two theme knobs (declared in _tokens.scss with the other JS-sampled
+  // tunables), BOTH px-only (JS samples them with getPropertyValue, which
+  // returns the raw token — an em value would parse as its bare number and
+  // desync the reservation): `--arts-cursor-arrow-size` is the chevron box, and
+  // everything else derives from it — the glyph scales with its viewBox, the
+  // margin self-centering is size/-2, and the seat calcs fold the glyph's reach
+  // past its box center as fixed RATIOS of the box (tip = size×¼ toward the
+  // point, tail = size×1/12 the other way; ARROW_TIP_RATIO/ARROW_TAIL_RATIO in
+  // constants/tuning.ts track the path `M4 14 L12 6 L20 14` in core/markup.ts).
+  // `--arts-cursor-arrow-gap` is real breathing room between the ring edge and
+  // the VISIBLE chevron — the ratio fold is what makes the gap mean
+  // edge-to-glyph, not edge-to-box-center. JS samples both once per style epoch
+  // to size the reservation, so retuning either var retunes both sides.
+  // All four arrows point outward, so inside the tip faces the edge and outside
+  // the tail.
+  //
+  // `--arts-cursor-press` (set on press, 1 otherwise) shrinks the seat with the
+  // ring so the arrows follow the click scale; the translate transition carries
+  // the move. On a pressed PILL it's an approximation — the pill's own width
+  // presses via a clamp() (see _cursor.scss), not this plain multiplier — and
+  // arrow room reserved in that width makes the mismatch marginally more
+  // visible. Deliberately unfixed: separating reserved width from label width
+  // would need a second var for a divergence the eye barely reads.
+  .arts-cursor {
+    --arts-cursor-arrow-reach-x: calc(
+      var(--arts-cursor-shape-width, calc(var(--arts-cursor-arrow-radius, 30px) * 2)) / 2
+    );
+    --arts-cursor-arrow-reach-y: calc(
+      var(--arts-cursor-shape-height, calc(var(--arts-cursor-arrow-radius, 30px) * 2)) / 2
+    );
+    --arts-cursor-arrow-offset-x: calc(
+      var(--arts-cursor-arrow-reach-x) * var(--arts-cursor-press, 1) -
+        var(--arts-cursor-arrow-gap) - var(--arts-cursor-arrow-size) * 0.25
+    );
+    --arts-cursor-arrow-offset-y: calc(
+      var(--arts-cursor-arrow-reach-y) * var(--arts-cursor-press, 1) -
+        var(--arts-cursor-arrow-gap) - var(--arts-cursor-arrow-size) * 0.25
+    );
+  }
+
+  .arts-cursor[data-cursor-arrows-position='outside'] {
+    --arts-cursor-arrow-offset-x: calc(
+      var(--arts-cursor-arrow-reach-x) * var(--arts-cursor-press, 1) +
+        var(--arts-cursor-arrow-gap) + var(--arts-cursor-arrow-size) / 12
+    );
+    --arts-cursor-arrow-offset-y: calc(
+      var(--arts-cursor-arrow-reach-y) * var(--arts-cursor-press, 1) +
+        var(--arts-cursor-arrow-gap) + var(--arts-cursor-arrow-size) / 12
+    );
+  }
+
+  .arts-cursor__arrow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: var(--arts-cursor-arrow-size);
+    height: var(--arts-cursor-arrow-size);
+    margin: calc(var(--arts-cursor-arrow-size) / -2) 0 0 calc(var(--arts-cursor-arrow-size) / -2);
+    color: var(--arts-cursor-text-color, currentColor);
+    opacity: 0;
+    translate: 0 0;
+    transition:
+      opacity tokens.$motion,
+      translate tokens.$motion;
+  }
+
+  .arts-cursor:is([data-cursor-arrows='all'], [data-cursor-arrows='vertical']) {
+    .arts-cursor__arrow_up {
+      opacity: 1;
+      translate: 0 calc(-1 * var(--arts-cursor-arrow-offset-y));
+    }
+
+    .arts-cursor__arrow_down {
+      opacity: 1;
+      translate: 0 var(--arts-cursor-arrow-offset-y);
+    }
+  }
+
+  .arts-cursor:is([data-cursor-arrows='all'], [data-cursor-arrows='horizontal']) {
+    .arts-cursor__arrow_right {
+      opacity: 1;
+      translate: var(--arts-cursor-arrow-offset-x) 0;
+    }
+
+    .arts-cursor__arrow_left {
+      opacity: 1;
+      translate: calc(-1 * var(--arts-cursor-arrow-offset-x)) 0;
+    }
+  }
+
+  // Riding a pill, the chevrons are hint chrome like the wording, so they
+  // follow the hint colour chain the text uses (Hints → Text Color) — on the
+  // bare ring they keep the shared text colour above.
+  .arts-cursor[data-cursor-shape='pill'] .arts-cursor__arrow {
+    color: var(--arts-cursor-hint-color, var(--arts-cursor-text-color, currentColor));
+  }
+
+  // Press dot: a filled point scaling up at the anchor while an ELIGIBLE
+  // payload (data-cursor-dot) is pressed. data-cursor-pressed spans the whole
+  // press-drag gesture, so this one rule covers click and drag alike — and it
+  // rides the press channel, so a site that disables pressScale never shows it.
+  // Pairs with drag.hideNativeCursor: the dot marks the pointer once the OS
+  // cursor hides.
+  .arts-cursor__dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--arts-cursor-dot-size, 6px);
+    height: var(--arts-cursor-dot-size, 6px);
+    translate: -50% -50%;
+    border-radius: 50%;
+    background-color: var(--arts-cursor-dot-color, var(--arts-cursor-text-color, currentColor));
+    scale: 0;
+    // Collapsed state is the base rule here, same split as the wrapper in
+    // _cursor.scss — the flattened curve on the way out, the back-out restored
+    // on the pressed rule below.
+    transition: scale tokens.$motion-collapse;
+  }
+
+  // Same hint-chrome rule as the arrows: on a pill the dot slots into the
+  // hint colour chain (its own var still winning), so the whole hint —
+  // wording, chevrons, dot — recolours from the one Hints control.
+  .arts-cursor[data-cursor-shape='pill'] .arts-cursor__dot {
+    background-color: var(
+      --arts-cursor-dot-color,
+      var(--arts-cursor-hint-color, var(--arts-cursor-text-color, currentColor))
+    );
+  }
+
+  .arts-cursor[data-cursor-dot][data-cursor-pressed] .arts-cursor__dot {
+    scale: 1;
+    transition: scale tokens.$motion;
+  }
+
+  // Loading spinner: one self-centering SVG, visible on [data-cursor-loading].
+  // The infinite animations are PAUSED while hidden — running they tick
+  // style + paint + commit at 60fps forever, even at opacity 0 with the
+  // engine asleep (stroke-dash animates on the main thread). Pause holds the
+  // current keyframe, so the arc doesn't snap during the fade-out.
+  .arts-cursor__spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    translate: -50% -50%;
+    width: calc(var(--arts-cursor-size, #{tokens.$size-fallback}) - 8px);
+    height: calc(var(--arts-cursor-size, #{tokens.$size-fallback}) - 8px);
+    opacity: 0;
+    transition: opacity tokens.$motion;
+    animation: arts-cursor-rotate 2s linear infinite;
+    animation-play-state: paused;
+
+    circle {
+      stroke: var(--arts-cursor-loading-color, currentColor);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      animation: arts-cursor-dash 1.5s ease-in-out infinite;
+      animation-play-state: paused;
+    }
+  }
+
+  .arts-cursor[data-cursor-loading] .arts-cursor__spinner {
+    opacity: 1;
+    animation-play-state: running;
+
+    circle {
+      animation-play-state: running;
+    }
+  }
+}

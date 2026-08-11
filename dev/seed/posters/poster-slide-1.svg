@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <pattern id="ps1" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#2AA9B5" stroke-width="1" opacity="0.3"/>
+    </pattern>
+    <pattern id="ps1b" width="192" height="192" patternUnits="userSpaceOnUse">
+      <path d="M192 0H0V192" fill="none" stroke="#2AA9B5" stroke-width="2" opacity="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="800" fill="#0B0B0D"/>
+  <rect width="1200" height="800" fill="url(#ps1)"/>
+  <rect width="1200" height="800" fill="url(#ps1b)"/>
+</svg>

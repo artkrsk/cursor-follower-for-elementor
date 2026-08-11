@@ -1,0 +1,28 @@
+@layer arts-cursor {
+  @keyframes arts-cursor-rotate {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  // Seamless loop: the arc grows head-first (0% → 50%), then the tail sweeps
+  // around and closes onto the head (50% → 100%). The end state is the start
+  // state exactly — dash 1 with offset −151 ≡ 0 (mod the 151 dash period) puts
+  // the closing dot on the same path segment the next cycle opens with.
+  @keyframes arts-cursor-dash {
+    0% {
+      stroke-dasharray: 1, 150;
+      stroke-dashoffset: 0;
+    }
+
+    50% {
+      stroke-dasharray: 90, 150;
+      stroke-dashoffset: -35;
+    }
+
+    100% {
+      stroke-dasharray: 1, 150;
+      stroke-dashoffset: -151;
+    }
+  }
+}

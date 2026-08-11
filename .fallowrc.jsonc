@@ -1,0 +1,44 @@
+{
+  // This file is JSONC: fallow reads these comments; generic JSON tools may not.
+  "$schema": "./node_modules/fallow/schema.json",
+  // The engine bundle (see project.config.js), the library surface
+  // package.json#types points at, and the stylesheet entry — the last named
+  // directly because its only importer is the docs site, which lives under the
+  // ignored docs/** below, so fallow never sees the import (knip lists the same
+  // entry as its own safety net). build/index.js is found on its own from the
+  // package.json script, though see ignoreDependencies below.
+  "entry": [
+    "src/ts/boot.ts",
+    "src/ts/gate.ts",
+    "src/ts/index.ts",
+    "project.config.js",
+    "src/styles/index.scss"
+  ],
+  "ignorePatterns": ["dist/**", "vendor/**", "vendor-prefixed/**", "src/php/**", "docs/**"],
+  // Pure module-scope helpers are exported as the unit-test surface while also
+  // being used inside their own module — see the convention in CLAUDE.md.
+  "ignoreExportsUsedInFile": true,
+  // fallow's built-in ignore defaults include build/** (it assumes build output),
+  // and custom ignorePatterns only ADD to those defaults — so this repo's build
+  // scripts are invisible to fallow and the two packages only they import read as
+  // unused. knip does analyse build/**/*.js and vouches for both. Don't delete
+  // either on fallow's word alone; re-check with `pnpm knip` first.
+  "ignoreDependencies": ["archiver", "chokidar"],
+  "duplicates": {
+    // Hide pair-only clones; focus on widespread copy-paste
+    // worth refactoring. Lower to 2 to report every duplicate pair.
+    "minOccurrences": 3
+  },
+  "health": {
+    // Test files add nothing here: their "large functions" are describe()
+    // bodies and CRAP over a test file is meaningless. Suffix-matched anywhere
+    // so relocating the tests doesn't strand the pattern.
+    "ignore": ["**/*.test.ts"]
+  },
+  "rules": {
+    // Structurally inapplicable here: the package is private and never installed
+    // with --prod, and it declares no runtime dependencies at all (the engine
+    // ships zero).
+    "dev-dependencies-in-production": "off"
+  }
+}

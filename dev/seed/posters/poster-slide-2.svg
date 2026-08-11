@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <pattern id="ps2" width="64" height="64" patternUnits="userSpaceOnUse">
+      <g stroke="#2B2F7A" stroke-width="2" opacity="0.75" stroke-linecap="round">
+        <path d="M16 8 v16 M8 16 h16"/>
+        <path d="M48 40 v16 M40 48 h16"/>
+      </g>
+      <g stroke="#2AA9B5" stroke-width="2" opacity="0.3" stroke-linecap="round">
+        <path d="M48 8 v16 M40 16 h16"/>
+        <path d="M16 40 v16 M8 48 h16"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="1200" height="800" fill="#0B0B0D"/>
+  <rect width="1200" height="800" fill="url(#ps2)"/>
+</svg>

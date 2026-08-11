@@ -1,0 +1,32 @@
+@layer arts-cursor {
+  // Document-level state classes, flipped by the engine alone — client-side,
+  // off the pointer media query. Nothing server-side stamps them.
+  //
+  // Scoped to :hover instead of `*`: the browser renders the cursor of the
+  // hovered chain only, so this is visually identical while a state toggle
+  // recalcs the hover chain instead of matching a universal rule on every
+  // element (~20% cheaper toggle on a 10k-node DOM). The bare declaration on
+  // html covers the viewport background, where no descendant is hovered —
+  // its inheritance is the remaining (unavoidable) toggle cost.
+  html.no-native-cursor,
+  html.no-native-cursor :hover {
+    cursor: none !important;
+  }
+
+  // The press dot REPLACES the pointer, so the native cursor hides the moment
+  // an eligible press starts — not at the drag threshold, which only exists
+  // for the drag payload. Rides the two attributes the engine already flips,
+  // no JS involved. Kept separate from the class rule above: an engine
+  // without :has() drops the whole selector list it appears in, and this way
+  // it drops only this rule (a drag payload's hideNativeCursor still kicks in
+  // at the threshold as the fallback).
+  html:has(.arts-cursor[data-cursor-dot][data-cursor-pressed]),
+  html:has(.arts-cursor[data-cursor-dot][data-cursor-pressed]) :hover {
+    cursor: none !important;
+  }
+
+  html.has-cursor-progress,
+  html.has-cursor-progress :hover {
+    cursor: progress !important;
+  }
+}

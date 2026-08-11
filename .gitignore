@@ -1,0 +1,13 @@
+node_modules/
+dist/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+.env
+vendor/
+vendor-prefixed/
+src/php/libraries/
+.DS_Store
+*.zip
+.fallow/
+coverage/
+.superpowers/

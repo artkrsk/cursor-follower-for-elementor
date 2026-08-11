@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <defs>
+    <pattern id="ph3" width="60" height="104" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#2AA9B5" stroke-width="1.5" opacity="0.17">
+        <path d="M0 0 L30 52 L0 104"/>
+        <path d="M60 0 L30 52 L60 104"/>
+        <path d="M0 0 L60 0 M0 104 L60 104"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="1200" height="900" fill="#0B0B0D"/>
+  <rect width="1200" height="900" fill="url(#ph3)"/>
+</svg>
