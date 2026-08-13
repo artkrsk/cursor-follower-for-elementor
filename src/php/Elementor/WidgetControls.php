@@ -38,17 +38,17 @@ class WidgetControls {
 
 	/** widget name => [ the widget's own last section id, builder method ]. */
 	private const WIDGETS = array(
-		'icon-box'       => array( 'section_style_content', 'add_icon_box_controls' ),
-		'icon'           => array( 'section_style_icon', 'add_icon_controls' ),
+		'icon-box'             => array( 'section_style_content', 'add_icon_box_controls' ),
+		'icon'                 => array( 'section_style_icon', 'add_icon_controls' ),
 		// Button_Trait only FILLS these sections; button.php opens and closes them
 		// itself, so this fires under the widget's own stack name.
-		'button'         => array( 'section_style', 'add_button_controls' ),
-		'image-carousel' => array( 'section_caption', 'add_carousel_controls' ),
+		'button'               => array( 'section_style', 'add_button_controls' ),
+		'image-carousel'       => array( 'section_caption', 'add_carousel_controls' ),
 		// section_design_filter is last despite carrying a `condition`: that gates
 		// the section's VISIBILITY on show_filter_bar, not its registration, so
 		// end_controls_section() always runs and this hook always fires.
-		'portfolio'      => array( 'section_design_filter', 'add_portfolio_controls' ),
-		'image'          => array( 'section_style_caption', 'add_image_controls' ),
+		'portfolio'            => array( 'section_design_filter', 'add_portfolio_controls' ),
+		'image'                => array( 'section_style_caption', 'add_image_controls' ),
 		// The two Pro carousels. Both anchors were MEASURED off the registered stack,
 		// not read off the widget file, because start_injection() re-splices the
 		// controls array — the section a widget registers last in source routinely
@@ -57,19 +57,19 @@ class WidgetControls {
 		// section_navigation, and section_image_style actually ends up dead last,
 		// after the skin section. Re-measure rather than reason if a Pro release
 		// moves them; the failure is our section sitting mid-panel, not breaking.
-		'media-carousel' => array( 'section_lightbox_style', 'add_media_carousel_controls' ),
+		'media-carousel'       => array( 'section_lightbox_style', 'add_media_carousel_controls' ),
 		'testimonial-carousel' => array( 'section_image_style', 'add_carousel_controls' ),
 		// Slides opens no injections at all, so unlike the two above its order is
 		// simply the order it reads — measured anyway, and the two do agree here.
 		// The anchor's own `condition` (navigation != none) hides IT, not ours.
-		'slides'         => array( 'section_style_navigation', 'add_slides_controls' ),
+		'slides'               => array( 'section_style_navigation', 'add_slides_controls' ),
 		// Neither opens an injection either, and nothing else hooks them, so their
 		// order reads straight — measured all the same, and both agreed.
-		'call-to-action' => array( 'hover_effects', 'add_box_button_controls' ),
-		'flip-box'       => array( 'section_style_b', 'add_box_button_controls' ),
+		'call-to-action'       => array( 'hover_effects', 'add_box_button_controls' ),
+		'flip-box'             => array( 'section_style_b', 'add_box_button_controls' ),
 		// No injections in this one either, so its order reads straight — measured
 		// anyway, and it agreed.
-		'social-icons'   => array( 'section_social_hover', 'add_social_icons_controls' ),
+		'social-icons'         => array( 'section_social_hover', 'add_social_icons_controls' ),
 		// Pro's newer "Carousel", built on the nested-elements base. The hook keys
 		// off get_name() and so uses `nested-carousel` here — but its wrapper class
 		// ISN'T `elementor-widget-{name}`: it overrides get_html_wrapper_class() to
@@ -81,8 +81,8 @@ class WidgetControls {
 		// `nested-tabs` → `elementor-widget-n-tabs`. Measure the wrapper class of any
 		// nested widget rather than deriving it from the name — a scope built from
 		// the name matches nothing and reports nothing.
-		'nested-carousel' => array( 'section_pagination_design', 'add_carousel_controls' ),
-		'image-box'      => array( 'section_style_content', 'add_image_box_controls' ),
+		'nested-carousel'      => array( 'section_pagination_design', 'add_carousel_controls' ),
+		'image-box'            => array( 'section_style_content', 'add_image_box_controls' ),
 	);
 
 	public function register(): void {

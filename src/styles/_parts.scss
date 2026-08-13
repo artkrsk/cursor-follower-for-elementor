@@ -20,6 +20,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4em;
+
     // The label's own colour (Labels controls), falling back to the shared text
     // colour — the inline icon inherits it via currentColor. Typography (font
     // family/size/…) is printed straight onto this element by the kit control.
@@ -43,6 +44,7 @@
 
     svg {
       display: block;
+
       // Cap height by default, so the icon matches the capitals rather than the
       // taller em box, with the kit Icons size overriding that when a site wants
       // it independent of the text. Width auto so non-square icons keep their
@@ -50,7 +52,7 @@
       width: auto;
       height: 1em;
       height: var(--arts-cursor-hint-icon-size, 1cap);
-      fill: currentColor;
+      fill: currentcolor;
     }
   }
 
@@ -79,7 +81,7 @@
     width: var(--arts-cursor-hint-icon-size, 1cap);
     height: 1em;
     height: var(--arts-cursor-hint-icon-size, 1cap);
-    background-color: currentColor;
+    background-color: currentcolor;
     -webkit-mask-image: var(--arts-cursor-icon-mask);
     mask-image: var(--arts-cursor-icon-mask);
     -webkit-mask-repeat: no-repeat;
@@ -227,6 +229,7 @@
     border-radius: 50%;
     background-color: var(--arts-cursor-dot-color, var(--arts-cursor-text-color, currentColor));
     scale: 0;
+
     // Collapsed state is the base rule here, same split as the wrapper in
     // _cursor.scss — the flattened curve on the way out, the back-out restored
     // on the pressed rule below.

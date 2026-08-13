@@ -15,6 +15,7 @@
     visibility: hidden;
     contain: layout style size;
     will-change: transform;
+
     // Kit-only var (dot-type cursors: solid fill + difference). Must
     // live on the ROOT: `contain` makes this element a stacking context, so
     // a follower-level blend would blend against the transparent root, not
@@ -48,6 +49,7 @@
     height: 0;
     scale: 0;
     translate: var(--arts-cursor-offset-x, 0) var(--arts-cursor-offset-y, 0);
+
     // This rule IS the collapsed state, so it owns the hide leg: scale rides the
     // flattened curve, which is the only way the whole cluster doesn't mirror
     // itself back into view on the way out. translate keeps the back-out — it
@@ -82,6 +84,7 @@
     width: var(--arts-cursor-shape-width, var(--arts-cursor-size, #{tokens.$size-fallback}));
     height: var(--arts-cursor-shape-height, var(--arts-cursor-size, #{tokens.$size-fallback}));
     border-radius: 999px;
+
     // Border colour defaults to the FILL (so a filled shape — pill or dot — has
     // no stray ring), then to #808080 when there's no fill — a neutral grey
     // rather than currentColor, which renders invisible on dark themes. An
@@ -99,6 +102,7 @@
       calc(var(--arts-cursor-border-width, 1px) / max(var(--arts-cursor-scale, 1), 0.25))
       var(--arts-cursor-border-color, var(--arts-cursor-background-color, #808080));
     background-color: var(--arts-cursor-background-color, transparent);
+
     // The var carries the whole filter value, not a radius: unset resolves to
     // `none` — the initial value, so no backdrop root and nothing to composite.
     // `blur(var(--x, 0px))` would instead leave a real zero-radius filter behind
