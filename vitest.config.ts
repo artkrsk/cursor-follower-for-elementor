@@ -43,7 +43,7 @@ export default defineConfig({
       // Istanbul-format `coverage-final.json` only, and silently reports nothing
       // useful when handed v8/c8 native output. Instrumentation is slower than
       // v8's, which does not matter at this suite's size.
-      provider: 'istanbul',
+      provider: 'v8',
       // v4 removed `coverage.all` and reports only files loaded during the run
       // unless `include` says otherwise — without this, an untested module is
       // simply absent from the report rather than showing as uncovered.
