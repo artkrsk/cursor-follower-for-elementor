@@ -1,7 +1,7 @@
 {
   "name": "arts/cursor-follower",
   "description": "Interactive mouse cursor effects for Elementor.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "wordpress-plugin",
   "license": "GPL-3.0-or-later",
   "authors": [
@@ -14,7 +14,7 @@
   "homepage": "https://artemsemkin.com/plugins/cursor-follower-for-elementor/",
   "wordpress": {
     "Requires at least": "6.2",
-    "Tested up to": "7.0",
+    "Tested up to": "7.1",
     "Requires PHP": "8.0"
   },
   "plugin": {
