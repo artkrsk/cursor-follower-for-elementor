@@ -41,7 +41,12 @@ class Options {
 			: false;
 
 		$options['pressScale'] = self::is_on( 'arts_cursor_press_enabled', true )
-			? array( 'scale' => array( 'ref' => 'cursor', 'factor' => self::size_of( 'arts_cursor_press_scale', 0.8 ) ) )
+			? array(
+				'scale' => array(
+					'ref'    => 'cursor',
+					'factor' => self::size_of( 'arts_cursor_press_scale', 0.8 ),
+				),
+			)
 			: false;
 
 		// Zero-config Elementor widget rules, grouped by widget scope. Within a
@@ -424,7 +429,7 @@ class Options {
 							'shape' => 'pill',
 							'label' => __( 'View Project', 'cursor-follower-for-elementor' ),
 						),
-					'labelVar' => '--arts-cursor-card-label',
+						'labelVar' => '--arts-cursor-card-label',
 						'iconVar'  => '--arts-cursor-card-icon',
 					),
 				),

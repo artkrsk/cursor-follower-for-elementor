@@ -11,6 +11,7 @@
     "src/ts/boot.ts",
     "src/ts/gate.ts",
     "src/ts/index.ts",
+    "tests/setup.ts",
     "project.config.js",
     "src/styles/index.scss"
   ],
@@ -22,8 +23,7 @@
   // and custom ignorePatterns only ADD to those defaults — so this repo's build
   // scripts are invisible to fallow and the two packages only they import read as
   // unused. knip does analyse build/**/*.js and vouches for both. Don't delete
-  // either on fallow's word alone; re-check with `pnpm knip` first.
-  "ignoreDependencies": ["archiver", "chokidar"],
+  // either on fallow's word alone; re-check with `pnpm knip` first.,
   "duplicates": {
     // Hide pair-only clones; focus on widespread copy-paste
     // worth refactoring. Lower to 2 to report every duplicate pair.

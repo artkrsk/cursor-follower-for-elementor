@@ -434,18 +434,18 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_trailing',
 			array(
-				'label'       => esc_html__( 'Follow Smoothing', 'cursor-follower-for-elementor' ),
-				'description' => esc_html__( 'Lower values trail further behind the pointer; 1 sticks to it.', 'cursor-follower-for-elementor' ),
-				'type'        => Controls_Manager::SLIDER,
-				'size_units'  => array( 'x' ),
-				'range'       => array(
+				'label'              => esc_html__( 'Follow Smoothing', 'cursor-follower-for-elementor' ),
+				'description'        => esc_html__( 'Lower values trail further behind the pointer; 1 sticks to it.', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SLIDER,
+				'size_units'         => array( 'x' ),
+				'range'              => array(
 					'x' => array(
 						'min'  => 0.02,
 						'max'  => 1,
 						'step' => 0.01,
 					),
 				),
-				'default'     => array(
+				'default'            => array(
 					'unit' => 'x',
 					'size' => 0.2,
 				),
@@ -480,11 +480,11 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_elastic_enabled',
 			array(
-				'label'       => esc_html__( 'Elastic Squash', 'cursor-follower-for-elementor' ),
-				'description' => esc_html__( 'The cursor stretches along its movement direction.', 'cursor-follower-for-elementor' ),
-				'type'        => Controls_Manager::SWITCHER,
-				'default'     => 'yes',
-				'separator'   => 'before',
+				'label'              => esc_html__( 'Elastic Squash', 'cursor-follower-for-elementor' ),
+				'description'        => esc_html__( 'The cursor stretches along its movement direction.', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SWITCHER,
+				'default'            => 'yes',
+				'separator'          => 'before',
 				'frontend_available' => true,
 			)
 		);
@@ -492,21 +492,21 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_elastic_strength',
 			array(
-				'label'      => esc_html__( 'Elastic Strength', 'cursor-follower-for-elementor' ),
-				'type'       => Controls_Manager::SLIDER,
-				'size_units' => array( 'x' ),
-				'range'      => array(
+				'label'              => esc_html__( 'Elastic Strength', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SLIDER,
+				'size_units'         => array( 'x' ),
+				'range'              => array(
 					'x' => array(
 						'min'  => 0,
 						'max'  => 5,
 						'step' => 0.1,
 					),
 				),
-				'default'    => array(
+				'default'            => array(
 					'unit' => 'x',
 					'size' => 1.5,
 				),
-				'condition'  => $this->condition_effect( 'arts_cursor_elastic_enabled' ),
+				'condition'          => $this->condition_effect( 'arts_cursor_elastic_enabled' ),
 				'frontend_available' => true,
 			)
 		);
@@ -514,11 +514,11 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_press_enabled',
 			array(
-				'label'       => esc_html__( 'Press Feedback', 'cursor-follower-for-elementor' ),
-				'description' => esc_html__( 'The cursor scales while the mouse button is pressed.', 'cursor-follower-for-elementor' ),
-				'type'        => Controls_Manager::SWITCHER,
-				'default'     => 'yes',
-				'separator'   => 'before',
+				'label'              => esc_html__( 'Press Feedback', 'cursor-follower-for-elementor' ),
+				'description'        => esc_html__( 'The cursor scales while the mouse button is pressed.', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SWITCHER,
+				'default'            => 'yes',
+				'separator'          => 'before',
 				'frontend_available' => true,
 			)
 		);
@@ -526,21 +526,21 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_press_scale',
 			array(
-				'label'      => esc_html__( 'Press Scale', 'cursor-follower-for-elementor' ),
-				'type'       => Controls_Manager::SLIDER,
-				'size_units' => array( 'x' ),
-				'range'      => array(
+				'label'              => esc_html__( 'Press Scale', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SLIDER,
+				'size_units'         => array( 'x' ),
+				'range'              => array(
 					'x' => array(
 						'min'  => 0.5,
 						'max'  => 1.5,
 						'step' => 0.05,
 					),
 				),
-				'default'    => array(
+				'default'            => array(
 					'unit' => 'x',
 					'size' => 0.8,
 				),
-				'condition'  => $this->condition_effect( 'arts_cursor_press_enabled' ),
+				'condition'          => $this->condition_effect( 'arts_cursor_press_enabled' ),
 				'frontend_available' => true,
 			)
 		);
@@ -560,10 +560,10 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_highlight_enabled',
 			array(
-				'label'       => esc_html__( 'Enable', 'cursor-follower-for-elementor' ),
-				'description' => esc_html__( 'The cursor grows and fades over links and buttons.', 'cursor-follower-for-elementor' ),
-				'type'        => Controls_Manager::SWITCHER,
-				'default'     => 'yes',
+				'label'              => esc_html__( 'Enable', 'cursor-follower-for-elementor' ),
+				'description'        => esc_html__( 'The cursor grows and fades over links and buttons.', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SWITCHER,
+				'default'            => 'yes',
 				'frontend_available' => true,
 			)
 		);
@@ -571,21 +571,21 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_highlight_size',
 			array(
-				'label'      => esc_html__( 'Size', 'cursor-follower-for-elementor' ),
-				'type'       => Controls_Manager::SLIDER,
-				'size_units' => array( 'px' ),
-				'range'      => array(
+				'label'              => esc_html__( 'Size', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SLIDER,
+				'size_units'         => array( 'px' ),
+				'range'              => array(
 					'px' => array(
 						'min'  => 20,
 						'max'  => 200,
 						'step' => 1,
 					),
 				),
-				'default'    => array(
+				'default'            => array(
 					'unit' => 'px',
 					'size' => 80,
 				),
-				'condition'  => $this->condition_effect( 'arts_cursor_highlight_enabled' ),
+				'condition'          => $this->condition_effect( 'arts_cursor_highlight_enabled' ),
 				'frontend_available' => true,
 			)
 		);
@@ -677,18 +677,18 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_magnetic_strength',
 			array(
-				'label'       => esc_html__( 'Strength', 'cursor-follower-for-elementor' ),
-				'description' => esc_html__( 'Tunes every magnet on the site. Magnetism itself is switched on per widget, in its Cursor Effects section.', 'cursor-follower-for-elementor' ),
-				'type'        => Controls_Manager::SLIDER,
-				'size_units'  => array( 'x' ),
-				'range'       => array(
+				'label'              => esc_html__( 'Strength', 'cursor-follower-for-elementor' ),
+				'description'        => esc_html__( 'Tunes every magnet on the site. Magnetism itself is switched on per widget, in its Cursor Effects section.', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SLIDER,
+				'size_units'         => array( 'x' ),
+				'range'              => array(
 					'x' => array(
 						'min'  => 0.05,
 						'max'  => 1,
 						'step' => 0.05,
 					),
 				),
-				'default'     => array(
+				'default'            => array(
 					'unit' => 'x',
 					'size' => 0.25,
 				),
@@ -699,17 +699,17 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_magnetic_release',
 			array(
-				'label'      => esc_html__( 'Release Distance', 'cursor-follower-for-elementor' ),
-				'type'       => Controls_Manager::SLIDER,
-				'size_units' => array( 'px' ),
-				'range'      => array(
+				'label'              => esc_html__( 'Release Distance', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SLIDER,
+				'size_units'         => array( 'px' ),
+				'range'              => array(
 					'px' => array(
 						'min'  => 40,
 						'max'  => 400,
 						'step' => 10,
 					),
 				),
-				'default'    => array(
+				'default'            => array(
 					'unit' => 'px',
 					'size' => 120,
 				),
@@ -720,18 +720,18 @@ class SiteSettingsTab extends Tab_Base {
 		$this->add_control(
 			'arts_cursor_magnetic_element_scale',
 			array(
-				'label'       => esc_html__( 'Element Scale', 'cursor-follower-for-elementor' ),
-				'description' => esc_html__( 'Scales the magnetized element itself, from its center: below 1 shrinks it, above 1 grows it, 1 leaves it alone. Press Scale takes over while the mouse button is down.', 'cursor-follower-for-elementor' ),
-				'type'        => Controls_Manager::SLIDER,
-				'size_units'  => array( 'x' ),
-				'range'       => array(
+				'label'              => esc_html__( 'Element Scale', 'cursor-follower-for-elementor' ),
+				'description'        => esc_html__( 'Scales the magnetized element itself, from its center: below 1 shrinks it, above 1 grows it, 1 leaves it alone. Press Scale takes over while the mouse button is down.', 'cursor-follower-for-elementor' ),
+				'type'               => Controls_Manager::SLIDER,
+				'size_units'         => array( 'x' ),
+				'range'              => array(
 					'x' => array(
 						'min'  => 0.5,
 						'max'  => 1.5,
 						'step' => 0.05,
 					),
 				),
-				'default'     => array(
+				'default'            => array(
 					'unit' => 'x',
 					'size' => 1,
 				),
