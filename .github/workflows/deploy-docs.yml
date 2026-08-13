@@ -22,35 +22,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v6
-      # The runner host already has node and a corepack-shimmed pnpm that
-      # honours packageManager; these only fire on a GitHub-hosted runner.
-      - uses: pnpm/action-setup@v4
-        if: runner.environment == 'github-hosted'
-      - uses: actions/setup-node@v6
-        if: runner.environment == 'github-hosted'
-        with:
-          node-version: 24
-          cache: pnpm
-      - uses: actions/configure-pages@v5
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm docs:build
-        env:
-          # Must match the GitHub repo name exactly — only ever exercised here.
-          DOCS_BASE_PATH: /cursor-follower-for-elementor/
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: docs/.vitepress/dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: self-hosted
-    steps:
-      - uses: actions/deploy-pages@v4
-        id: deployment
+  deploy-docs:
+    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/deploy-docs.yml@main
+    with:
+      runner: self-hosted
+      docs_base_path: /cursor-follower-for-elementor/
