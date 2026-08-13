@@ -3,6 +3,9 @@
 [![Tests](https://img.shields.io/github/actions/workflow/status/artkrsk/cursor-follower-for-elementor/test.yml?style=flat-square&logo=githubactions&logoColor=white&label=tests)](https://github.com/artkrsk/cursor-follower-for-elementor/actions/workflows/test.yml)
 [![PHP](https://img.shields.io/badge/PHP-8.0+-777bb4?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0+-21759b?style=flat-square&logo=wordpress&logoColor=white)](https://wordpress.org)
+[![Version](https://img.shields.io/wordpress/plugin/v/cursor-follower-for-elementor?style=flat-square&logo=wordpress&logoColor=white&label=wp.org)](https://wordpress.org/plugins/cursor-follower-for-elementor/)
+[![Installs](https://img.shields.io/wordpress/plugin/installs/cursor-follower-for-elementor?style=flat-square)](https://wordpress.org/plugins/cursor-follower-for-elementor/)
+[![Rating](https://img.shields.io/wordpress/plugin/rating/cursor-follower-for-elementor?style=flat-square)](https://wordpress.org/plugins/cursor-follower-for-elementor/reviews/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)](LICENSE)
 
 An animated cursor follower for Elementor: magnetic buttons, link highlights, text and icon hints, drag effects. Loads nothing on touch devices.
