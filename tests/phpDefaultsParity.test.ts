@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import {
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
+  DEFAULT_MAGNETIC_ELEMENT_SCALE,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
   DEFAULT_PRESS_FACTOR,
@@ -43,6 +44,7 @@ describe('PHP and TS state the same defaults', () => {
     ['arts_cursor_elastic_strength', DEFAULT_ELASTIC_STRENGTH],
     ['arts_cursor_magnetic_strength', DEFAULT_MAGNETIC_STRENGTH],
     ['arts_cursor_magnetic_release', DEFAULT_MAGNETIC_RELEASE_RADIUS],
+    ['arts_cursor_magnetic_element_scale', DEFAULT_MAGNETIC_ELEMENT_SCALE],
     ['arts_cursor_highlight_size', DEFAULT_HIGHLIGHT_SIZE_PX],
     ['arts_cursor_press_scale', DEFAULT_PRESS_FACTOR]
   ])('%s', (key, tsDefault) => {

@@ -51,6 +51,7 @@ Parsed once per element, matched via delegation — elements added later (AJAX, 
 | `magnetic` | `true` \| number | Pull the cursor onto the element; a number overrides the global strength |
 | `scale` | `"80px"` \| `"target"` \| `{ref, factor, min?}` \| `false` | Cursor size over the element — px, the element's own rendered size, or a factor of `cursor`/`target` |
 | `anchor` | selector | Resolved *inside* the element: the magnet's pull target when the hover zone is bigger than the visual target |
+| `elementScale` | number | Magnetic only. Scales the **element itself** from its center while engaged — overrides the global `magnetic.elementScale`. `1` leaves the element's own CSS alone; the press ratio replaces it flat while the button is down |
 | `label` | string | Text riding the cursor. Written via `textContent` — safe for user-typed content |
 | `shape` | `"pill"` | Morph the follower into a filled stadium hugging its content |
 | `icon` | SVG/HTML string | Inline markup for the label's icon slot — **author-trusted**, never end-user input |

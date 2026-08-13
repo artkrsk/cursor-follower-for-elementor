@@ -1,6 +1,7 @@
 import {
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
+  DEFAULT_MAGNETIC_ELEMENT_SCALE,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
   DEFAULT_PRESS_FACTOR,
@@ -103,11 +104,12 @@ describe('section mapping', () => {
         arts_cursor_magnetic_strength: { size: 0.5, unit: 'px' },
         arts_cursor_magnetic_release: { size: 200, unit: 'px' }
       }).magnetic
-    ).toEqual({ strength: 0.5, releaseRadius: 200 })
+    ).toEqual({ strength: 0.5, releaseRadius: 200, elementScale: DEFAULT_MAGNETIC_ELEMENT_SCALE })
 
     expect(mapKitSettings({}).magnetic).toEqual({
       strength: DEFAULT_MAGNETIC_STRENGTH,
-      releaseRadius: DEFAULT_MAGNETIC_RELEASE_RADIUS
+      releaseRadius: DEFAULT_MAGNETIC_RELEASE_RADIUS,
+      elementScale: DEFAULT_MAGNETIC_ELEMENT_SCALE
     })
   })
 

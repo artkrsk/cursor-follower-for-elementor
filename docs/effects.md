@@ -29,6 +29,8 @@ The element carries one JSON attribute; the engine pulls the cursor onto it whil
 
 A button draws its own outline — a ring sitting across it reads as two shapes arguing. So the cursor collapses (`"scale": "0px"`) while the magnet pulls, and the button's own hover state is the feedback. This is exactly the payload the plugin ships for the Elementor Button widget.
 
+`"elementScale": 0.95` adds the other half of that feedback: the button itself gives a little, from its center, for as long as the magnet holds it. Set it site-wide under Site Settings → Magnetic → Element Scale, or per element as here. While the mouse button is down the press ratio takes over the same property, so a press stays one consistent depth rather than compounding.
+
 <CursorDemo :html="magneticButton" />
 
 <<< @/demos/magnetic-button.html

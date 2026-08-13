@@ -4,6 +4,7 @@ import {
   DEFAULT_ELASTIC_MAX,
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
+  DEFAULT_MAGNETIC_ELEMENT_SCALE,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
   DEFAULT_PRESS_FACTOR,
@@ -19,7 +20,8 @@ describe('resolveOptions', () => {
       elastic: { strength: DEFAULT_ELASTIC_STRENGTH, max: DEFAULT_ELASTIC_MAX },
       magnetic: {
         strength: DEFAULT_MAGNETIC_STRENGTH,
-        releaseRadius: DEFAULT_MAGNETIC_RELEASE_RADIUS
+        releaseRadius: DEFAULT_MAGNETIC_RELEASE_RADIUS,
+        elementScale: DEFAULT_MAGNETIC_ELEMENT_SCALE
       },
       highlight: { scale: `${DEFAULT_HIGHLIGHT_SIZE_PX}px` },
       pressScale: { scale: { ref: 'cursor', factor: DEFAULT_PRESS_FACTOR } },
@@ -49,7 +51,8 @@ describe('resolveOptions', () => {
     })
     expect(resolveOptions({ magnetic: { releaseRadius: 40 } }).magnetic).toEqual({
       strength: DEFAULT_MAGNETIC_STRENGTH,
-      releaseRadius: 40
+      releaseRadius: 40,
+      elementScale: DEFAULT_MAGNETIC_ELEMENT_SCALE
     })
   })
 
@@ -117,7 +120,8 @@ describe('applyOptionPatch', () => {
     applyOptionPatch(options, { magnetic: { strength: 0.5 } })
     expect(options.magnetic).toEqual({
       strength: 0.5,
-      releaseRadius: DEFAULT_MAGNETIC_RELEASE_RADIUS
+      releaseRadius: DEFAULT_MAGNETIC_RELEASE_RADIUS,
+      elementScale: DEFAULT_MAGNETIC_ELEMENT_SCALE
     })
   })
 

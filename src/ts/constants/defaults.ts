@@ -9,6 +9,11 @@ export const DEFAULT_ELASTIC_STRENGTH = 1.5
 export const DEFAULT_ELASTIC_MAX = 0.1
 export const DEFAULT_MAGNETIC_STRENGTH = 0.25
 export const DEFAULT_MAGNETIC_RELEASE_RADIUS = 120
+/** Resting scale of an engaged magnetic ELEMENT (not the cursor). 1 means the
+    engine writes no inline `scale` at all — anything else would override
+    whatever the element's own CSS sets, so the value is normalized away at the
+    resolve site rather than here. */
+export const DEFAULT_MAGNETIC_ELEMENT_SCALE = 1
 /** The highlight size is authored in px; the engine wants a size string. */
 export const DEFAULT_HIGHLIGHT_SIZE_PX = 80
 /** Press-scale multiplier of the cursor size. The kit slider (Press Scale,

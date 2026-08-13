@@ -1,6 +1,7 @@
 import { ELEMENT_RETURN_EPS } from '@ts/constants'
 import {
   atRest,
+  composeElementScale,
   composeTransition,
   createMagnetic,
   easePull,
@@ -57,6 +58,37 @@ describe('composeTransition', () => {
   })
 })
 
+/**
+ * One inline property, two features writing it: the resting shrink an
+ * engagement applies and the press ratio mirrored from the ring. Everything the
+ * trap writes to `element.style.scale` goes through here, so these four cases
+ * are the whole contract.
+ */
+describe('composeElementScale', () => {
+  it('writes the resting shrink when nothing is pressed', () => {
+    expect(composeElementScale(0.95, null)).toBe('0.95')
+  })
+
+  it('writes the press ratio when nothing is resting', () => {
+    expect(composeElementScale(null, 0.8)).toBe('0.8')
+  })
+
+  /** Flat replacement, not a product: a press reads as one depth whatever the
+      element's resting shrink is. 0.95 × 0.8 would be 0.76. */
+  it('lets the press replace the resting shrink rather than compound it', () => {
+    expect(composeElementScale(0.95, 0.8)).toBe('0.8')
+    // The accepted consequence: a resting shrink below the press ratio makes
+    // pressing GROW the element. Deliberate — don't "fix" it into a product.
+    expect(composeElementScale(0.5, 0.8)).toBe('0.8')
+  })
+
+  /** Not '1' — an inline `scale: 1` would override the element's own CSS, so
+      "no shrink" has to leave the property unset entirely. */
+  it('yields the empty string when neither applies', () => {
+    expect(composeElementScale(null, null)).toBe('')
+  })
+})
+
 describe('the pull-record steppers', () => {
   const record = (over: Partial<IPullRecord> = {}): IPullRecord => ({
     pull: { x: 20, y: -10 },
@@ -106,7 +138,7 @@ describe('live engagement (the magnetize path)', () => {
     createMagnetic({
       state,
       options: {
-        magnetic: { strength: 0.25, releaseRadius: 120 },
+        magnetic: { strength: 0.25, releaseRadius: 120, elementScale: 1 },
         animation: { duration: 0.25, easing: null }
       },
       readScroll: () => {},

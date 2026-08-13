@@ -1,4 +1,7 @@
 export const FRAME_60 = 1000 / 60
+/** Ticker deltas are milliseconds; the animation tokens are authored in seconds
+    (they go straight into a CSS `transition`). Bridges the two. */
+export const MS_PER_SECOND = 1000
 export const CONVERGE_EPS = 0.05
 export const VELOCITY_FACTOR = 0.001
 export const SETTLE_EPS = 0.001

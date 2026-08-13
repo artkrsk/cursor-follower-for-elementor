@@ -112,7 +112,7 @@ describe('engageHover', () => {
 
     sessions.engageHover(el, { magnetic: true }, zoneEl)
 
-    expect(engage).toHaveBeenCalledWith(el, expect.any(Number), entry, zoneEntry)
+    expect(engage).toHaveBeenCalledWith(el, expect.any(Number), entry, zoneEntry, null)
   })
 
   it('does nothing at all while Magnetic is switched off globally', () => {
@@ -130,7 +130,7 @@ describe('engageHover', () => {
 
     sessions.engageHover(el, { magnetic: 0.9 }, el)
 
-    expect(engage).toHaveBeenCalledWith(el, 0.9, entry, entry)
+    expect(engage).toHaveBeenCalledWith(el, 0.9, entry, entry, null)
   })
 
   it('falls back to the configured strength for a bare `magnetic: true`', () => {
@@ -141,7 +141,7 @@ describe('engageHover', () => {
     sessions.engageHover(el, { magnetic: true }, el)
 
     const strength = options.magnetic === false ? null : options.magnetic.strength
-    expect(engage).toHaveBeenCalledWith(el, strength, entry, entry)
+    expect(engage).toHaveBeenCalledWith(el, strength, entry, entry, null)
   })
 })
 

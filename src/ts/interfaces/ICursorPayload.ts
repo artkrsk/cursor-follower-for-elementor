@@ -27,6 +27,11 @@ export interface ICursorPayload {
       this target — e.g. a carousel that hovers a "Drag" pill and shows arrows
       while dragging. */
   drag?: TDragPayload
+  /** Magnetic only: the element's OWN resting scale while engaged, from its
+      centre — overrides the global `magnetic.elementScale`. 1 leaves the
+      element's CSS alone. A press overwrites it flat rather than compounding,
+      so a value below the press ratio inverts the press into a grow. */
+  elementScale?: number
   textColor?: string
   hideNativeCursor?: boolean
   highlight?: boolean | Partial<IHighlightConfig>

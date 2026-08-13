@@ -17,7 +17,7 @@ All global configuration lives in Elementor's Site Settings: open any page **Edi
 - **Motion** — the trailing lag and the elastic squash-and-stretch, with strength tuning.
 - **Hints** — typography, colors, backdrop blur and offset for the cursor whenever it's showing content: the pill over linked images, cards and slides, and the circle that grows around a word or an icon. Leave the Cursor section's background and blur empty and this section owns the entire filled look, so the free-roam cursor stays a bare ring.
 - **Highlight** — the grow-and-fade over links and buttons. On by default, and automatic: links need no setup.
-- **Magnetic** — global pull strength and release radius. Which elements magnetize is decided per widget, not here.
+- **Magnetic** — global pull strength, release radius, and how far the magnetized element itself scales while the cursor holds it. Which elements magnetize is decided per widget, not here.
 - **Loading** — the spinner that takes over the cursor during loading states.
 
 ## Per-element Cursor Effects

@@ -12,6 +12,7 @@ export type TKitSettingKey =
   | 'arts_cursor_elastic_strength'
   | 'arts_cursor_magnetic_strength'
   | 'arts_cursor_magnetic_release'
+  | 'arts_cursor_magnetic_element_scale'
   | 'arts_cursor_highlight_enabled'
   | 'arts_cursor_highlight_size'
   | 'arts_cursor_press_enabled'

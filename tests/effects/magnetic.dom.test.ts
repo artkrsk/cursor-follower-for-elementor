@@ -69,11 +69,11 @@ const twoDots = () => {
 const engagedAt = (
   x: number,
   y: number,
-  over: { target?: TStyledElement; strength?: number } = {}
+  over: { target?: TStyledElement; strength?: number; elementScale?: number } = {}
 ) => {
   const s = state({ mouseClient: { x, y } })
   const controller = trap({ state: s })
-  controller.engage(over.target ?? el, over.strength ?? 1, entry())
+  controller.engage(over.target ?? el, over.strength ?? 1, entry(), undefined, over.elementScale)
   return { controller, s }
 }
 
@@ -288,6 +288,75 @@ describe('pressed scale', () => {
 
     expect(first.style.scale).toBe('')
     expect(second.style.scale).toBe('0.75')
+  })
+})
+
+describe('resting element scale', () => {
+  /** The engagement's own shrink — the magnetized element reads as "grabbed"
+      whether or not the button is down. */
+  it('writes the resting scale at engage and hands it back on release', () => {
+    const { controller } = engagedAt(150, 150, { elementScale: 0.95 })
+    expect(el.style.scale).toBe('0.95')
+
+    controller.release()
+
+    expect(el.style.scale).toBe('')
+  })
+
+  /** The default. An inline `scale: 1` would override whatever the element's
+      own CSS sets, so "no shrink" has to leave the property unwritten. */
+  it('writes nothing when no resting scale is configured', () => {
+    engagedAt(150, 150)
+
+    expect(el.style.scale).toBe('')
+  })
+
+  /** Flat replacement in both directions: the press overwrites the resting
+      shrink, and lifting it falls back to the resting shrink, not to nothing. */
+  it('lets a press replace it, then falls back to it when the press lifts', () => {
+    const { controller } = engagedAt(150, 150, { elementScale: 0.95 })
+
+    controller.setPressedScale(0.8)
+    expect(el.style.scale).toBe('0.8')
+
+    controller.setPressedScale(null)
+    expect(el.style.scale).toBe('0.95')
+  })
+})
+
+/**
+ * restore() strips the composed transition, and removing a transition CANCELS a
+ * running one — the property jumps to its target instead of easing there. The
+ * pull can rest within a frame (a pointer sitting dead centre never builds one,
+ * and neither does a fast flick), so without a hold the element would snap back
+ * to full size the moment the pull settled.
+ */
+describe('the scale-transition hold', () => {
+  it('keeps the element owned until the scale transition can finish', () => {
+    const { controller } = engagedAt(150, 150, { elementScale: 0.95 })
+    controller.release()
+
+    // The pointer sat on the anchor centre, so the pull is already at rest.
+    controller.tick(FRAME_60)
+
+    expect(controller.busy).toBe(true)
+    expect(el.style.transition).not.toBe('')
+
+    settle(controller)
+
+    expect(controller.busy).toBe(false)
+    expect(el.style.transition).toBe('')
+  })
+
+  /** No scale was ever written, so there is nothing to outlast — the default
+      path keeps its old timing instead of pinning the ticker awake. */
+  it('does not hold an element that never carried a scale', () => {
+    const { controller } = engagedAt(150, 150)
+    controller.release()
+
+    controller.tick(FRAME_60)
+
+    expect(controller.busy).toBe(false)
   })
 })
 

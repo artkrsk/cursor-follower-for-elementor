@@ -2,6 +2,7 @@ import {
   DEFAULT_EASING,
   ELEMENT_EASE,
   ELEMENT_RETURN_EPS,
+  MS_PER_SECOND,
   PULL_FACTOR,
   RELEASE_RADIUS_PAD,
   RELEASE_RADIUS_SLACK
@@ -69,6 +70,22 @@ export const easePull = (record: IPullRecord, tx: number, ty: number, k: number)
 export const atRest = (record: IPullRecord): boolean =>
   Math.abs(record.pull.x) < ELEMENT_RETURN_EPS && Math.abs(record.pull.y) < ELEMENT_RETURN_EPS
 
+/**
+ * The engaged element's inline `scale`. One property, two writers: the resting
+ * shrink an engagement applies, and the press ratio mirrored from the ring. The
+ * press REPLACES rather than compounds, so a press reads as one depth whatever
+ * the resting shrink is — which does mean a resting scale below the press ratio
+ * inverts the press into a grow. Deliberate, not an oversight.
+ *
+ * `''` when neither applies, so the property falls back to the element's own
+ * CSS — which is also why a resting value of exactly 1 has to arrive here as
+ * null rather than as a number.
+ */
+export const composeElementScale = (resting: number | null, pressed: number | null): string => {
+  const value = pressed ?? resting
+  return value === null ? '' : String(value)
+}
+
 /** Quantize, dedupe against the record's last written pair, write the inline
     translate. The template string only allocates when a write happens. */
 export const writePull = (el: TStyledElement, record: IPullRecord): void => {
@@ -115,12 +132,43 @@ export function createMagnetic(args: {
   /** Click-scale ratio while the primary button is down — mirrored onto the
       engaged element as an inline `scale` so it shrinks with the cursor. */
   let pressedScale: number | null = null
+  /** The current engagement's resting element scale, already normalized (null
+      writes nothing). */
+  let restingScale: number | null = null
+  /** Whether this engagement ever wrote an inline `scale` — decides whether the
+      return home has to outlast the scale transition (see `hold`). */
+  let scaleWritten = false
+  /** Milliseconds the element stays owned after release, ON TOP of the pull
+      settling. The pull can rest within a frame or two — a fast flick across
+      the element never builds one — while the scale is still easing back, and
+      restore() strips the transition, which cancels it mid-flight and snaps the
+      element. Zero unless a scale was actually written, so the default (no
+      resting shrink, no press) keeps today's timing exactly. */
+  let hold = 0
 
   /** Elements easing home after their engagement was taken over by another —
       each keeps its transition/will-change overrides until it arrives, then
       hands its inline styles back. Slider dots sit next to each other, so a
-      neighbouring engagement must not cut the release bounce short. */
-  const returning: ({ el: TStyledElement } & IPullRecord)[] = []
+      neighbouring engagement must not cut the release bounce short. Each entry
+      carries its own `hold` for the same reason the active element does. */
+  const returning: ({ el: TStyledElement; hold: number } & IPullRecord)[] = []
+
+  /** How long the element must outlive its pull, so a still-running scale
+      transition isn't stripped mid-flight. */
+  const holdMs = () => (scaleWritten ? options.animation.duration * MS_PER_SECOND : 0)
+
+  /** Explicit args rather than reading the fields: engage() writes before
+      enterPageSpace() flips `engaged`. */
+  const writeScale = (resting: number | null, pressed: number | null) => {
+    if (!element) {
+      return
+    }
+    const value = composeElementScale(resting, pressed)
+    if (value !== '') {
+      scaleWritten = true
+    }
+    element.style.scale = value
+  }
 
   const restore = (el: TStyledElement) => {
     el.style.translate = ''
@@ -143,6 +191,9 @@ export function createMagnetic(args: {
       restore(element)
       element = null
     }
+    restingScale = null
+    scaleWritten = false
+    hold = 0
     resetPull()
   }
 
@@ -151,13 +202,15 @@ export function createMagnetic(args: {
       per hand-off (interaction path), not per frame. */
   const handOff = () => {
     if (element) {
-      // The pressed shrink rides the engagement — ease back while returning.
-      element.style.scale = ''
-      if (atRest(active)) {
+      // Both shrinks ride the engagement — ease back while returning.
+      writeScale(null, null)
+      const wait = holdMs()
+      if (atRest(active) && wait <= 0) {
         restore(element)
       } else {
         returning.push({
           el: element,
+          hold: wait,
           pull: { x: active.pull.x, y: active.pull.y },
           lastX: active.lastX,
           lastY: active.lastY
@@ -165,6 +218,9 @@ export function createMagnetic(args: {
       }
       element = null
     }
+    restingScale = null
+    scaleWritten = false
+    hold = 0
     resetPull()
   }
 
@@ -212,7 +268,7 @@ export function createMagnetic(args: {
       return engaged || element !== null || returning.length > 0
     },
 
-    engage(el, pullStrength, entry, zone) {
+    engage(el, pullStrength, entry, zone, elementScale) {
       // A previous element keeps easing home in the returning queue; the new
       // one is taken back out of it if it was still on its way.
       if (element && element !== el) {
@@ -235,9 +291,8 @@ export function createMagnetic(args: {
       // new containing block: the inline `translate` the pull writes creates
       // the same one from the first tick anyway.
       el.style.willChange = 'translate'
-      if (pressedScale !== null) {
-        el.style.scale = String(pressedScale)
-      }
+      restingScale = elementScale ?? null
+      writeScale(restingScale, pressedScale)
       strength = pullStrength
       liveStrength = null
       anchorEntry = entry
@@ -275,11 +330,11 @@ export function createMagnetic(args: {
       anchorEntry = null
       zoneEntry = null
       liveAnchor = null
-      // The pressed shrink rides the engagement, not the press — hand it back
-      // now (eased by the transition, which stays until the element rests).
-      if (element) {
-        element.style.scale = ''
-      }
+      // Both shrinks ride the engagement, not the press — hand them back now
+      // (eased by the transition, which stays until the element rests).
+      writeScale(null, null)
+      restingScale = null
+      hold = holdMs()
       // Back to viewport space; the element keeps easing to rest in tick().
       state.follower.x -= state.scroll.x
       state.follower.y -= state.scroll.y
@@ -288,7 +343,8 @@ export function createMagnetic(args: {
     setPressedScale(ratio) {
       pressedScale = ratio
       if (element && engaged) {
-        element.style.scale = ratio === null ? '' : String(ratio)
+        // Lifting the press falls back to the resting shrink, not to nothing.
+        writeScale(restingScale, ratio)
       }
     },
 
@@ -304,7 +360,8 @@ export function createMagnetic(args: {
           continue
         }
         easePull(r, 0, 0, k)
-        if (atRest(r)) {
+        r.hold -= dt
+        if (atRest(r) && r.hold <= 0) {
           restore(r.el)
           returning.splice(i, 1)
         } else {
@@ -317,9 +374,10 @@ export function createMagnetic(args: {
       if (!engaged) {
         pullTarget.x = 0
         pullTarget.y = 0
+        hold -= dt
       }
       easePull(active, pullTarget.x, pullTarget.y, k)
-      if (!engaged && atRest(active)) {
+      if (!engaged && atRest(active) && hold <= 0) {
         clearElement()
         return
       }

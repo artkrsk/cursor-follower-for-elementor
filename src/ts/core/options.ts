@@ -4,6 +4,7 @@ import {
   DEFAULT_ELASTIC_MAX,
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
+  DEFAULT_MAGNETIC_ELEMENT_SCALE,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
   DEFAULT_PRESS_FACTOR,
@@ -30,7 +31,8 @@ export const resolveMagnetic = (value: ICursorOptions['magnetic']): IResolvedOpt
     ? false
     : {
         strength: value?.strength ?? DEFAULT_MAGNETIC_STRENGTH,
-        releaseRadius: value?.releaseRadius ?? DEFAULT_MAGNETIC_RELEASE_RADIUS
+        releaseRadius: value?.releaseRadius ?? DEFAULT_MAGNETIC_RELEASE_RADIUS,
+        elementScale: value?.elementScale ?? DEFAULT_MAGNETIC_ELEMENT_SCALE
       }
 
 export const resolveHighlight = (

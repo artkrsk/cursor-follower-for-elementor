@@ -717,6 +717,28 @@ class SiteSettingsTab extends Tab_Base {
 			)
 		);
 
+		$this->add_control(
+			'arts_cursor_magnetic_element_scale',
+			array(
+				'label'       => esc_html__( 'Element Scale', 'cursor-follower-for-elementor' ),
+				'description' => esc_html__( 'Scales the magnetized element itself, from its center: below 1 shrinks it, above 1 grows it, 1 leaves it alone. Press Scale takes over while the mouse button is down.', 'cursor-follower-for-elementor' ),
+				'type'        => Controls_Manager::SLIDER,
+				'size_units'  => array( 'x' ),
+				'range'       => array(
+					'x' => array(
+						'min'  => 0.5,
+						'max'  => 1.5,
+						'step' => 0.05,
+					),
+				),
+				'default'     => array(
+					'unit' => 'x',
+					'size' => 1,
+				),
+				'frontend_available' => true,
+			)
+		);
+
 		// Re-point the cursor's OWN colour vars, scoped to the state attribute, the
 		// way the Link Highlight section does — rather than inventing a magnetic var
 		// and a stylesheet rule to consume it. That keeps the whole override inside

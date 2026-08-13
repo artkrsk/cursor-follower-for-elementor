@@ -33,6 +33,7 @@ class Options {
 		$options['magnetic'] = array(
 			'strength'      => self::size_of( 'arts_cursor_magnetic_strength', 0.25 ),
 			'releaseRadius' => self::size_of( 'arts_cursor_magnetic_release', 120 ),
+			'elementScale'  => self::size_of( 'arts_cursor_magnetic_element_scale', 1 ),
 		);
 
 		$options['highlight'] = self::is_on( 'arts_cursor_highlight_enabled', true )

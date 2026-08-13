@@ -72,7 +72,13 @@ export function createMagneticSessions(args: {
       stopStream = geometry.stream(element)
       const strength =
         typeof payload.magnetic === 'number' ? payload.magnetic : options.magnetic.strength
-      controller.engage(element, strength, entry, zone)
+      // Normalized here rather than in the trap: 1 means "leave it alone", and
+      // an inline `scale: 1` would override whatever the element's CSS sets.
+      const elementScale =
+        typeof payload.elementScale === 'number'
+          ? payload.elementScale
+          : options.magnetic.elementScale
+      controller.engage(element, strength, entry, zone, elementScale === 1 ? null : elementScale)
       root.setAttribute(MAGNETIC_ATTR, '')
       args.wake()
     },

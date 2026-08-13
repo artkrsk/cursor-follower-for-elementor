@@ -1,6 +1,7 @@
 import {
   DEFAULT_ELASTIC_STRENGTH,
   DEFAULT_HIGHLIGHT_SIZE_PX,
+  DEFAULT_MAGNETIC_ELEMENT_SCALE,
   DEFAULT_MAGNETIC_RELEASE_RADIUS,
   DEFAULT_MAGNETIC_STRENGTH,
   DEFAULT_PRESS_FACTOR,
@@ -61,7 +62,11 @@ export function mapKitSettings(settings: TKitSettings): ICursorOptions {
     // Magnetic enable is per-widget now; the global option is always on.
     magnetic: {
       strength: sizeOf(settings.arts_cursor_magnetic_strength, DEFAULT_MAGNETIC_STRENGTH),
-      releaseRadius: sizeOf(settings.arts_cursor_magnetic_release, DEFAULT_MAGNETIC_RELEASE_RADIUS)
+      releaseRadius: sizeOf(settings.arts_cursor_magnetic_release, DEFAULT_MAGNETIC_RELEASE_RADIUS),
+      elementScale: sizeOf(
+        settings.arts_cursor_magnetic_element_scale,
+        DEFAULT_MAGNETIC_ELEMENT_SCALE
+      )
     },
     highlight: isOn(settings.arts_cursor_highlight_enabled, true)
       ? { scale: `${sizeOf(settings.arts_cursor_highlight_size, DEFAULT_HIGHLIGHT_SIZE_PX)}px` }
