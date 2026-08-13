@@ -107,18 +107,18 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 == Changelog ==
 
 = 1.0.4 =
-* Confirmed compatibility with WordPress 7.1.
+* improved: confirmed compatibility with WordPress 7.1.
 
 = 1.0.3 =
-* Added an Element Scale setting under Magnetic: the magnetized element itself can now shrink or grow slightly while the cursor holds it.
+* added: an Element Scale setting under Magnetic — the magnetized element itself can now shrink or grow slightly while the cursor holds it.
 
 = 1.0.2 =
-* Fixed the no-cursor-follower class being dropped from the html tag when another plugin adds a class to it as well.
-* The class is no longer added on admin screens, where WordPress puts its own class on the same tag.
-* Now requires WordPress 6.2 or newer.
+* improved: the no-cursor-follower class is no longer added on admin screens, where WordPress puts its own class on the same tag.
+* improved: now requires WordPress 6.2 or newer.
+* fixed: the no-cursor-follower class being dropped from the html tag when another plugin adds a class to it as well.
 
 = 1.0.1 =
-* Fixed the cursor briefly jumping to a wrong position on the first magnetic hover after scrolling, when the target sits inside a fixed or sticky container such as a sticky header.
+* fixed: the cursor briefly jumping to a wrong position on the first magnetic hover after scrolling, when the target sits inside a fixed or sticky container such as a sticky header.
 
 = 1.0.0 =
-* Initial release.
+Initial release.
