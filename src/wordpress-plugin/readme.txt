@@ -4,7 +4,7 @@ Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0
 GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
@@ -105,6 +105,9 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 5. Portfolio: a "View Project" pill following the cursor across a card, live in the editor preview.
 
 == Changelog ==
+
+= 1.0.3 =
+* Added an Element Scale setting under Magnetic: the magnetized element itself can now shrink or grow slightly while the cursor holds it.
 
 = 1.0.2 =
 * Fixed the no-cursor-follower class being dropped from the html tag when another plugin adds a class to it as well.
