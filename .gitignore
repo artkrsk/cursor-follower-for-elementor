@@ -10,4 +10,15 @@ src/php/libraries/
 *.zip
 .fallow/
 coverage/
+playwright-report/
+test-results/
+.phpunit.result.cache
+.wp-env.override.json
+dev/wp
+.mcp.json
+
+# Working docs are never committed — docs/ in a public repo holds public
+# documentation only. Plans, specs, brainstorms, scratch stay local.
+docs/superpowers/
+drafts/
 .superpowers/

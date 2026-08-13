@@ -11,7 +11,7 @@
     "src/ts/boot.ts",
     "src/ts/gate.ts",
     "src/ts/index.ts",
-    "tests/setup.ts",
+    "tests/ts/setup.ts",
     "project.config.js",
     "src/styles/index.scss"
   ],

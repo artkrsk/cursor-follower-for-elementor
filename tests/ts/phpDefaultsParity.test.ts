@@ -25,7 +25,7 @@ import { describe, expect, it } from 'vitest'
  * would cost the suite a PHP runtime for six numbers.
  */
 
-const OPTIONS_PHP = readFileSync(resolve(__dirname, '../src/php/Options.php'), 'utf8')
+const OPTIONS_PHP = readFileSync(resolve(__dirname, '../../src/php/Options.php'), 'utf8')
 
 /** The literal fallback in a `self::size_of( 'key', <default> )` call. */
 const phpFallback = (key: string): number => {
