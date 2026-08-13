@@ -10,33 +10,8 @@ permissions:
   pull-requests: read
 
 jobs:
-  # Extract this version's changelog entry from readme.txt
-  prepare-changelog:
-    runs-on: self-hosted
-    outputs:
-      changelog: ${{ steps.extract.outputs.changelog }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v6
-        if: runner.environment == 'github-hosted'
-        with:
-          node-version: '24'
-
-      - name: Extract changelog from readme.txt
-        id: extract
-        run: |
-          CHANGELOG=$(node build/extract-changelog.js latest)
-          {
-            echo "changelog<<EOF"
-            echo "$CHANGELOG"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-  # Build, validate versions, create the GitHub release
   release:
-    needs: prepare-changelog
-    uses: artkrsk/wordpress-plugin-release-action/.github/workflows/release.yml@main
+    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/release.yml@main
     with:
       # Node 24: last LTS line that still bundles corepack (the action uses it for pnpm)
       node_version: '24'
@@ -46,8 +21,9 @@ jobs:
       # release assertions fail fast without it.
       build_command: 'composer install --prefer-dist --no-progress && pnpm build'
 
-      # Changelog from readme.txt
-      custom_changelog: ${{ needs.prepare-changelog.outputs.changelog }}
+      # Validate the readme.txt changelog grammar for the tagged version and
+      # use the entry as the release body — hard fail before any SVN contact.
+      use_arts_changelog: true
 
       # WordPress.org listing assets (banners, icons, screenshots, and the
       # Live Preview blueprint under blueprints/)
