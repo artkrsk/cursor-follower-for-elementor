@@ -10,7 +10,16 @@
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 10000;
+
+    // Top of the world, deliberately: this element IS the pointer, and the
+    // real pointer draws above every layer a page can build. At 10000 it
+    // cleared Elementor's own lightbox (9999) but nothing else — the admin
+    // bar (99999), popups, and replacement-lightbox plugins all buried it,
+    // which reads as the cursor vanishing rather than as a stacking choice.
+    // Blending follows the same move: mix-blend-mode composites against
+    // whatever paints below, so the cursor now inverts against the overlay
+    // it sits on instead of the page hidden behind it.
+    z-index: 2147483647;
     pointer-events: none;
     visibility: hidden;
     contain: layout style size;

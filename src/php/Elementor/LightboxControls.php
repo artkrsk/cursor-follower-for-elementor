@@ -34,17 +34,20 @@ class LightboxControls {
 	 * (`core/kits/documents/kit.php`), which Controls_Stack turns into the
 	 * section id `section_settings-lightbox` for hook purposes.
 	 */
-	private const ANCHOR = 'elementor/element/kit/section_settings-lightbox/before_section_end';
+	private const ANCHOR = 'elementor/element/kit/section_settings-lightbox/after_section_end';
+
+	/** Elementor's own Lightbox tab id — our section is appended to it. */
+	private const TAB_ID = 'settings-lightbox';
 
 	public function register(): void {
 		add_action( self::ANCHOR, array( $this, 'add_controls' ), 10, 2 );
 	}
 
 	/**
-	 * Appended to the end of Elementor's own Lightbox section. No
-	 * `start_injection()`: that exists to place a control BETWEEN two of
-	 * Elementor's, which would tie us to one of their control ids for nothing —
-	 * an addition from another plugin reads fine as the last thing in the group.
+	 * Its own section beside Elementor's, not three controls tacked onto the
+	 * end of theirs. These are cursor settings that happen to be scoped to the
+	 * lightbox, and a replacement-lightbox plugin adds sections of its own to
+	 * this tab — inline, ours read as part of whatever section they trailed.
 	 *
 	 * Only the magnet is a setting. Zoom and fullscreen also get an effect (see
 	 * Options::build) but no control, because they carry `role="switch"` and so
@@ -55,6 +58,14 @@ class LightboxControls {
 	 * @param array<string, mixed> $args
 	 */
 	public function add_controls( $element, $args = array() ): void {
+		$element->start_controls_section(
+			'arts_cursor_section_lightbox',
+			array(
+				'label' => esc_html__( 'Cursor Effects', 'cursor-follower-for-elementor' ),
+				'tab'   => self::TAB_ID,
+			)
+		);
+
 		$element->add_control(
 			'arts_cursor_lightbox',
 			array(
@@ -62,7 +73,6 @@ class LightboxControls {
 				'description' => esc_html__( 'Pull the cursor to the previous/next arrows while the lightbox is open.', 'cursor-follower-for-elementor' ),
 				'type'        => Controls_Manager::SWITCHER,
 				'default'     => 'yes',
-				'separator'   => 'before',
 			)
 		);
 
@@ -75,7 +85,7 @@ class LightboxControls {
 			'arts_cursor_lightbox_drag',
 			array(
 				'label'       => esc_html__( 'Drag Hint', 'cursor-follower-for-elementor' ),
-				'description' => esc_html__( 'Show a hint over the slideshow while it can be dragged.', 'cursor-follower-for-elementor' ),
+				'description' => esc_html__( 'Show a hint over the slides while the lightbox can be dragged.', 'cursor-follower-for-elementor' ),
 				'type'        => Controls_Manager::SWITCHER,
 				'default'     => 'yes',
 			)
@@ -96,5 +106,7 @@ class LightboxControls {
 				'condition'   => array( 'arts_cursor_lightbox_drag' => 'yes' ),
 			)
 		);
+
+		$element->end_controls_section();
 	}
 }
