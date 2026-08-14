@@ -303,6 +303,10 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       geometry?.warm(collectWarmTargets(container ?? document, options.attribute, warmSelector))
     },
 
+    refresh() {
+      targets?.refresh()
+    },
+
     remeasure() {
       if (refs) {
         Object.assign(options.animation, readAnimationTokens(refs.root))

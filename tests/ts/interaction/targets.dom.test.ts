@@ -579,3 +579,62 @@ describe('lifecycle', () => {
     expect(targets.current).toBeNull()
   })
 })
+
+describe('refresh', () => {
+  it('re-resolves the hovered element when its rule stops applying', () => {
+    // Rules resolve on a crossing and are held while the pointer sits still,
+    // so a class toggled by the host — a lightbox changing slides, a state
+    // its own CSS tracks — left the cursor promising the old element's
+    // payload until the pointer left and came back.
+    mount('<div class="zone"><img id="pic" alt=""></div>')
+    const scopes: ITargetScope[] = [
+      {
+        scope: '.zone',
+        rules: [{ selector: ':scope.ready img', payload: { label: 'Zoom' } }]
+      }
+    ]
+    const targets = start({ scopes })
+    at('.zone').classList.add('ready')
+    fire(at('#pic'), 'pointerover')
+    expect(targets.current?.payload?.label).toBe('Zoom')
+
+    const leave = vi.fn()
+    targets.on('leave', leave)
+    at('.zone').classList.remove('ready')
+    targets.refresh()
+
+    expect(leave).toHaveBeenCalledTimes(1)
+    expect(targets.current).toBeNull()
+  })
+
+  it('costs nothing when the same rule still resolves', () => {
+    // Re-emitting would rebuild the hint markup (the icon slot is written
+    // wholesale on every recompute), so an unchanged verdict must be silent.
+    mount('<div class="zone ready"><img id="pic" alt=""></div>')
+    const scopes: ITargetScope[] = [
+      {
+        scope: '.zone',
+        rules: [{ selector: ':scope.ready img', payload: { label: 'Zoom' } }]
+      }
+    ]
+    const targets = start({ scopes })
+    fire(at('#pic'), 'pointerover')
+
+    const enter = vi.fn()
+    const leave = vi.fn()
+    targets.on('enter', enter)
+    targets.on('leave', leave)
+    targets.refresh()
+
+    expect(enter).not.toHaveBeenCalled()
+    expect(leave).not.toHaveBeenCalled()
+    expect(targets.current?.payload?.label).toBe('Zoom')
+  })
+
+  it('is a no-op with nothing hovered', () => {
+    mount('<a href="#" id="link">go</a>')
+    const targets = start()
+    expect(() => targets.refresh()).not.toThrow()
+    expect(targets.current).toBeNull()
+  })
+})

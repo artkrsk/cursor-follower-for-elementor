@@ -419,6 +419,25 @@ export function createTargets(args: {
       return current
     },
     on: events.on,
+    refresh() {
+      // Rules resolve on a crossing and are held while the pointer sits
+      // still, so a host that changes what a rule matches — a class toggled
+      // under a parked pointer — had no way to be believed until the pointer
+      // left and came back. This re-runs the same resolve the crossing does.
+      //
+      // Silent when the verdict is unchanged: a plain rule match returns the
+      // authored payload object itself, so identity settles the common case,
+      // and re-emitting would rebuild the hint markup for nothing.
+      const next = resolveTarget(current?.trigger ?? null)
+      if (next?.element === current?.element && next?.payload === current?.payload) {
+        return
+      }
+      leaveCurrent()
+      if (next) {
+        current = next
+        events.emit('enter', current)
+      }
+    },
     handleDown() {
       if (current) {
         events.emit('press', current)
