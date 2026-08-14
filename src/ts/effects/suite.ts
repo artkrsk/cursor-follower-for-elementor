@@ -392,6 +392,19 @@ const fillHintSlots = (
   root.setAttribute(HINT_ATTR, '')
 }
 
+/** Empty the label and icon slots. Deferred behind a retract so the content
+    fades with the hint, immediate when the cluster keeps rendering. */
+const clearHintSlots = (refs: ICursorRefs, root: HTMLElement, hint: HTMLElement) => {
+  const textEl = refs.hintText ?? hint
+  textEl.textContent = ''
+  if (refs.hintIcon) {
+    refs.hintIcon.innerHTML = ''
+    setVar(refs.hintIcon, ICON_MASK_VAR, null)
+  }
+  root.removeAttribute(HINT_ICON_ATTR)
+  root.removeAttribute(ICON_KIND_ATTR)
+}
+
 /** Lower the label and clear its slots once the hide transition ends. */
 const retractHint = (
   refs: ICursorRefs,
@@ -400,14 +413,7 @@ const retractHint = (
   clearDelay: number
 ) => {
   hideContent(root, hint, HINT_ATTR, clearDelay, () => {
-    const textEl = refs.hintText ?? hint
-    textEl.textContent = ''
-    if (refs.hintIcon) {
-      refs.hintIcon.innerHTML = ''
-      setVar(refs.hintIcon, ICON_MASK_VAR, null)
-    }
-    root.removeAttribute(HINT_ICON_ATTR)
-    root.removeAttribute(ICON_KIND_ATTR)
+    clearHintSlots(refs, root, hint)
   })
 }
 
@@ -478,7 +484,14 @@ export const applyHint = (
   }
   // HINT_ATTR stays down for an arrow-only pill: its styling keys on the
   // shape attr.
-  return { labelFit: 0, pill: arrowOnlyPill(merged, hintPad, arrowTheme) }
+  const pill = arrowOnlyPill(merged, hintPad, arrowTheme)
+  // That pill keeps the cluster on screen, so the retract above has no end
+  // for its deferred clear to arrive at — the previous payload's label or
+  // icon would sit inside the arrows. Empty the slots now instead.
+  if (pill && refs.hint) {
+    clearHintSlots(refs, root, refs.hint)
+  }
+  return { labelFit: 0, pill }
 }
 
 export function createEffectsSuite(args: {

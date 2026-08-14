@@ -1185,3 +1185,37 @@ describe('the section appliers', () => {
     expect(out.pill).toEqual({ width: 136, height: 30 })
   })
 })
+
+describe('slot content when the hint stops having content', () => {
+  it('empties the slots as soon as an arrows pill takes over', () => {
+    // A drag session states arrows and no icon: the cluster keeps rendering
+    // as a pill, so there is no retract to clear the slots at the end of —
+    // and the previous target's icon sat inside the arrows.
+    build()
+    applyHint(
+      { icon: '<span class="glyph"></span>' },
+      refs,
+      refs.root,
+      new Map(),
+      () => ({ x: 18, y: 8 }),
+      () => ({ gap: 8, size: 16 }),
+      60,
+      100
+    )
+    expect(refs.hintIcon?.innerHTML).toContain('glyph')
+
+    applyHint(
+      { icon: '', shape: 'pill', arrows: 'horizontal', dot: true },
+      refs,
+      refs.root,
+      new Map(),
+      () => ({ x: 18, y: 8 }),
+      () => ({ gap: 8, size: 16 }),
+      60,
+      100
+    )
+
+    expect(refs.hintIcon?.innerHTML).toBe('')
+    expect(refs.root.hasAttribute('data-cursor-icon-kind')).toBe(false)
+  })
+})
