@@ -369,6 +369,10 @@ export function createTargets(args: {
       reports the flip), so the memo can never mask a Site Settings change. */
   let crossing: { el: Element; ctx: ITargetContext | null } | null = null
 
+  /** Where the pointer was at the last crossing — a refresh resolves from
+      there, since a pointer that had moved would have re-resolved itself. */
+  let lastPoint: { x: number; y: number } | null = null
+
   document.addEventListener(
     'pointerover',
     (e) => {
@@ -381,6 +385,7 @@ export function createTargets(args: {
         return
       }
       const from = e.target as Element | null
+      lastPoint = { x: e.clientX, y: e.clientY }
       const memo = crossing
       crossing = null
       const hit = memo && memo.el === from && !refreshActive() ? memo.ctx : resolveTarget(from)
@@ -405,6 +410,7 @@ export function createTargets(args: {
         return
       }
       const related = e.relatedTarget as Element | null
+      lastPoint = { x: e.clientX, y: e.clientY }
       const next = resolveTarget(related)
       crossing = related ? { el: related, ctx: next } : null
       if (next?.element !== current.element) {
@@ -428,7 +434,15 @@ export function createTargets(args: {
       // Silent when the verdict is unchanged: a plain rule match returns the
       // authored payload object itself, so identity settles the common case,
       // and re-emitting would rebuild the hint markup for nothing.
-      const next = resolveTarget(current?.trigger ?? null)
+      //
+      // Resolved from whatever is under the pointer NOW, not from the element
+      // the crossing recorded: a host that swaps its content — a lightbox
+      // recycling slide holders — leaves that one detached, or belonging to
+      // something else, and re-reading it keeps a promise that has moved on.
+      // The last crossing's coordinates still describe the pointer, since a
+      // pointer that had moved would have re-resolved on its own.
+      const under = lastPoint ? document.elementFromPoint(lastPoint.x, lastPoint.y) : null
+      const next = resolveTarget(under ?? current?.trigger ?? null)
       if (next?.element === current?.element && next?.payload === current?.payload) {
         return
       }

@@ -638,3 +638,41 @@ describe('refresh', () => {
     expect(targets.current).toBeNull()
   })
 })
+
+describe('refresh under a still pointer', () => {
+  it('resolves from what is under the pointer, not the element it entered', () => {
+    // A host can replace the element the pointer is over — a lightbox
+    // recycling slide holders does exactly that. Re-resolving from the
+    // element the crossing recorded then reads a detached node, or one now
+    // belonging to something else, and the cursor keeps a promise that no
+    // longer applies.
+    mount('<div class="zone"><img id="pic" alt=""></div>')
+    const scopes: ITargetScope[] = [
+      {
+        scope: '.zone',
+        rules: [
+          { selector: ':scope.zoomable img', payload: { label: 'Zoom' } },
+          { selector: ':scope img', payload: { label: 'Drag' } }
+        ]
+      }
+    ]
+    const targets = start({ scopes })
+    at('.zone').classList.add('zoomable')
+    fire(at('#pic'), 'pointerover', null, 'mouse')
+    expect(targets.current?.payload?.label).toBe('Zoom')
+
+    // The slide changes under the still pointer: new image element, and this
+    // one cannot zoom.
+    const fresh = document.createElement('img')
+    fresh.id = 'pic2'
+    at('#pic').replaceWith(fresh)
+    at('.zone').classList.remove('zoomable')
+    // Whatever is at the pointer now is the fresh image.
+    document.elementFromPoint = () => fresh
+
+    targets.refresh()
+
+    expect(targets.current?.payload?.label).toBe('Drag')
+    expect(targets.current?.element).toBe(fresh)
+  })
+})
