@@ -622,3 +622,23 @@ describe('collectWarmTargets', () => {
     expect(collectWarmTargets(container('<a>x</a>'), DEFAULT_ATTRIBUTE, '').size).toBe(0)
   })
 })
+
+describe('iframes', () => {
+  /** The crossing into an embed is the last event the parent document gets —
+      the ring folds back to the not-yet-seen state so it never freezes
+      mid-glide over a video, and the next parent-side event re-materializes
+      it at the pointer, exactly like page entry. */
+  it('collapses over an iframe and re-materializes on return', () => {
+    boot('<iframe id="frame"></iframe>')
+    const root = cursor.el as HTMLElement
+
+    pointer(window as unknown as Element, 'pointermove', { clientX: 10, clientY: 10 })
+    expect(root.hasAttribute(VISIBLE_ATTR)).toBe(true)
+
+    pointer(at('#frame'), 'pointerover', { clientX: 42, clientY: 42 })
+    expect(root.hasAttribute(VISIBLE_ATTR)).toBe(false)
+
+    pointer(window as unknown as Element, 'pointermove', { clientX: 90, clientY: 12 })
+    expect(root.hasAttribute(VISIBLE_ATTR)).toBe(true)
+  })
+})

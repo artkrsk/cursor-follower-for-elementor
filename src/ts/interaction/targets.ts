@@ -323,6 +323,14 @@ export function createTargets(args: {
     if (!from || from.closest?.(NO_TARGET_SELECTOR)) {
       return null
     }
+    // An iframe is a hole in the observable document: the embedded page eats
+    // every event while the pointer is over it, so whatever resolved here
+    // would freeze in place until the pointer resurfaced. Nothing may hold —
+    // not even a rule matched through `closest()` on an ancestor. The ring
+    // itself hides on the same crossing (createCursor's move gate).
+    if (from.tagName === 'IFRAME') {
+      return null
+    }
     refreshActive()
     const target = from.closest?.(selector) ?? null
     if (!target) {

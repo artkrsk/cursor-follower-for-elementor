@@ -676,3 +676,46 @@ describe('refresh under a still pointer', () => {
     expect(targets.current?.element).toBe(fresh)
   })
 })
+
+describe('iframes — a hole in the observable document', () => {
+  it('lets no rule hold once the pointer crosses into an iframe', () => {
+    // The embedded page eats every event while the pointer is over it, so a
+    // rule kept through the crossing would freeze its payload in place — the
+    // lightbox's zoom glyph parked mid-slide over a YouTube embed. closest()
+    // would happily match the container around the iframe; the crossing must
+    // read as a departure instead.
+    mount('<div class="zone"><img id="pic" alt=""><iframe id="frame"></iframe></div>')
+    const targets = start({
+      scopes: [{ scope: '.zone', rules: [{ payload: { label: 'View' } }] }]
+    })
+    const leave = vi.fn()
+    targets.on('leave', leave)
+
+    fire(at('#pic'), 'pointerover', null, 'mouse')
+    expect(targets.current?.payload?.label).toBe('View')
+
+    // Entering the embed: pointerout on the image names the iframe, then the
+    // iframe itself is the pointerover target — the parent's last events.
+    fire(at('#pic'), 'pointerout', at('#frame'))
+    fire(at('#frame'), 'pointerover')
+
+    expect(targets.current).toBeNull()
+    expect(leave).toHaveBeenCalledTimes(1)
+  })
+
+  it('stays clear when a refresh finds an iframe under the parked pointer', () => {
+    // A host swapping slides can put an embed where an image was — the nudge
+    // it sends must not resurrect the image's rule.
+    mount('<div class="zone"><img id="pic" alt=""><iframe id="frame"></iframe></div>')
+    const targets = start({
+      scopes: [{ scope: '.zone', rules: [{ payload: { label: 'View' } }] }]
+    })
+    fire(at('#pic'), 'pointerover', null, 'mouse')
+    expect(targets.current).not.toBeNull()
+
+    document.elementFromPoint = () => at('#frame')
+    targets.refresh()
+
+    expect(targets.current).toBeNull()
+  })
+})

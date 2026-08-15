@@ -214,6 +214,19 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       input = createPointerInput({
         signal: lifecycle.signal,
         onMove: (e) => {
+          // Crossing INTO an iframe is the last event the parent document
+          // gets — everything after belongs to the embedded page, so the
+          // follower would freeze mid-glide wearing its last state. Fold back
+          // to the not-yet-seen state instead: the wrapper's collapse leg
+          // scales the ring away, and the next parent-side event
+          // re-materializes it at the pointer, exactly like page entry. No
+          // forced sleep — the pipeline converges and sleeps on its own, and
+          // a magnetic release may still be animating home.
+          if ((e.target as Element | null)?.tagName === 'IFRAME') {
+            state.pointerSeen = false
+            refs?.root.removeAttribute(VISIBLE_ATTR)
+            return
+          }
           if (!state.pointerSeen) {
             // Materialize at the pointer: snap silently, then reveal — no glide-in.
             state.pointerSeen = true
