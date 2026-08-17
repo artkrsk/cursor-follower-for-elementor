@@ -27,6 +27,7 @@ import {
   HTML_NO_NATIVE,
   HTML_PROGRESS,
   LOADING_ATTR,
+  LOADING_OUT_ATTR,
   OFFSET_X_VAR,
   OFFSET_Y_VAR,
   PRESS_VAR,
@@ -1044,6 +1045,78 @@ describe('sessions', () => {
 
     release()
     expect(cssVar(refs.root, TEXT_COLOR_VAR)).toBe('red')
+  })
+})
+
+/**
+ * The exit's transient attribute lets the spinner shrink away (still spinning)
+ * before the circle grows back — CSS can delay "become visible" but cannot
+ * remove its own transient state, so effects/suite.ts holds it up for one
+ * collapse+restore cycle. The settle gate skips the transient when loading
+ * releases before the circle's collapse leg ran its course: the spinner was
+ * never visible, so the delayed restore would hold a half-collapsed circle
+ * waiting on nothing.
+ */
+describe('sessions — loading exit sequencing', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  const settleMs = DEFAULT_ANIMATION_DURATION * 1000
+  const outMs = 2 * DEFAULT_ANIMATION_DURATION * 1000 + CLEAR_DELAY_PAD_MS
+
+  it('raises the out attribute on a settled exit and drops it after the cycle', () => {
+    const suite = build()
+    const release = suite.addSession({ showLoadingAnimation: true })
+    vi.advanceTimersByTime(settleMs + 1)
+
+    release()
+    expect(refs.root.hasAttribute(LOADING_ATTR)).toBe(false)
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(true)
+
+    vi.advanceTimersByTime(outMs + 1)
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(false)
+  })
+
+  it('skips the transient when loading releases before the collapse settled', () => {
+    const suite = build()
+    const release = suite.addSession({ showLoadingAnimation: true })
+
+    release()
+
+    expect(refs.root.hasAttribute(LOADING_ATTR)).toBe(false)
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(false)
+  })
+
+  it('cancels the out state when loading re-engages mid-exit', () => {
+    const suite = build()
+    const first = suite.addSession({ showLoadingAnimation: true })
+    vi.advanceTimersByTime(settleMs + 1)
+    first()
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(true)
+
+    suite.addSession({ showLoadingAnimation: true })
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(false)
+    expect(refs.root.hasAttribute(LOADING_ATTR)).toBe(true)
+
+    // The stale out timer must not resurrect the transient.
+    vi.runOnlyPendingTimers()
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(false)
+    expect(refs.root.hasAttribute(LOADING_ATTR)).toBe(true)
+  })
+
+  it('clears the transient and its timers on dispose', () => {
+    const suite = build()
+    const release = suite.addSession({ showLoadingAnimation: true })
+    vi.advanceTimersByTime(settleMs + 1)
+    release()
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(true)
+
+    suite.dispose()
+    expect(refs.root.hasAttribute(LOADING_ATTR)).toBe(false)
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(false)
+
+    expect(() => vi.runOnlyPendingTimers()).not.toThrow()
+    expect(refs.root.hasAttribute(LOADING_OUT_ATTR)).toBe(false)
   })
 })
 

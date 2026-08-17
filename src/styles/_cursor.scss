@@ -182,10 +182,40 @@
     );
   }
 
-  // While the loading spinner shows, the circle itself steps aside.
+  // Loading enter: the circle steps aside by collapsing to zero FIRST — the
+  // spinner's grow (_parts.scss) waits out this leg via transition-delay. A
+  // literal override, not the calc(): --arts-cursor-scale keeps carrying
+  // whatever the merged payload (a loading({size}) session included) wants
+  // for the moment loading ends. Fill/border ride along untouched — at scale
+  // 0 they're invisible regardless, so there's no separate fade to keep in
+  // sync. Same restatement deal as [data-cursor-collapsed] above.
   .arts-cursor[data-cursor-loading] .arts-cursor__follower {
-    background-color: transparent;
-    box-shadow: inset 0 0 0 var(--arts-cursor-border-width, 1px) transparent;
+    scale: 0;
+    transition:
+      scale tokens.$motion-collapse,
+      width tokens.$motion,
+      height tokens.$motion,
+      background-color tokens.$motion,
+      box-shadow tokens.$motion,
+      -webkit-backdrop-filter tokens.$motion,
+      backdrop-filter tokens.$motion;
+  }
+
+  // Loading exit: the transient tail (effects/suite.ts holds this attribute
+  // up after data-cursor-loading drops). The circle grows back to its
+  // ordinary var-driven scale from the base rule — this only delays the leg
+  // by one collapse-duration so the spinner shrinks out of the way first.
+  // $motion and $motion-collapse share --arts-cursor-duration, so the delay
+  // is exactly the spinner's collapse time, no second constant to sync.
+  .arts-cursor[data-cursor-loading-out] .arts-cursor__follower {
+    transition:
+      scale tokens.$motion var(--arts-cursor-duration),
+      width tokens.$motion,
+      height tokens.$motion,
+      background-color tokens.$motion,
+      box-shadow tokens.$motion,
+      -webkit-backdrop-filter tokens.$motion,
+      backdrop-filter tokens.$motion;
   }
 
   // Pressed pill: press via the box, not a uniform scale, so the sides never

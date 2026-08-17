@@ -819,9 +819,9 @@ class SiteSettingsTab extends Tab_Base {
 	/**
 	 * Loading is a state like the others, so it gets the states treatment. The
 	 * uniform appearance kit is deliberately absent: while loading, the stylesheet
-	 * blanks the circle with literal `transparent` (not var-driven), so
-	 * background/border overrides here would be dead declarations. Future loading
-	 * features land in this section when built.
+	 * collapses the circle to zero scale (not var-driven), so background/border
+	 * overrides here would be dead declarations. Future loading features land in
+	 * this section when built.
 	 */
 	private function add_section_loading(): void {
 		$this->start_controls_section(

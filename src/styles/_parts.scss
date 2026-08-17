@@ -251,11 +251,13 @@
     transition: scale tokens.$motion;
   }
 
-  // Loading spinner: one self-centering SVG, visible on [data-cursor-loading].
-  // The infinite animations are PAUSED while hidden — running they tick
-  // style + paint + commit at 60fps forever, even at opacity 0 with the
-  // engine asleep (stroke-dash animates on the main thread). Pause holds the
-  // current keyframe, so the arc doesn't snap during the fade-out.
+  // Loading spinner: one self-centering SVG. Hidden IS scale 0 (the dot's
+  // idiom above) — one property, no opacity to keep in sync. The infinite
+  // animations are PAUSED while hidden — running they tick style + paint +
+  // commit at 60fps forever, even when invisible with the engine asleep
+  // (stroke-dash animates on the main thread). By the time this base rule
+  // re-applies after an exit, the spinner has already settled at scale 0, so
+  // the pause never freezes a visible frame.
   .arts-cursor__spinner {
     position: absolute;
     top: 0;
@@ -263,8 +265,8 @@
     translate: -50% -50%;
     width: calc(var(--arts-cursor-size, #{tokens.$size-fallback}) - 8px);
     height: calc(var(--arts-cursor-size, #{tokens.$size-fallback}) - 8px);
-    opacity: 0;
-    transition: opacity tokens.$motion;
+    scale: 0;
+    transition: scale tokens.$motion-collapse;
     animation: arts-cursor-rotate 2s linear infinite;
     animation-play-state: paused;
 
@@ -277,8 +279,26 @@
     }
   }
 
+  // Enter: the circle collapses first (its data-cursor-loading rule in
+  // _cursor.scss), then the spinner grows in behind it — delayed by one
+  // collapse-duration (shared --arts-cursor-duration) and already spinning,
+  // so there's no freeze-then-thaw. During the delay a transitioning
+  // property holds its start value: the spinner waits at scale 0, running.
   .arts-cursor[data-cursor-loading] .arts-cursor__spinner {
-    opacity: 1;
+    scale: 1;
+    transition: scale tokens.$motion var(--arts-cursor-duration);
+    animation-play-state: running;
+
+    circle {
+      animation-play-state: running;
+    }
+  }
+
+  // Exit: the transient tail (effects/suite.ts raises this the instant
+  // data-cursor-loading drops). The collapse itself is the base rule — scale
+  // 0 on the flattened curve, no delay; this rule's sole job is keeping the
+  // spin alive so the arc visibly shrinks away instead of freezing mid-turn.
+  .arts-cursor[data-cursor-loading-out] .arts-cursor__spinner {
     animation-play-state: running;
 
     circle {

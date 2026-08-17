@@ -32,6 +32,7 @@ import {
   ICON_KIND_ATTR,
   ICON_MASK_VAR,
   LOADING_ATTR,
+  LOADING_OUT_ATTR,
   NO_HIGHLIGHT_SELECTOR,
   OFFSET_X_VAR,
   OFFSET_Y_VAR,
@@ -516,6 +517,70 @@ export function createEffectsSuite(args: {
   // content off mid-transition.
   const clearDelay = () => options.animation.duration * 1000 + CLEAR_DELAY_PAD_MS
 
+  // Loading exit choreography: hideContent's deferred-clear idiom, generalized
+  // to two attributes — CSS sequences "become visible" for free
+  // (transition-delay) but can't remove its own transient state. The settle
+  // gate marks the moment the circle's collapse leg has run its course, i.e.
+  // the earliest the spinner could be visible: an exit before that skips the
+  // transient entirely, or the delayed restore would hold a half-collapsed
+  // circle waiting on a spinner that never appeared.
+  let loadingSettleTimer: ReturnType<typeof setTimeout> | null = null
+  let loadingOutTimer: ReturnType<typeof setTimeout> | null = null
+  let loadingSettled = false
+
+  const clearLoadingTimers = () => {
+    if (loadingSettleTimer !== null) {
+      clearTimeout(loadingSettleTimer)
+      loadingSettleTimer = null
+    }
+    if (loadingOutTimer !== null) {
+      clearTimeout(loadingOutTimer)
+      loadingOutTimer = null
+    }
+  }
+
+  const applyLoading = (showLoading: boolean) => {
+    const wasLoading = root.hasAttribute(LOADING_ATTR)
+    if (showLoading === wasLoading) {
+      return
+    }
+    if (showLoading) {
+      // Re-entering mid-exit: drop the transient and reverse from wherever
+      // the circle/spinner currently sit.
+      if (loadingOutTimer !== null) {
+        clearTimeout(loadingOutTimer)
+        loadingOutTimer = null
+      }
+      root.removeAttribute(LOADING_OUT_ATTR)
+      root.setAttribute(LOADING_ATTR, '')
+      loadingSettled = false
+      if (loadingSettleTimer !== null) {
+        clearTimeout(loadingSettleTimer)
+      }
+      loadingSettleTimer = setTimeout(() => {
+        loadingSettled = true
+        loadingSettleTimer = null
+      }, options.animation.duration * 1000)
+      return
+    }
+    if (loadingSettleTimer !== null) {
+      clearTimeout(loadingSettleTimer)
+      loadingSettleTimer = null
+    }
+    root.removeAttribute(LOADING_ATTR)
+    if (!loadingSettled) {
+      return
+    }
+    root.setAttribute(LOADING_OUT_ATTR, '')
+    loadingOutTimer = setTimeout(
+      () => {
+        root.removeAttribute(LOADING_OUT_ATTR)
+        loadingOutTimer = null
+      },
+      2 * options.animation.duration * 1000 + CLEAR_DELAY_PAD_MS
+    )
+  }
+
   let hover: { payload: ICursorPayload; element: Element | null } | null = null
   const sessions: ICursorPayload[] = []
 
@@ -647,7 +712,7 @@ export function createEffectsSuite(args: {
     // -- document-level states (the merged view IS the refcount) --
     html.classList.toggle(HTML_NO_NATIVE, merged.hideNativeCursor === true)
     html.classList.toggle(HTML_PROGRESS, merged.showProgressCursor === true)
-    root.toggleAttribute(LOADING_ATTR, merged.showLoadingAnimation === true)
+    applyLoading(merged.showLoadingAnimation === true)
   }
 
   return {
@@ -718,6 +783,11 @@ export function createEffectsSuite(args: {
     dispose() {
       hover = null
       sessions.length = 0
+      // Ahead of the recompute so its applyLoading(false) is a no-op: no
+      // zombie timer may mutate a torn-down root later.
+      clearLoadingTimers()
+      root.removeAttribute(LOADING_ATTR)
+      root.removeAttribute(LOADING_OUT_ATTR)
       recompute()
       html.classList.remove(HTML_NO_NATIVE, HTML_PROGRESS)
     }
