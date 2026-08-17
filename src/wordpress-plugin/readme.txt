@@ -4,7 +4,7 @@ Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.0.4
+Stable tag: 1.1.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0
 GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
