@@ -106,6 +106,14 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
+= 1.1.0 =
+* added: a refresh() method — a host that swaps content under a resting pointer (a lightbox changing slides) can ask the cursor to re-resolve what it is hovering.
+* improved: the loading spinner now takes over through a sequenced scale swap — the circle shrinks away, the spinner grows in already spinning — instead of an abrupt cross-fade.
+* improved: the lightbox cursor controls moved into their own Cursor Effects section beside Elementor's Lightbox settings.
+* fixed: the cursor drew underneath the admin bar, popups and replacement lightboxes; it now draws above every overlay, the way the real pointer does.
+* fixed: crossing into an embedded iframe (a video, a map) left the ring parked over the embed holding the last hover state; it now folds away and returns when the pointer resurfaces.
+* fixed: an arrows-only drag pill kept the previous hover's text or icon visible inside the arrows.
+
 = 1.0.4 =
 * improved: confirmed compatibility with WordPress 7.1.
 
