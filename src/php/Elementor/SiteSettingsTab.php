@@ -210,7 +210,7 @@ class SiteSettingsTab extends Tab_Base {
 			)
 		);
 
-		// Typography prints straight onto the label element (falls back to the
+		// Typography prints straight onto the hint element (falls back to the
 		// engine's own 14px when unset).
 		$this->add_group_control(
 			Group_Control_Typography::get_type(),

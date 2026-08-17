@@ -34,9 +34,9 @@
 
   // A label is content to read, not a dot to invert: while one shows the blend
   // drops to `normal`, unless the site opts the label back into the global mode
-  // (Labels → Blend Mode → Inherit) — e.g. a transparent pill with light text
+  // (Hints → Blend Mode → Inherit) — e.g. a transparent pill with light text
   // that reads well inverted. The pill shape counts as content too: the
-  // arrows-only style raises no label attribute, but its chevrons deserve the
+  // arrows-only style raises no hint attribute, but its chevrons deserve the
   // same treatment as wording. Same element as the base blend above, +1
   // attribute of specificity, so it wins whenever either is up.
   .arts-cursor:is([data-cursor-hint], [data-cursor-shape='pill']) {

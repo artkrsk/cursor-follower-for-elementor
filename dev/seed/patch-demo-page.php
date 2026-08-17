@@ -9,8 +9,8 @@
  *     /path/to/dev/seed/patch-demo-page.php
  *
  * This PATCHES rather than builds. The page was assembled by hand in Elementor
- * and that work is the source of truth; a full builder (the one the Playground
- * blueprint will need) comes later and will be written from this page's saved
+ * and that work is the source of truth; the full builder (dev/seed/demo-page.php,
+ * inlined into the Playground blueprint) was written from this page's saved
  * state, not the other way round.
  *
  * Idempotent: every change is an assignment to a known key, so re-running is a

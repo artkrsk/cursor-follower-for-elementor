@@ -46,7 +46,7 @@ export function buildMarkup(target?: Element | string | null): ICursorRefs {
     root,
     follower: ref(root, 'follower', !built),
     hint: ref(root, 'hint', !built),
-    // Optional sub-slots — no warning when an adopter's label lacks them.
+    // Optional sub-slots — no warning when an adopter's hint lacks them.
     hintText: ref(root, 'hint-text', false),
     hintIcon: ref(root, 'hint-icon', false),
     built
@@ -141,9 +141,9 @@ function createTree(): HTMLElement {
   return root
 }
 
-/** The label: an inline-flex row with a text slot and an icon slot, so a payload
-    icon renders before/after the text and the pill (or circle) auto-sizes to fit
-    both. The engine ships no icon — the slot is filled per payload. */
+/** The hint: an inline-flex row with a text slot and an icon slot, so a payload
+    icon renders before/after the label text and the pill (or circle) auto-sizes
+    to fit both. The engine ships no icon — the slot is filled per payload. */
 function hint(): HTMLElement {
   const el = div('arts-cursor__hint', { [EL_ATTR]: 'hint' })
   el.append(

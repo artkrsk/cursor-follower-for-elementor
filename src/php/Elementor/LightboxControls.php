@@ -23,9 +23,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * own appearance and motion — nothing there is scoped to one piece of host UI.
  *
  * ONE hook, one method, no registry — the opposite of WidgetControls, and
- * deliberately: that class carries a lookup table because it has eleven widgets
- * and eleven anchor sections to reach, several of them measured rather than
- * read. This has exactly one anchor and will only ever have one.
+ * deliberately: that class carries a lookup table because it has fourteen
+ * widgets and fourteen anchor sections to reach, several of them measured
+ * rather than read. This has exactly one anchor and will only ever have one.
  */
 class LightboxControls {
 

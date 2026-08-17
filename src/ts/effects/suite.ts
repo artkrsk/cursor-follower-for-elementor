@@ -699,8 +699,6 @@ export function createEffectsSuite(args: {
     writeVar(root, OFFSET_X_VAR, offsetX)
     writeVar(root, OFFSET_Y_VAR, offsetY)
 
-    // -- icon --
-
     // -- arrows --
     setAttr(root, ARROWS_ATTR, merged.arrows)
     setAttr(root, ARROWS_POSITION_ATTR, merged.arrowsPosition)

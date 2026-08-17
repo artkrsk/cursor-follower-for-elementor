@@ -2,10 +2,10 @@
 
 @layer arts-cursor {
   // Content parts sit directly on the 0×0 wrapper anchor and center
-  // themselves — the label folds the slide offset into the same translate,
+  // themselves — the hint folds the slide offset into the same translate,
   // arrows center via margin so `translate` stays free for the slide.
 
-  // The label slides up from below and settles centered on the anchor.
+  // The hint slides up from below and settles centered on the anchor.
   .arts-cursor__hint {
     position: absolute;
     top: 0;
@@ -21,7 +21,7 @@
     align-items: center;
     gap: 0.4em;
 
-    // The label's own colour (Labels controls), falling back to the shared text
+    // The hint's own colour (Hints controls), falling back to the shared text
     // colour — the inline icon inherits it via currentColor. Typography (font
     // family/size/…) is printed straight onto this element by the kit control.
     color: var(--arts-cursor-hint-color, var(--arts-cursor-text-color, currentColor));
