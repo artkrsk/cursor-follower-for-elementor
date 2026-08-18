@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   canary:
-    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/canary.yml@main
+    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/canary.yml@ae4342eb9ff95a915392723659526c21f94b5b94 # main
     with:
       integration_suites: '[]'
       # wp_env_ports: '8890,8891'

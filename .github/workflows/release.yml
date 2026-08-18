@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/release.yml@main
+    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/release.yml@ae4342eb9ff95a915392723659526c21f94b5b94 # main
     with:
       # Node 24: last LTS line that still bundles corepack (the action uses it for pnpm)
       node_version: '24'

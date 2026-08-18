@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   deploy-docs:
-    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/deploy-docs.yml@main
+    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/deploy-docs.yml@ae4342eb9ff95a915392723659526c21f94b5b94 # main
     with:
       runner: self-hosted
       docs_base_path: /cursor-follower-for-elementor/
