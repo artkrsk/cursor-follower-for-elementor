@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   test:
-    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/test.yml@main
+    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/test.yml@ae4342eb9ff95a915392723659526c21f94b5b94 # main
     with:
       zip_budget_mb: '0.25'
       coverage: true
