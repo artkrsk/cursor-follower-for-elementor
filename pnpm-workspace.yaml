@@ -6,6 +6,15 @@ allowBuilds:
   # postinstall does is write .git/hooks, which package.json#prepare does explicitly.
   lefthook: false
 minimumReleaseAgeExclude:
+  - '@biomejs/biome@2.5.9'
+  - '@biomejs/cli-darwin-arm64@2.5.9'
+  - '@biomejs/cli-darwin-x64@2.5.9'
+  - '@biomejs/cli-linux-arm64@2.5.9'
+  - '@biomejs/cli-linux-arm64-musl@2.5.9'
+  - '@biomejs/cli-linux-x64@2.5.9'
+  - '@biomejs/cli-linux-x64-musl@2.5.9'
+  - '@biomejs/cli-win32-arm64@2.5.9'
+  - '@biomejs/cli-win32-x64@2.5.9'
   - '@fallow-cli/darwin-arm64@3.8.0'
   - '@fallow-cli/darwin-x64@3.8.0'
   - '@fallow-cli/linux-arm64-gnu@3.8.0'
