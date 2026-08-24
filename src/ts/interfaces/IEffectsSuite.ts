@@ -12,8 +12,8 @@ export interface IEffectsSuite {
   handlePress(e: PointerEvent): number | null
   /** True when this event lifts a primary press. */
   handleRelease(e: PointerEvent): boolean
-  /** Re-sample the measured CSS environment (base size, border width, pill
-      padding, label boxes) and reapply the current state. */
+  /** Re-sample the measured CSS environment (base size, hint padding, arrow
+      box + gap, label boxes) and reapply the current state. */
   remeasure(): void
   dispose(): void
 }

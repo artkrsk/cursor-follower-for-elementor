@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   for the boot script. In the editor the inline bridge live-forwards ANY
  *   `arts_cursor_*` change — the JS-bound keys re-tune the engine, and a
  *   selectors-based change prompts it to re-sample what it measures (size,
- *   border width, label boxes).
+ *   hint padding, arrow box + gap, label boxes).
  */
 class SiteSettingsTab extends Tab_Base {
 

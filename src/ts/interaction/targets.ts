@@ -120,7 +120,9 @@ export const authoredTarget = (
 }
 
 /**
- * A per-instance label authored as a CSS custom property on the scope element.
+ * One per-instance value authored as a CSS custom property on the scope element
+ * — the shared read behind `labelVar`, `iconVar` and `stateVars`; the `label` in
+ * the name is deliberate (see the hint-vs-label note in CLAUDE.md).
  * A custom property rather than an attribute because that is the channel a host's
  * own styling machinery writes — Elementor's `selectors` update it live in the
  * editor preview, where an attribute printed by PHP never lands (the editor

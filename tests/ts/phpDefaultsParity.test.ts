@@ -22,7 +22,7 @@ import { describe, expect, it } from 'vitest'
  * class of bug this file exists to make impossible.
  *
  * Parsed by regex rather than executed: booting WordPress to call the method
- * would cost the suite a PHP runtime for six numbers.
+ * would cost the suite a PHP runtime for a handful of numbers.
  */
 
 const OPTIONS_PHP = readFileSync(resolve(__dirname, '../../src/php/Options.php'), 'utf8')

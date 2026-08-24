@@ -32,8 +32,8 @@
     mix-blend-mode: var(--arts-cursor-blend-mode, normal);
   }
 
-  // A label is content to read, not a dot to invert: while one shows the blend
-  // drops to `normal`, unless the site opts the label back into the global mode
+  // A hint is content to read, not a dot to invert: while one shows the blend
+  // drops to `normal`, unless the site opts it back into the global mode
   // (Hints → Blend Mode → Inherit) — e.g. a transparent pill with light text
   // that reads well inverted. The pill shape counts as content too: the
   // arrows-only style raises no hint attribute, but its chevrons deserve the
@@ -152,9 +152,9 @@
   // icon. Fill, border and blur come from the hint controls
   // (--arts-cursor-hint-*), each falling back to the cursor's own var — so the
   // free-roam ring can stay a bare outline while content reads as a distinct
-  // chip. With no label border set it follows the fill (no stray ring), like the
-  // circle. Same states as the label blend mode above, for the same reason: an
-  // arrows-only pill raises no label attribute but is still a filled shape.
+  // chip. With no hint border set it follows the fill (no stray ring), like the
+  // circle. Same states as the hint blend mode above, for the same reason: an
+  // arrows-only pill raises no hint attribute but is still a filled shape.
   .arts-cursor:is([data-cursor-hint], [data-cursor-shape='pill']) .arts-cursor__follower {
     background-color: var(
       --arts-cursor-hint-background,

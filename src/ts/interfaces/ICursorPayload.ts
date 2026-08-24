@@ -35,8 +35,8 @@ export interface ICursorPayload {
   textColor?: string
   hideNativeCursor?: boolean
   highlight?: boolean | Partial<IHighlightConfig>
-  /** Raw SVG/HTML injected (author-trusted) into the label's icon slot, rendered
-      inline with the label — before or after per `iconPosition`. */
+  /** Raw SVG/HTML injected (author-trusted) into the hint's icon slot, rendered
+      inline with the label text — before or after per `iconPosition`. */
   icon?: string
   /** Icon-font classes for the same slot, for a glyph rather than markup — the
       webfont has to be on the page for it to render. */
@@ -49,7 +49,8 @@ export interface ICursorPayload {
   label?: string
   magnetic?: boolean | number
   /** Shift the whole cursor cluster off the pointer, in px `[x, y]` — e.g. to
-      lift a label clear of the OS cursor. Overrides the auto label nudge. */
+      lift a label clear of the OS cursor. Overrides the auto nudge a hint
+      (wording OR icon) otherwise applies. */
   offset?: [number, number]
   scale?: TScaleValue | false
   /** `'pill'` morphs the follower into a filled stadium hugging its content —

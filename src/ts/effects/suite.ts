@@ -68,7 +68,7 @@ import { hintFitScale, resolveScale, usesTargetRef } from '../utils'
  * All animation lives in CSS: this module only flips data-cursor-* attributes,
  * two document-level classes, and custom properties; transitions do the rest.
  * Everything that decides *what* to write is a pure module-scope function
- * taking explicit arguments; recompute() is the applier, with its label
+ * taking explicit arguments; recompute() is the applier, with its hint
  * section split out as a module-scope sub-applier (applyHint) that takes its
  * state explicitly.
  *
@@ -362,9 +362,9 @@ export const iconKind = (merged: ICursorPayload): 'mask' | 'glyph' | 'markup' | 
   return merged.icon ? 'markup' : null
 }
 
-/** Fill the text and icon slots and raise the label attributes. Text and the
+/** Fill the text and icon slots and raise the hint attributes. Text and the
     optional icon go in their own slots (built markup); adopted markup without
-    them falls back to text on the label itself, no icon. Markup is raw
+    them falls back to text on the hint itself, no icon. Markup is raw
     author-trusted HTML — set as innerHTML; a glyph becomes a real element so a
     class string never has to be escaped into markup. */
 const fillHintSlots = (
@@ -406,7 +406,7 @@ const clearHintSlots = (refs: ICursorRefs, root: HTMLElement, hint: HTMLElement)
   root.removeAttribute(ICON_KIND_ATTR)
 }
 
-/** Lower the label and clear its slots once the hide transition ends. */
+/** Lower the hint and clear its slots once the hide transition ends. */
 const retractHint = (
   refs: ICursorRefs,
   root: HTMLElement,
@@ -419,12 +419,13 @@ const retractHint = (
 }
 
 /**
- * The label section of a recompute: fill the slots and measure (memoized) when
- * a label is shown, retract when one was up. Returns what the rest of the
- * recompute needs from the label — the circle-floor scale and the pill box.
+ * The hint section of a recompute: fill the slots and measure (memoized) when
+ * a hint is shown — wording, an icon, or both — retract when one was up.
+ * Returns what the rest of the recompute needs from it: the circle-floor scale
+ * and the pill box.
  * Active inside arrows reserve their room in whichever box wins (the pill
  * grows, the circle floor inflates), and on a pill they can establish the box
- * with no label at all — so `pill` can be non-null when nothing shows.
+ * with no hint content at all — so `pill` can be non-null when nothing shows.
  * The pill DEMOTES to the circle whenever an inside pair grows its vertical
  * axis against competing horizontal content — a labeled pill with any vertical
  * reservation, or an 'all' pair with or without one — because the near-square
@@ -651,7 +652,7 @@ export function createEffectsSuite(args: {
     const merged = mergeLayers(hover?.payload, sessions)
     const element = hover?.element ?? null
 
-    // -- label (applied FIRST so its measured box sizes the pill / floors the
+    // -- hint (applied FIRST so its measured box sizes the pill / floors the
     //    circle scale below) --
     const { labelFit, pill } = applyHint(
       merged,

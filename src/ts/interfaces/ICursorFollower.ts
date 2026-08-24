@@ -23,7 +23,7 @@ export interface ICursorFollower {
   updateOptions(partial: ICursorOptions): void
   /** Optional pre-measure hint after injecting large DOM subtrees. */
   warm(container?: ParentNode): void
-  /** Re-sample the measured theming vars (size, border width, pill padding,
+  /** Re-sample the measured theming vars (size, hint padding, arrow box + gap,
       label metrics) after the host changes them at runtime. */
   remeasure(): void
   /** Re-resolve the hovered element after the HOST changed what its rules
