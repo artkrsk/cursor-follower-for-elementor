@@ -225,6 +225,31 @@ export const withCssContent = (rule: ICompiledRule, scopeEl: Element): ICursorPa
   return payload
 }
 
+/** Payload equivalence for a re-resolve. Identity settles authored payloads
+    (parsed once, cached) and plain rule matches (the authored object itself);
+    a var-tuned rule clones per resolve (withCssContent/withStateVars), so two
+    reads of the SAME content still differ by identity — compare one level of
+    values instead. Nested values (scale, drag, highlight) keep their identity
+    from the compiled rule, so Object.is per key is exact. */
+export const samePayload = (a: ICursorPayload | null, b: ICursorPayload | null): boolean => {
+  if (a === b) {
+    return true
+  }
+  if (!a || !b) {
+    return false
+  }
+  const keys = Object.keys(a) as (keyof ICursorPayload)[]
+  if (keys.length !== Object.keys(b).length) {
+    return false
+  }
+  for (const key of keys) {
+    if (!Object.is(a[key], b[key])) {
+      return false
+    }
+  }
+  return true
+}
+
 /**
  * One rule against one hovered element. The anchor is resolved within the
  * hovered scope INSTANCE and BECOMES the effect element (magnetic pull, snap
@@ -430,38 +455,81 @@ export function createTargets(args: {
     { passive: true, signal: args.signal }
   )
 
+  const refresh = (): void => {
+    // Rules resolve on a crossing and are held while the pointer sits
+    // still, so a host that changes what a rule matches — a class toggled
+    // under a parked pointer — had no way to be believed until the pointer
+    // left and came back. This re-runs the same resolve the crossing does.
+    //
+    // An unchanged verdict must not re-enter — re-emitting enter would
+    // rebuild the hint markup for nothing, on every click now that clicks
+    // schedule a refresh. samePayload settles it: identity for the common
+    // case, value equivalence for var-tuned rules whose payload is cloned
+    // per resolve. The held context is re-announced on its own channel
+    // instead: a host that derived state from the element at enter time (a
+    // computed colour var) has no other signal that the page changed under
+    // a still pointer.
+    //
+    // Resolved from whatever is under the pointer NOW, not from the element
+    // the crossing recorded: a host that swaps its content — a lightbox
+    // recycling slide holders — leaves that one detached, or belonging to
+    // something else, and re-reading it keeps a promise that has moved on.
+    // The last crossing's coordinates still describe the pointer, since a
+    // pointer that had moved would have re-resolved on its own.
+    const under = lastPoint ? document.elementFromPoint(lastPoint.x, lastPoint.y) : null
+    const next = resolveTarget(under ?? current?.trigger ?? null)
+    if (
+      next?.element === current?.element &&
+      samePayload(next?.payload ?? null, current?.payload ?? null)
+    ) {
+      if (current) {
+        events.emit('refresh', current)
+      }
+      return
+    }
+    leaveCurrent()
+    if (next) {
+      current = next
+      events.emit('enter', current)
+    }
+  }
+
+  // A click is the moment page state flips under a parked pointer (a burger
+  // opening a menu), and the browser fires no crossing for what changed
+  // beneath it. Deferring one frame lets the toggle handler's synchronous
+  // class/attribute flips land before the re-resolve reads them. No
+  // accepts() gate on purpose: a touch tap can flip the page under a parked
+  // mouse too, and the refresh re-verifies the MOUSE's own position — on
+  // touch-only input no crossing ever set lastPoint, so it no-ops.
+  let pendingRefresh = 0
+  const cancelPendingRefresh = () => {
+    if (pendingRefresh) {
+      cancelAnimationFrame(pendingRefresh)
+      pendingRefresh = 0
+    }
+  }
+  document.addEventListener(
+    'click',
+    () => {
+      cancelPendingRefresh()
+      pendingRefresh = requestAnimationFrame(() => {
+        pendingRefresh = 0
+        refresh()
+      })
+    },
+    // Capture, unlike the crossings above: toggle handlers stop a click's
+    // propagation to keep document-level "outside click closes" listeners at
+    // bay, which would starve a bubble listener of exactly these clicks.
+    { passive: true, capture: true, signal: args.signal }
+  )
+  args.signal.addEventListener('abort', cancelPendingRefresh)
+
   return {
     get current() {
       return current
     },
     on: events.on,
-    refresh() {
-      // Rules resolve on a crossing and are held while the pointer sits
-      // still, so a host that changes what a rule matches — a class toggled
-      // under a parked pointer — had no way to be believed until the pointer
-      // left and came back. This re-runs the same resolve the crossing does.
-      //
-      // Silent when the verdict is unchanged: a plain rule match returns the
-      // authored payload object itself, so identity settles the common case,
-      // and re-emitting would rebuild the hint markup for nothing.
-      //
-      // Resolved from whatever is under the pointer NOW, not from the element
-      // the crossing recorded: a host that swaps its content — a lightbox
-      // recycling slide holders — leaves that one detached, or belonging to
-      // something else, and re-reading it keeps a promise that has moved on.
-      // The last crossing's coordinates still describe the pointer, since a
-      // pointer that had moved would have re-resolved on its own.
-      const under = lastPoint ? document.elementFromPoint(lastPoint.x, lastPoint.y) : null
-      const next = resolveTarget(under ?? current?.trigger ?? null)
-      if (next?.element === current?.element && next?.payload === current?.payload) {
-        return
-      }
-      leaveCurrent()
-      if (next) {
-        current = next
-        events.emit('enter', current)
-      }
-    },
+    refresh,
     handleDown() {
       if (current) {
         events.emit('press', current)

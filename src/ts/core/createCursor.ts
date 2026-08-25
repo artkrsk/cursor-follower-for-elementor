@@ -193,6 +193,11 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
           events.emit('target:leave', ctx)
         }
       })
+      targets.on('refresh', (ctx) => {
+        if (!drag?.isDragging) {
+          events.emit('target:refresh', ctx)
+        }
+      })
 
       drag = createDragSessions({
         suite,

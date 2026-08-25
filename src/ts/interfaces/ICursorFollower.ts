@@ -28,8 +28,9 @@ export interface ICursorFollower {
   remeasure(): void
   /** Re-resolve the hovered element after the HOST changed what its rules
       match — a class toggled under a still pointer is otherwise unseen until
-      the pointer leaves and returns. Silent when nothing resolves
-      differently, so it is safe to call on any state change. */
+      the pointer leaves and returns. Also runs automatically one frame after
+      any click. When the same target survives, `target:refresh` fires instead
+      of a re-enter, so it is safe to call on any state change. */
   refresh(): void
 
   on<E extends keyof ICursorEvents>(event: E, cb: ICursorEvents[E]): () => void

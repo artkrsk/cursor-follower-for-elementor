@@ -11,8 +11,9 @@ export interface ITargets {
    * Re-resolve whatever is hovered right now. For hosts whose own state
    * decides which rule applies: rules are otherwise resolved only when the
    * pointer crosses into an element, so a change under a still pointer went
-   * unseen until it left and returned. Silent when nothing resolves
-   * differently.
+   * unseen until it left and returned. Also scheduled automatically one
+   * frame after any click. When the same verdict resolves, no leave/enter
+   * fires — the held context is re-announced as a `refresh` event instead.
    */
   refresh(): void
 }

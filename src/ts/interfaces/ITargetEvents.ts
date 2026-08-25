@@ -6,4 +6,7 @@ export interface ITargetEvents {
   leave: (ctx: ITargetContext) => void
   press: (ctx: ITargetContext) => void
   release: (ctx: ITargetContext) => void
+  /** The held target survived a re-resolve — page state may have changed
+      under it, so anything derived from the element should be re-read. */
+  refresh: (ctx: ITargetContext) => void
 }

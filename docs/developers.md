@@ -105,8 +105,9 @@ interface ICursorFollower {
   updateOptions(partial: ICursorOptions): void  // live-tune trailing/elastic/magnetic/highlight/pressScale
   warm(container?: ParentNode): void            // pre-measure hint after injecting large DOM
   remeasure(): void                             // re-sample measured theming vars after you change them
+  refresh(): void                               // re-resolve the hovered target after your state changed under a still pointer (also runs automatically one frame after any click; same verdict emits 'target:refresh' instead of re-entering)
 
-  on(event: 'target:enter' | 'target:leave' | 'enabled:change', cb): () => void
+  on(event: 'target:enter' | 'target:leave' | 'target:refresh' | 'enabled:change', cb): () => void
 
   readonly enabled: boolean
   readonly el: HTMLElement | null

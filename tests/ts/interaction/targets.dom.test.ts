@@ -35,6 +35,40 @@ const fire = (
   el.dispatchEvent(event)
 }
 
+const click = (el: Element) => {
+  el.dispatchEvent(new Event('click', { bubbles: true }))
+}
+
+const fakeRaf = () => {
+  let nextHandle = 1
+  const pending = new Map<number, FrameRequestCallback>()
+  const cancelled: number[] = []
+
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    const handle = nextHandle++
+    pending.set(handle, cb)
+    return handle
+  })
+  vi.stubGlobal('cancelAnimationFrame', (handle: number) => {
+    cancelled.push(handle)
+    pending.delete(handle)
+  })
+
+  return {
+    get armed() {
+      return pending.size
+    },
+    cancelled,
+    frame(now: number) {
+      const due = [...pending.values()]
+      pending.clear()
+      for (const cb of due) {
+        cb(now)
+      }
+    }
+  }
+}
+
 const start = (
   over: { scopes?: ITargetScope[]; isRuleActive?: (r: ITargetRule) => boolean } = {}
 ) =>
@@ -637,6 +671,103 @@ describe('refresh', () => {
     expect(() => targets.refresh()).not.toThrow()
     expect(targets.current).toBeNull()
   })
+
+  it('notifies the held target when the same verdict resolves', () => {
+    // The silent branch still has an audience: a host deriving state from the
+    // element at enter time (Velum reads a computed colour var) has no other
+    // signal that the page changed under a target the pointer never left.
+    mount('<div class="zone ready"><img id="pic" alt=""></div>')
+    const scopes: ITargetScope[] = [
+      {
+        scope: '.zone',
+        rules: [{ selector: ':scope.ready img', payload: { label: 'Zoom' } }]
+      }
+    ]
+    const targets = start({ scopes })
+    fire(at('#pic'), 'pointerover')
+
+    const refreshed: ITargetContext[] = []
+    const enter = vi.fn()
+    const leave = vi.fn()
+    targets.on('refresh', (ctx) => refreshed.push(ctx))
+    targets.on('enter', enter)
+    targets.on('leave', leave)
+    targets.refresh()
+
+    expect(refreshed).toHaveLength(1)
+    expect(refreshed[0]?.element).toBe(at('#pic'))
+    expect(enter).not.toHaveBeenCalled()
+    expect(leave).not.toHaveBeenCalled()
+  })
+
+  it('does not notify when nothing is held', () => {
+    mount('<a href="#" id="link">go</a>')
+    const targets = start()
+    const refreshed = vi.fn()
+    targets.on('refresh', refreshed)
+
+    targets.refresh()
+
+    expect(refreshed).not.toHaveBeenCalled()
+  })
+
+  /** withCssContent clones the payload whenever a var resolves, so identity
+      alone can never survive a re-resolve of a var-tuned rule — and with every
+      click scheduling a refresh, identity-only comparison would tear down and
+      rebuild the hint on any click that changed nothing. */
+  it('stays silent when a var-tuned rule re-resolves to the same content', () => {
+    vi.stubGlobal('getComputedStyle', () => ({
+      getPropertyValue: (name: string) => (name === '--drag-label' ? 'Drag' : '')
+    }))
+    mount('<div class="zone"><img id="pic" alt=""></div>')
+    const scopes: ITargetScope[] = [
+      {
+        scope: '.zone',
+        rules: [{ selector: ':scope img', payload: { shape: 'pill' }, labelVar: '--drag-label' }]
+      }
+    ]
+    const targets = start({ scopes })
+    fire(at('#pic'), 'pointerover')
+    expect(targets.current?.payload?.label).toBe('Drag')
+
+    const enter = vi.fn()
+    const leave = vi.fn()
+    const refreshed = vi.fn()
+    targets.on('enter', enter)
+    targets.on('leave', leave)
+    targets.on('refresh', refreshed)
+    targets.refresh()
+    vi.unstubAllGlobals()
+
+    expect(enter).not.toHaveBeenCalled()
+    expect(leave).not.toHaveBeenCalled()
+    expect(refreshed).toHaveBeenCalledTimes(1)
+  })
+
+  it('re-enters when a var-tuned rule resolves different content', () => {
+    let label = 'Drag'
+    vi.stubGlobal('getComputedStyle', () => ({
+      getPropertyValue: (name: string) => (name === '--drag-label' ? label : '')
+    }))
+    mount('<div class="zone"><img id="pic" alt=""></div>')
+    const scopes: ITargetScope[] = [
+      {
+        scope: '.zone',
+        rules: [{ selector: ':scope img', payload: { shape: 'pill' }, labelVar: '--drag-label' }]
+      }
+    ]
+    const targets = start({ scopes })
+    fire(at('#pic'), 'pointerover')
+
+    label = 'Swipe'
+    const enter = vi.fn()
+    targets.on('enter', enter)
+    targets.refresh()
+    vi.unstubAllGlobals()
+
+    expect(enter).toHaveBeenCalledTimes(1)
+    expect(targets.current?.payload?.label).toBe('Swipe')
+  })
 })
 
 describe('refresh under a still pointer', () => {
@@ -716,6 +847,86 @@ describe('iframes — a hole in the observable document', () => {
     document.elementFromPoint = () => at('#frame')
     targets.refresh()
 
+    expect(targets.current).toBeNull()
+  })
+})
+
+describe('click-triggered refresh', () => {
+  let raf: ReturnType<typeof fakeRaf>
+
+  beforeEach(() => {
+    raf = fakeRaf()
+    // The iframe describe above patches elementFromPoint per test and leaves
+    // the patch behind; park it on the null path so these ride the trigger
+    // fallback deterministically.
+    document.elementFromPoint = () => null
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('re-resolves one frame after a click, once the toggle handler has run', () => {
+    // A click that mutates the page under a parked pointer — a burger opening
+    // a fullscreen menu — fires no crossing, so the held verdict went stale
+    // until the pointer left and returned.
+    mount('<div class="zone"><img id="pic" alt=""></div>')
+    const scopes: ITargetScope[] = [
+      {
+        scope: '.zone',
+        rules: [{ selector: ':scope.ready img', payload: { label: 'Zoom' } }]
+      }
+    ]
+    const targets = start({ scopes })
+    at('.zone').classList.add('ready')
+    fire(at('#pic'), 'pointerover')
+    expect(targets.current?.payload?.label).toBe('Zoom')
+
+    const leave = vi.fn()
+    targets.on('leave', leave)
+    at('.zone').classList.remove('ready')
+    click(at('#pic'))
+
+    expect(leave).not.toHaveBeenCalled()
+    raf.frame(0)
+    expect(leave).toHaveBeenCalledTimes(1)
+    expect(targets.current).toBeNull()
+  })
+
+  it('coalesces rapid clicks into a single pending refresh', () => {
+    mount('<a href="#" id="link">go</a>')
+    start()
+
+    click(at('#link'))
+    click(at('#link'))
+    click(at('#link'))
+
+    expect(raf.armed).toBe(1)
+    expect(raf.cancelled).toHaveLength(2)
+  })
+
+  it('cancels the pending refresh when the lifecycle aborts', () => {
+    mount('<a href="#" id="link">go</a>')
+    start()
+    click(at('#link'))
+    expect(raf.armed).toBe(1)
+
+    lifecycle.abort()
+
+    expect(raf.armed).toBe(0)
+    expect(raf.cancelled).toHaveLength(1)
+  })
+
+  it('neither throws nor emits on a click before any crossing', () => {
+    mount('<a href="#" id="link">go</a>')
+    const targets = start()
+    const enter = vi.fn()
+    targets.on('enter', enter)
+
+    click(at('#link'))
+
+    expect(() => raf.frame(0)).not.toThrow()
+    expect(enter).not.toHaveBeenCalled()
     expect(targets.current).toBeNull()
   })
 })

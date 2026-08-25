@@ -131,6 +131,20 @@ describe('hover wiring', () => {
     expect(left[0]?.element).toBe(at('#link'))
   })
 
+  /** The silent-refresh bridge: a host deriving state from the element at
+      enter time gets told the page may have changed under a held target. */
+  it('emits target:refresh when a refresh keeps the same target', () => {
+    boot('<a href="#" id="link">go</a>')
+    const refreshed: ITargetContext[] = []
+    cursor.on('target:refresh', (ctx) => refreshed.push(ctx))
+    pointer(at('#link'), 'pointerover')
+
+    cursor.refresh()
+
+    expect(refreshed).toHaveLength(1)
+    expect(refreshed[0]?.element).toBe(at('#link'))
+  })
+
   /** The magnetic branch of the enter handler: a payload asking for it engages
       the trap, which is what raises the flag the CSS keys off. */
   it('engages the magnetic trap for a magnetic payload', () => {
