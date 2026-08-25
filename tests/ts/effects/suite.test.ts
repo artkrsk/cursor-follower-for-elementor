@@ -12,7 +12,7 @@ import {
   pillGeometry,
   resolveAppearance
 } from '@ts/effects/suite'
-import type { ICursorPayload, IGeometryCache, IGeometryEntry } from '@ts/interfaces'
+import type { ICursorPayload } from '@ts/interfaces'
 import { describe, expect, it, vi } from 'vitest'
 
 /**
@@ -29,11 +29,8 @@ const el = (over: Partial<{ closest: unknown; matches: unknown }> = {}) =>
     ...over
   }) as unknown as Element
 
-/** Geometry that answers a fixed size and counts how often it was asked. */
-const makeGeometry = (size = 200) => {
-  const entry: IGeometryEntry = { pageX: 0, pageY: 0, w: size, h: size / 2 }
-  return { resolve: vi.fn(() => entry) } as unknown as IGeometryCache
-}
+/** Measure thunk that answers a fixed size and counts how often it was asked. */
+const makeMeasure = (size = 200) => vi.fn(() => size)
 
 const BASE = 50
 
@@ -132,14 +129,14 @@ describe('iconKind', () => {
 
 describe('resolveAppearance', () => {
   it('resolves the payload scale when highlighting is off globally', () => {
-    expect(resolveAppearance({ scale: '40px' }, el(), makeGeometry(), BASE, false)).toEqual({
+    expect(resolveAppearance({ scale: '40px' }, el(), makeMeasure(), BASE, false)).toEqual({
       scale: 40 / BASE,
       highlight: false
     })
   })
 
   it('applies the configured highlight scale to a bare interactive', () => {
-    expect(resolveAppearance({}, el(), makeGeometry(), BASE, { scale: '80px' })).toEqual({
+    expect(resolveAppearance({}, el(), makeMeasure(), BASE, { scale: '80px' })).toEqual({
       scale: 80 / BASE,
       highlight: true
     })
@@ -147,7 +144,7 @@ describe('resolveAppearance', () => {
 
   it('lets the payload override the configured highlight', () => {
     expect(
-      resolveAppearance({ highlight: { scale: '100px' } }, el(), makeGeometry(), BASE, {
+      resolveAppearance({ highlight: { scale: '100px' } }, el(), makeMeasure(), BASE, {
         scale: '80px'
       })
     ).toEqual({ scale: 100 / BASE, highlight: true })
@@ -159,7 +156,7 @@ describe('resolveAppearance', () => {
     const result = resolveAppearance(
       { scale: '40px', highlight: { scale: 'target' } },
       null,
-      makeGeometry(),
+      () => undefined,
       BASE,
       { scale: '80px' }
     )
@@ -169,32 +166,32 @@ describe('resolveAppearance', () => {
 
   /**
    * The layout-read guard. Hovering a plain link must not measure it — the
-   * geometry cache is only consulted when the size grammar names 'target'.
+   * measure thunk is only called when the size grammar names 'target'.
    */
   it('does not measure the element unless the grammar asks for it', () => {
-    const geometry = makeGeometry()
+    const measure = makeMeasure()
 
-    resolveAppearance({ scale: '40px' }, el(), geometry, BASE, false)
-    resolveAppearance({}, el(), geometry, BASE, { scale: '80px' })
+    resolveAppearance({ scale: '40px' }, el(), measure, BASE, false)
+    resolveAppearance({}, el(), measure, BASE, { scale: '80px' })
 
-    expect(geometry.resolve).not.toHaveBeenCalled()
+    expect(measure).not.toHaveBeenCalled()
   })
 
   it('measures the element when the payload scale references the target', () => {
-    const geometry = makeGeometry(200)
+    const measure = makeMeasure(200)
 
-    const result = resolveAppearance({ scale: 'target' }, el(), geometry, BASE, false)
+    const result = resolveAppearance({ scale: 'target' }, el(), measure, BASE, false)
 
-    expect(geometry.resolve).toHaveBeenCalledOnce()
-    expect(result.scale).toBe(200 / BASE) // larger dimension of a 200×100 box
+    expect(measure).toHaveBeenCalledOnce()
+    expect(result.scale).toBe(200 / BASE)
   })
 
   it('measures the element when only the highlight scale references the target', () => {
-    const geometry = makeGeometry(200)
+    const measure = makeMeasure(200)
 
-    resolveAppearance({}, el(), geometry, BASE, { scale: 'target' })
+    resolveAppearance({}, el(), measure, BASE, { scale: 'target' })
 
-    expect(geometry.resolve).toHaveBeenCalledOnce()
+    expect(measure).toHaveBeenCalledOnce()
   })
 })
 

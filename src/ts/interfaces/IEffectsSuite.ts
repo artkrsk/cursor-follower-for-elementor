@@ -13,7 +13,10 @@ export interface IEffectsSuite {
   /** True when this event lifts a primary press. */
   handleRelease(e: PointerEvent): boolean
   /** Re-sample the measured CSS environment (base size, hint padding, arrow
-      box + gap, label boxes) and reapply the current state. */
+      box + gap, label boxes) and reapply the current state. The hover
+      target's own size is deliberately NOT re-sampled — it is fixed per
+      engagement (a mid-engagement read would include the magnetic element
+      shrink) and re-reads on the next enter. */
   remeasure(): void
   dispose(): void
 }

@@ -165,21 +165,21 @@ export const highlightEligible = (merged: ICursorPayload, element: Element | nul
 }
 
 /**
- * Scale and the highlight decision for a merged payload. The hovered
- * element is measured only when the size grammar actually references it (a
- * clamp bound counts) — hovering a plain link must not force a layout read.
- * The highlight scale wins only if it resolves; otherwise the payload's own
+ * Scale and the highlight decision for a merged payload. `measureTarget` is
+ * called only when the size grammar actually references the target (a clamp
+ * bound counts) — hovering a plain link must not force a layout read. The
+ * highlight scale wins only if it resolves; otherwise the payload's own
  * scale stands.
  */
 export const resolveAppearance = (
   merged: ICursorPayload,
   element: Element | null,
-  geometry: IGeometryCache,
+  measureTarget: () => number | undefined,
   baseSize: number,
   highlightOption: IResolvedOptions['highlight']
 ): IAppearance => {
   if (highlightOption === false || !highlightEligible(merged, element)) {
-    const targetSize = usesTargetRef(merged.scale) ? targetSizeOf(geometry, element) : undefined
+    const targetSize = usesTargetRef(merged.scale) ? measureTarget() : undefined
     return {
       scale: resolveScale(merged.scale ?? null, baseSize, targetSize),
       highlight: false
@@ -188,9 +188,7 @@ export const resolveAppearance = (
   const config = typeof merged.highlight === 'object' ? merged.highlight : {}
   const highlightScale = config.scale ?? highlightOption.scale
   const targetSize =
-    usesTargetRef(merged.scale) || usesTargetRef(highlightScale)
-      ? targetSizeOf(geometry, element)
-      : undefined
+    usesTargetRef(merged.scale) || usesTargetRef(highlightScale) ? measureTarget() : undefined
   const payloadScale = resolveScale(merged.scale ?? null, baseSize, targetSize)
   return {
     scale: resolveScale(highlightScale, baseSize, targetSize) ?? payloadScale,
@@ -584,6 +582,18 @@ export function createEffectsSuite(args: {
 
   let hover: { payload: ICursorPayload; element: Element | null } | null = null
   const sessions: ICursorPayload[] = []
+  /** The hover target's size, measured at most once per hover — at enter,
+      before the magnetic engagement writes its inline element scale (resting
+      shrink or press). The rect includes transforms, so a recompute triggered
+      mid-engagement (a session layered while hovering) re-measuring would fold
+      the engine's own shrink back into the ring's wrap scale. */
+  let hoverTargetSize: number | undefined
+  const measureHoverTarget = () => {
+    if (hoverTargetSize === undefined) {
+      hoverTargetSize = targetSizeOf(geometry, hover?.element ?? null)
+    }
+    return hoverTargetSize
+  }
 
   // Hint padding: the tunable CSS vars, read once (same lazy pattern) so both
   // shapes can be sized in JS — the pill pads its stadium with them, the circle
@@ -666,7 +676,13 @@ export function createEffectsSuite(args: {
     )
 
     // -- scale (highlight config wins; a label floors the size) --
-    const appearance = resolveAppearance(merged, element, geometry, baseSize, options.highlight)
+    const appearance = resolveAppearance(
+      merged,
+      element,
+      measureHoverTarget,
+      baseSize,
+      options.highlight
+    )
     const scale = floorScale(appearance.scale, labelFit)
     root.toggleAttribute(HIGHLIGHT_ATTR, appearance.highlight)
     // Exactly 0, not <= 0: the scale grammar never produces a negative, and a
@@ -717,11 +733,13 @@ export function createEffectsSuite(args: {
   return {
     setHover(payload, element) {
       hover = { payload, element }
+      hoverTargetSize = undefined
       recompute()
     },
     clearHover() {
       if (hover) {
         hover = null
+        hoverTargetSize = undefined
         recompute()
       }
     },

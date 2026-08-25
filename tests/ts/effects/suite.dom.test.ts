@@ -950,6 +950,54 @@ describe('remeasure', () => {
   })
 })
 
+describe('recompute — target measurement lifetime', () => {
+  const buildWith = (geometryCache: IGeometryCache) => {
+    html = document.createElement('html')
+    const root = document.createElement('div')
+    const follower = document.createElement('div')
+    const hint = document.createElement('div')
+    const hintText = document.createElement('div')
+    const hintIcon = document.createElement('div')
+    hint.append(hintText, hintIcon)
+    root.append(follower, hint)
+    refs = { root, follower, hint, hintText, hintIcon, built: true }
+    return createEffectsSuite({ refs, options: resolveOptions(), geometry: geometryCache, html })
+  }
+
+  /** The measurement is the ENGAGEMENT's size, taken at enter before magnetic
+      writes its inline element scale (resting or pressed) — the rect includes
+      transforms, so a recompute from session churn measuring mid-engagement
+      folds the engine's own shrink back into the ring's wrap scale. */
+  it('reuses the enter-time target measurement across session churn', () => {
+    const entry: IGeometryEntry = { pageX: 0, pageY: 0, w: 200, h: 100 }
+    const suite = buildWith({ resolve: () => entry } as unknown as IGeometryCache)
+    const target = document.createElement('div')
+    suite.setHover({ scale: 'target' }, target)
+    expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(`${200 / BASE_SIZE_FALLBACK}`)
+
+    entry.w = 190
+    entry.h = 95
+    const release = suite.addSession({ borderColor: '#fff' })
+    release()
+
+    expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(`${200 / BASE_SIZE_FALLBACK}`)
+  })
+
+  it('measures afresh on the next hover', () => {
+    const entry: IGeometryEntry = { pageX: 0, pageY: 0, w: 200, h: 100 }
+    const suite = buildWith({ resolve: () => entry } as unknown as IGeometryCache)
+    const target = document.createElement('div')
+    suite.setHover({ scale: 'target' }, target)
+    suite.clearHover()
+
+    entry.w = 100
+    entry.h = 50
+    suite.setHover({ scale: 'target' }, target)
+
+    expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe(`${100 / BASE_SIZE_FALLBACK}`)
+  })
+})
+
 describe('recompute — attributes and document flags', () => {
   it('mirrors the arrows payload and clears it when dropped', () => {
     const suite = build()
