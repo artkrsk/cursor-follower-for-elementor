@@ -460,9 +460,10 @@ class Options {
 			),
 			array(
 				// Legacy Tabs: `role="tab"`, which is not `role="button"`, so it misses
-				// too. Hidden from the panel while the `container` experiment is active
-				// (the widget's own show_in_panel() gate) but still rendered by every
-				// page that already had one.
+				// too. Hidden from the panel while the `nested-elements` experiment is
+				// active (the widget's own show_in_panel() gate — the same experiment
+				// that makes the nested Accordion above the default) but still rendered
+				// by every page that already had one.
 				// `.elementor-tab-title` is the base class on both the desktop and the
 				// mobile title.
 				//

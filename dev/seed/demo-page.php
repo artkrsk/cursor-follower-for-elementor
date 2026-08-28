@@ -7,8 +7,9 @@
  *   php -d mysqli.default_socket="$SOCK" "$(which wp)" eval-file dev/seed/demo-page.php
  *
  * Also inlined verbatim into .wordpress-org/blueprints/blueprint.json's
- * writeFile step by dev/blueprint/build-blueprint.js — there is no wp-cli in
- * that context, which is why every WP_CLI:: call below is guarded.
+ * writeFile step by `arts-wp blueprint build` (@arts/wp-plugin-tooling) — there
+ * is no wp-cli in that context, which is why every WP_CLI:: call below is
+ * guarded.
  *
  * The six posters are embedded rather than downloaded: plugins.svn.wordpress.org
  * serves no CORS headers, so a blueprint cannot fetch from there. The panel
@@ -39,8 +40,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Pinned so the blueprint's landingPage can address the page without guessing.
- * dev/blueprint/build-blueprint.js reads this constant — keep the literal on
- * one line.
+ * `arts-wp blueprint build` greps this define() out of the file — keep the
+ * literal on one line.
  */
 define( 'ARTS_CF_DEMO_PAGE_ID', 9931 );
 

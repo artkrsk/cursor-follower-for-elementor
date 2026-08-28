@@ -5,8 +5,7 @@
   // package.json#types points at, and the stylesheet entry — the last named
   // directly because its only importer is the docs site, which lives under the
   // ignored docs/** below, so fallow never sees the import (knip lists the same
-  // entry as its own safety net). build/index.js is found on its own from the
-  // package.json script, though see ignoreDependencies below.
+  // entry as its own safety net).
   "entry": [
     "src/ts/boot.ts",
     "src/ts/gate.ts",
@@ -19,11 +18,6 @@
   // Pure module-scope helpers are exported as the unit-test surface while also
   // being used inside their own module — see the convention in CLAUDE.md.
   "ignoreExportsUsedInFile": true,
-  // fallow's built-in ignore defaults include build/** (it assumes build output),
-  // and custom ignorePatterns only ADD to those defaults — so this repo's build
-  // scripts are invisible to fallow and the two packages only they import read as
-  // unused. knip does analyse build/**/*.js and vouches for both. Don't delete
-  // either on fallow's word alone; re-check with `pnpm knip` first.,
   "duplicates": {
     // Hide pair-only clones; focus on widespread copy-paste
     // worth refactoring. Lower to 2 to report every duplicate pair.

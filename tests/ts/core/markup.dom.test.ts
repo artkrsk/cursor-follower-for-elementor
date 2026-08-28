@@ -22,7 +22,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
  * adopted or built — `built` is what decides if destroy() may remove it.
  *
  * The dev-only warnings (a missing part, a hijacked containing block) do not run
- * here: tests/setup.ts stubs import.meta.env.DEV false to mirror the shipped
+ * here: tests/ts/setup.ts stubs import.meta.env.DEV false to mirror the shipped
  * bundle. The dev-diagnostics block below flips it back on for its own scope.
  */
 
