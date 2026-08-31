@@ -21,7 +21,7 @@
     "@arts/wp-plugin-tooling": "github:artkrsk/wp-plugin-tooling",
     "@biomejs/biome": "2.5.9",
     "@types/node": "^26.1.1",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-istanbul": "^4.1.10",
     "fallow": "3.17.0",
     "happy-dom": "20.11.2",
     "knip": "6.32.2",
