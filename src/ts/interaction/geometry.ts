@@ -5,9 +5,11 @@ import type { IGeometryCache, IGeometryEntry } from '../interfaces'
  * Page-space element geometry, kept fresh without layout flushes on any
  * interaction path:
  * - pre-warmed in one batched pass at idle (single flush, clean tree)
- * - revalidated per hover via a shared IntersectionObserver (its
- *   boundingClientRect is served from already-computed geometry — flush-free)
- * - sizes maintained by a shared ResizeObserver
+ * - revalidated through a shared IntersectionObserver (its boundingClientRect is
+ *   served from already-computed geometry — flush-free): the resize sweep pushes
+ *   through it, and stream() re-observes for a continuous feed while an anchor is
+ *   engaged
+ * - sizes maintained by a shared ResizeObserver, which revalidates the same way
  * - page-space coordinates are scroll-invariant for elements in normal flow,
  *   so scrolling never stales them; a fixed or stuck-sticky element's page
  *   coordinates DO move with scroll, which is why engage-time consumers call

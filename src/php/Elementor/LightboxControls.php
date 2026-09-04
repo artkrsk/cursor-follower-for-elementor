@@ -31,8 +31,8 @@ class LightboxControls {
 
 	/**
 	 * `settings-lightbox` is the tab id Elementor's kit registers
-	 * (`core/kits/documents/kit.php`), which Controls_Stack turns into the
-	 * section id `section_settings-lightbox` for hook purposes.
+	 * (`core/kits/documents/kit.php`); the tab class itself opens its section as
+	 * `'section_' . get_id()`, so the hook name carries `section_settings-lightbox`.
 	 */
 	private const ANCHOR = 'elementor/element/kit/section_settings-lightbox/after_section_end';
 

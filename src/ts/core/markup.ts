@@ -99,7 +99,10 @@ export function setActiveClasses(html: HTMLElement, active: boolean): void {
 /** Dev-only: an ancestor with transform/filter/will-change/contain/perspective
     makes `position: fixed` track that ancestor instead of the viewport — the
     classic silent breakage when themes wrap the printed markup. A fixed
-    element's offsetParent is non-null exactly in that case. Deferred a frame:
+    element's offsetParent is non-null exactly in that case — CSSOM View says it
+    is unconditionally null for `position: fixed`, but Chrome and Firefox both
+    return the containing-block ancestor and go null only when that is the
+    viewport, which is the divergence this probe rides. Deferred a frame:
     offsetParent forces layout, and stylesheets may not have applied yet. */
 function warnIfContainingBlockHijacked(root: HTMLElement): void {
   if (!import.meta.env?.DEV) {

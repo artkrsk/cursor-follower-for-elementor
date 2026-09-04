@@ -2,7 +2,7 @@ import type { ITickerAdapter } from '../interfaces'
 import type { TTickerCallback } from '../types'
 
 /**
- * Internal rAF ticker with the tempus-compatible callback shape.
+ * Internal rAF ticker, emitting the shared TTickerCallback shape.
  * The loop only runs while subscribers exist — zero cost when the engine idles.
  */
 export function createInternalTicker(): ITickerAdapter {

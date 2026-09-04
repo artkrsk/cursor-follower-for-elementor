@@ -45,7 +45,7 @@ export default defineConfig({
     server: {
       watch: {
         // dist/cache live inside the source root; without this, every
-        // `docs:build` force-reloads any open docs:dev tab.
+        // `vitepress build docs` force-reloads any open `pnpm dev` tab.
         ignored: ['**/docs/.vitepress/dist/**', '**/docs/.vitepress/cache/**']
       }
     }

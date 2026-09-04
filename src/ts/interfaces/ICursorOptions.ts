@@ -18,8 +18,9 @@ export interface ICursorOptions {
   /** Declarative rules grouped by scope selector, resolved on hover (e.g. Elementor widget defaults). */
   targetScopes?: ITargetScope[]
   animation?: Partial<IAnimationConfig>
-  /** Frame source. Shape-compatible with tempus and with `@arts/component-runtime`'s
-      ITicker, so a host that owns the loop can share it. */
+  /** Frame source. Shape-compatible with `@arts/component-runtime`'s ITicker, so a
+      host that owns the loop can share it — see TTickerCallback for the tempus
+      versions that shape still matches. */
   ticker?: ITickerAdapter
   /** Existing cursor markup to verify; engine builds its own tree when absent. */
   root?: Element | string | null
