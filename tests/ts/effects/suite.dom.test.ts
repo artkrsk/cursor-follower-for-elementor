@@ -203,6 +203,37 @@ describe('recompute — pill shape', () => {
     expect(cssVar(refs.root, SHAPE_HEIGHT_VAR)).toBe('42px')
   })
 
+  it('lets a drag session expand an outside-arrow press pill', () => {
+    const suite = build()
+    const primaryPress = { button: 0 } as PointerEvent
+
+    suite.setHover(
+      {
+        dot: true,
+        press: {
+          shape: 'pill',
+          pillAxis: 'horizontal',
+          arrows: 'horizontal',
+          arrowsPosition: 'outside'
+        },
+        drag: { shape: 'pill', arrows: 'horizontal' }
+      },
+      null
+    )
+    suite.handlePress(primaryPress)
+    expect(refs.root.getAttribute(ARROWS_POSITION_ATTR)).toBe('outside')
+    expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('42px')
+
+    const release = suite.addSession({
+      shape: 'pill',
+      arrows: 'horizontal',
+      arrowsPosition: 'inside'
+    })
+    expect(refs.root.getAttribute(ARROWS_POSITION_ATTR)).toBe('inside')
+    expect(Number.parseFloat(cssVar(refs.root, SHAPE_WIDTH_VAR))).toBeGreaterThan(42)
+    release()
+  })
+
   /** With a stylesheet present the pads come from the tunable vars — and the
       style read happens once, however many pills a page hovers. */
   it('reads the pill padding from the computed vars, once', () => {

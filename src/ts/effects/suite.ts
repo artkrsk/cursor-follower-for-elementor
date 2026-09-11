@@ -679,8 +679,12 @@ export function createEffectsSuite(args: {
   root.ownerDocument.fonts?.ready.then(() => labelBoxes.clear())
 
   const recompute = () => {
-    const base = mergeLayers(hover?.payload, sessions)
-    const merged = pressActive && base.press ? { ...base, ...base.press } : base
+    // Press enriches the hover layer, but a drag or programmatic session owns
+    // the later gesture state. In particular, a compact press pill can keep
+    // its arrows outside until the drag session expands them inside.
+    const pressPayload = pressActive ? hover?.payload.press : undefined
+    const hoverPayload = pressPayload ? { ...hover?.payload, ...pressPayload } : hover?.payload
+    const merged = mergeLayers(hoverPayload, sessions)
     const element = hover?.element ?? null
 
     // -- hint (applied FIRST so its measured box sizes the pill / floors the
