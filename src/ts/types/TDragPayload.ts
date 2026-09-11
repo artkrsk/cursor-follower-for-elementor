@@ -5,4 +5,4 @@ import type { ICursorPayload } from '../interfaces/ICursorPayload'
     no element, so `anchor` and `magnetic` have nothing to resolve against and a
     further nested `drag` is never consulted. Accepting them would let a payload
     state something that silently does nothing. */
-export type TDragPayload = Omit<ICursorPayload, 'anchor' | 'magnetic' | 'drag'>
+export type TDragPayload = Omit<ICursorPayload, 'anchor' | 'magnetic' | 'drag' | 'press'>

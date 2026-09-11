@@ -31,6 +31,7 @@ export type {
   TBootOptions,
   TDragPayload,
   TKitSettings,
+  TPressPayload,
   TScaleValue,
   TStateVarKey,
   TTickerCallback

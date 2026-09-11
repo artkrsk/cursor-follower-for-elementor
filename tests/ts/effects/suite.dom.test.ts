@@ -174,6 +174,35 @@ describe('recompute — pill shape', () => {
     expect(cssVar(refs.follower as HTMLElement, SCALE_VAR)).toBe('')
   })
 
+  it('composes a dot-only pill while a target press is held', () => {
+    const suite = build()
+    const primaryPress = { button: 0 } as PointerEvent
+
+    suite.setHover({ dot: true, press: { shape: 'pill' } }, null)
+    expect(refs.root.hasAttribute(SHAPE_ATTR)).toBe(false)
+
+    suite.handlePress(primaryPress)
+    expect(refs.root.getAttribute(SHAPE_ATTR)).toBe('pill')
+    expect(refs.root.getAttribute(SHAPE_AXIS_ATTR)).toBe('x')
+    expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('42px')
+    expect(cssVar(refs.root, SHAPE_HEIGHT_VAR)).toBe('22px')
+
+    suite.handleRelease(primaryPress)
+    expect(refs.root.hasAttribute(SHAPE_ATTR)).toBe(false)
+  })
+
+  it('orients a dot-only press pill vertically when requested', () => {
+    const suite = build()
+    const primaryPress = { button: 0 } as PointerEvent
+
+    suite.setHover({ dot: true, press: { shape: 'pill', pillAxis: 'vertical' } }, null)
+    suite.handlePress(primaryPress)
+
+    expect(refs.root.getAttribute(SHAPE_AXIS_ATTR)).toBe('y')
+    expect(cssVar(refs.root, SHAPE_WIDTH_VAR)).toBe('22px')
+    expect(cssVar(refs.root, SHAPE_HEIGHT_VAR)).toBe('42px')
+  })
+
   /** With a stylesheet present the pads come from the tunable vars — and the
       style read happens once, however many pills a page hovers. */
   it('reads the pill padding from the computed vars, once', () => {

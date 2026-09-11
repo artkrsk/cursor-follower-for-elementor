@@ -1,5 +1,6 @@
 import type { TArrowAxis } from '../types/TArrowAxis'
 import type { TDragPayload } from '../types/TDragPayload'
+import type { TPressPayload } from '../types/TPressPayload'
 import type { TScaleValue } from '../types/TScaleValue'
 import type { IHighlightConfig } from './IHighlightConfig'
 
@@ -27,6 +28,9 @@ export interface ICursorPayload {
       this target — e.g. a carousel that hovers a "Drag" pill and shows arrows
       while dragging. */
   drag?: TDragPayload
+  /** A cursor sub-state composed only while the primary press is held over this
+      target. Use it for a grab affordance that precedes the drag threshold. */
+  press?: TPressPayload
   /** Magnetic only: the element's OWN resting scale while engaged, from its
       centre — overrides the global `magnetic.elementScale`. 1 leaves the
       element's CSS alone. A press overwrites it flat rather than compounding,
@@ -52,6 +56,9 @@ export interface ICursorPayload {
       lift a label clear of the OS cursor. Overrides the auto nudge a hint
       (wording OR icon) otherwise applies. */
   offset?: [number, number]
+  /** Long axis for a dot-only press pill. Label and arrow pills derive their
+      axis from their content, so this has no effect outside that press state. */
+  pillAxis?: TArrowAxis
   scale?: TScaleValue | false
   /** `'pill'` morphs the follower into a filled stadium hugging its content —
       a label, an icon, or an inside arrow pair (effects/suite.ts decides,

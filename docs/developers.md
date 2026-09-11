@@ -59,6 +59,8 @@ Parsed once per element, matched via delegation — elements added later (AJAX, 
 | `iconPosition` | `"before"` \| `"after"` | Which side of the label the icon sits on (default after) |
 | `arrows` | `"horizontal"` \| `"vertical"` \| `"all"` \| `false` | Arrow glyphs around/inside the cursor |
 | `arrowsPosition` | `"inside"` \| `"outside"` | Arrows inside the ring or outside its edge |
+| `pillAxis` | `"horizontal"` \| `"vertical"` | Long axis for a dot-only press pill; label and arrow pills infer it from their content |
+| `press` | payload | A sub-payload composed while the primary press is held, before the drag threshold |
 | `drag` | payload | A sub-payload pushed while a click-drag is held on the element (its own `drag` is ignored) |
 | `dot` | `true` | A filled dot scales up at the anchor while pressed; rides the press channel |
 | `highlight` | `true` \| `false` \| `{scale?}` | Force, forbid, or tune the highlight for this element |

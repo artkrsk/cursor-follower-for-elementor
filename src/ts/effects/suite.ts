@@ -293,6 +293,20 @@ export const arrowOnlyPill = (
   return null
 }
 
+/** A compact stadium around the press dot. The dot has no layout box of its
+    own, so a press-only pill derives its content floor from the cursor size;
+    the 0.1 ratio is the shipped 6px dot at the 60px default cursor size. */
+const dotOnlyPill = (
+  baseSize: number,
+  hintPad: () => { x: number; y: number },
+  axis: 'horizontal' | 'vertical' | undefined
+) => {
+  const pad = hintPad()
+  const dotSize = baseSize * 0.1
+  const pill = pillGeometry(dotSize, dotSize, pad.x, pad.y)
+  return axis === 'vertical' ? { width: pill.height, height: pill.width } : pill
+}
+
 /** The auto nudge as CSS values rather than literals, so Site Settings can
     retune both distances through the kit vars while this module keeps deciding
     when a nudge applies at all. The constants stay the fallbacks. */
@@ -439,7 +453,8 @@ export const applyHint = (
   hintPad: () => { x: number; y: number },
   arrowTheme: () => { gap: number; size: number },
   baseSize: number,
-  clearDelay: number
+  clearDelay: number,
+  pressActive = false
 ): { labelFit: number; pill: { width: number; height: number } | null } => {
   // An icon with no wording is content in its own right, so the pill has to
   // render for it — gating on the label alone left an icon-only payload invisible.
@@ -484,7 +499,11 @@ export const applyHint = (
   }
   // HINT_ATTR stays down for an arrow-only pill: its styling keys on the
   // shape attr.
-  const pill = arrowOnlyPill(merged, hintPad, arrowTheme)
+  const pill =
+    arrowOnlyPill(merged, hintPad, arrowTheme) ??
+    (pressActive && merged.shape === 'pill' && merged.dot
+      ? dotOnlyPill(baseSize, hintPad, merged.pillAxis)
+      : null)
   // That pill keeps the cluster on screen, so the retract above has no end
   // for its deferred clear to arrive at — the previous payload's label or
   // icon would sit inside the arrows. Empty the slots now instead.
@@ -582,6 +601,7 @@ export function createEffectsSuite(args: {
 
   let hover: { payload: ICursorPayload; element: Element | null } | null = null
   const sessions: ICursorPayload[] = []
+  let pressActive = false
   /** The hover target's size, measured at most once per hover — at enter,
       before the magnetic engagement writes its inline element scale (resting
       shrink or press). The rect includes transforms, so a recompute triggered
@@ -659,7 +679,8 @@ export function createEffectsSuite(args: {
   root.ownerDocument.fonts?.ready.then(() => labelBoxes.clear())
 
   const recompute = () => {
-    const merged = mergeLayers(hover?.payload, sessions)
+    const base = mergeLayers(hover?.payload, sessions)
+    const merged = pressActive && base.press ? { ...base, ...base.press } : base
     const element = hover?.element ?? null
 
     // -- hint (applied FIRST so its measured box sizes the pill / floors the
@@ -672,7 +693,8 @@ export function createEffectsSuite(args: {
       hintPad,
       arrowTheme,
       baseSize,
-      clearDelay()
+      clearDelay(),
+      pressActive
     )
 
     // -- scale (highlight config wins; a label floors the size) --
@@ -769,6 +791,10 @@ export function createEffectsSuite(args: {
       // Mirror onto the root (inheriting) so the arrows re-seat on the pressed
       // ring; the follower's registered var can't reach them.
       setVar(root, PRESS_VAR, scale)
+      pressActive = hover?.payload.press !== undefined
+      if (pressActive) {
+        recompute()
+      }
       return scale
     },
     handleRelease(e) {
@@ -778,6 +804,10 @@ export function createEffectsSuite(args: {
       root.removeAttribute(PRESSED_ATTR)
       setVar(follower, SCALE_PRESSED_VAR, null)
       setVar(root, PRESS_VAR, null)
+      if (pressActive) {
+        pressActive = false
+        recompute()
+      }
       return true
     },
     remeasure() {

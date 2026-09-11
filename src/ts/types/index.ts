@@ -8,6 +8,7 @@ export type { TGateBoot } from './TGateBoot'
 // imports it directly — a barrel line with zero consumers would only trip the
 // unused-export analyzers.
 export type { TKitSettings } from './TKitSettings'
+export type { TPressPayload } from './TPressPayload'
 export type { TScaleValue } from './TScaleValue'
 export type { TStateVarKey } from './TStateVarKey'
 export type { TStyledElement } from './TStyledElement'
