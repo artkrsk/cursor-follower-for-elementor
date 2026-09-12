@@ -1,11 +1,10 @@
 import type { ICursorElementEvents } from './ICursorElementEvents'
-import type { ICursorElementHideOptions } from './ICursorElementHideOptions'
 
 export interface ICursorElementAttachment {
   readonly following: boolean
   pause(): void
   resume(): void
-  hide(options?: ICursorElementHideOptions): void
+  hide(options?: { position?: 'home' | 'current' }): void
   show(): void
   /** false preserves outgoing local DOM; external overlays are still removed. */
   destroy(revert?: boolean): void
