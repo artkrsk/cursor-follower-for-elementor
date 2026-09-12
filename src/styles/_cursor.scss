@@ -47,6 +47,10 @@
     visibility: visible;
   }
 
+  html.has-cursor-follower .arts-cursor[data-cursor-hidden] {
+    visibility: hidden;
+  }
+
   // Wrapper: a 0×0 anchor point at the follower position. Carries the reveal
   // (scale 0→1) plus the per-state offset that lifts the cluster off the pointer
   // (JS sets --arts-cursor-offset-* on the root; they inherit here). Both are

@@ -1,3 +1,5 @@
+import type { ICursorElementAttachment } from './ICursorElementAttachment'
+import type { ICursorElementOptions } from './ICursorElementOptions'
 import type { ICursorEvents } from './ICursorEvents'
 import type { ICursorOptions } from './ICursorOptions'
 import type { ICursorPayload } from './ICursorPayload'
@@ -18,6 +20,8 @@ export interface ICursorFollower {
   hideNativeCursor(): ICursorSession
   /** Magnet the cursor to a live (possibly moving) anchor until released. */
   magnetize(opts: IMagnetizeOptions): ICursorSession
+  /** Attach decorative content after init. Initial activation is deferred one frame. */
+  attachElement(opts: ICursorElementOptions): ICursorElementAttachment
 
   /** Live-tune feel parameters (trailing, elastic, magnetic). */
   updateOptions(partial: ICursorOptions): void

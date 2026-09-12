@@ -7,6 +7,7 @@
  * across languages.
  */
 export const VISIBLE_ATTR = 'data-cursor-visible'
+export const HIDDEN_ATTR = 'data-cursor-hidden'
 export const HIGHLIGHT_ATTR = 'data-cursor-highlight'
 /** The applied scale resolved to exactly 0 (the magnetic button-collapse rule
     in Options.php). Raised purely so _cursor.scss has something to select on:

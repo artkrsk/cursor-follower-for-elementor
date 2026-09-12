@@ -20,6 +20,7 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide' },
       { text: 'Effects', link: '/effects' },
+      { text: 'Attachments', link: '/attachments' },
       { text: 'Developers', link: '/developers' }
     ],
     search: { provider: 'local' },

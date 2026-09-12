@@ -16,6 +16,7 @@ import {
   COLLAPSED_ATTR,
   DISABLED_SELECTOR,
   DOT_ATTR,
+  HIDDEN_ATTR,
   HIGHLIGHT_ATTR,
   HINT_ATTR,
   HINT_ICON_ATTR,
@@ -749,6 +750,7 @@ export function createEffectsSuite(args: {
     // -- press dot (eligibility only; the stylesheet keys the scale-up on this
     //    plus data-cursor-pressed) --
     root.toggleAttribute(DOT_ATTR, merged.dot === true)
+    root.toggleAttribute(HIDDEN_ATTR, merged.hidden === true)
 
     // -- document-level states (the merged view IS the refcount) --
     html.classList.toggle(HTML_NO_NATIVE, merged.hideNativeCursor === true)

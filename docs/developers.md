@@ -65,6 +65,7 @@ Parsed once per element, matched via delegation — elements added later (AJAX, 
 | `dot` | `true` | A filled dot scales up at the anchor while pressed; rides the press channel |
 | `highlight` | `true` \| `false` \| `{scale?}` | Force, forbid, or tune the highlight for this element |
 | `hideNativeCursor` | `true` | Hide the OS cursor over the element |
+| `hidden` | `true` | Hide the complete engine graphic independently of the native pointer |
 | `backgroundColor` / `borderColor` / `borderWidth` / `textColor` | string / number | Per-element color and stroke overrides |
 | `offset` | `[x, y]` | Shift the whole cursor cluster off the pointer, in px — signed, `+x` right, `+y` down |
 | `showLoadingAnimation` / `showProgressCursor` | `true` | Enter the loading / progress state on hover |
@@ -72,6 +73,10 @@ Parsed once per element, matched via delegation — elements added later (AJAX, 
 Two behaviors you get without any attribute: interactive elements (`a`, `button`, `[role="button"]`, `.has-cursor-highlight`) auto-highlight, and `.no-cursor-highlight` opts one out. Localization is yours and upstream of the wire: wrap `label` in your own `__()` when printing the attribute from PHP.
 
 ## Server-side rules
+
+For existing DOM content that follows the pointer, see [Element attachments](/attachments).
+This API supports home-returning affordances, hover-only previews, delegated targets,
+and consumer-owned content updates through pointer and frame hooks.
 
 For markup you don't render — other people's widgets, plugin output — add rules through the one PHP filter instead of attributes. The docs engine runs these exact rules; hover the card:
 

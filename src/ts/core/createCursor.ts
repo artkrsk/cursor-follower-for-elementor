@@ -3,6 +3,7 @@ import { createMagneticSessions } from '../effects/magneticSessions'
 import { createEffectsSuite } from '../effects/suite'
 import { createMotion } from '../follower/motion'
 import { createDragSessions } from '../interaction/dragSessions'
+import { createElementAttachments } from '../interaction/elementAttachments'
 import { createGeometryCache } from '../interaction/geometry'
 import { createTargets, geometrySelector, resolveAnchor } from '../interaction/targets'
 import type {
@@ -109,10 +110,12 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
   let suite: IEffectsSuite | null = null
   let drag: IDragSessions | null = null
   let input: IPointerInput | null = null
+  let attachments: ReturnType<typeof createElementAttachments> | null = null
 
   const onEnabledChange = (enabled: boolean) => {
     setActiveClasses(html, enabled)
     if (!enabled) {
+      attachments?.disable()
       refs?.root.removeAttribute(VISIBLE_ATTR)
       state.pointerSeen = false
       motion?.sleep()
@@ -228,6 +231,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
           // forced sleep — the pipeline converges and sleeps on its own, and
           // a magnetic release may still be animating home.
           if ((e.target as Element | null)?.tagName === 'IFRAME') {
+            attachments?.move(e)
             state.pointerSeen = false
             refs?.root.removeAttribute(VISIBLE_ATTR)
             return
@@ -241,6 +245,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
             motion?.setPointer(e.clientX, e.clientY)
           }
           drag?.handleMove(e)
+          attachments?.move(e)
         },
         onDown: (e) => {
           const pressed = suite?.handlePress(e) ?? null
@@ -272,6 +277,8 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       if (!lifecycle) {
         return
       }
+      attachments?.destroy()
+      attachments = null
       motion?.dispose()
       lifecycle.abort()
       lifecycle = null
@@ -317,12 +324,27 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       return magnetics?.magnetize(opts) ?? createSession(() => {})
     },
 
+    attachElement(opts) {
+      if (!lifecycle) throw new Error('Call cursor.init() before attachElement()')
+      attachments ??= createElementAttachments({
+        options,
+        ticker,
+        pointer: state.mouseClient,
+        root: () => refs?.root ?? null,
+        enabled: () => input?.enabled ?? false,
+        seen: () => state.pointerSeen,
+        session: (payload) => api.set(payload)
+      })
+      return attachments.attach(opts)
+    },
+
     warm(container) {
       geometry?.warm(collectWarmTargets(container ?? document, options.attribute, warmSelector))
     },
 
     refresh() {
       targets?.refresh()
+      attachments?.refresh()
     },
 
     remeasure() {
@@ -330,6 +352,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
         Object.assign(options.animation, readAnimationTokens(refs.root))
       }
       suite?.remeasure()
+      attachments?.remeasure()
     },
 
     on: events.on,
@@ -340,6 +363,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
 
     updateOptions(partial) {
       applyOptionPatch(options, partial)
+      attachments?.remeasure()
     },
 
     get stats() {

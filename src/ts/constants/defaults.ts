@@ -25,3 +25,5 @@ export const DEFAULT_ANIMATION_DURATION = 0.25
     back-out curve) for inline transitions on PAGE elements — the token is
     scoped to `.arts-cursor`, so an arbitrary element can't `var()` it. */
 export const DEFAULT_EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+/** Mirrors the CSS zero-scale easing; expansion and collapse are deliberately distinct. */
+export const DEFAULT_COLLAPSE_EASING = 'cubic-bezier(0.34, 1, 0.64, 1)'

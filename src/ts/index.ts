@@ -7,6 +7,10 @@ export { createCursor } from './core/createCursor'
 export type {
   IAnimationConfig,
   IArtsCursorGlobal,
+  ICursorElementAttachment,
+  ICursorElementEvents,
+  ICursorElementFrame,
+  ICursorElementOptions,
   ICursorEvents,
   ICursorFollower,
   ICursorOptions,
