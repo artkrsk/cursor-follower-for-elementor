@@ -29,6 +29,8 @@ export interface IMagneticController {
       animation tokens as the ring — so the pair shrinks as one. Rides the
       engagement: releasing the trap hands the scale back regardless. */
   setPressedScale(ratio: number | null): void
+  /** Sample live callbacks before the shared frame's DOM writes. */
+  measure(): void
   /** Advances the element pull (and release-return). Every frame. */
   tick(dt: number): void
   /** Page-space target composition; false when not engaged (free-roam). */

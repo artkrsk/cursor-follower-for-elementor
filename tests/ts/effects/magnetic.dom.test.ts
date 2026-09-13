@@ -84,6 +84,48 @@ const settle = (controller: IMagneticController, ticks = 90) => {
   }
 }
 
+describe('frame measurement', () => {
+  it('samples live anchor and strength once before composition', () => {
+    const s = state({ mouseClient: { x: 200, y: 200 } })
+    const controller = trap({ state: s })
+    const anchor = vi.fn(() => ({ x: 100, y: 100 }))
+    const strength = vi.fn(() => 0)
+    controller.engageLive(anchor, strength)
+    anchor.mockClear()
+    controller.measure()
+    anchor.mockImplementation(() => ({ x: 900, y: 900 }))
+    strength.mockReturnValue(1)
+    controller.tick(FRAME_60)
+    controller.composeTarget()
+    expect(anchor).toHaveBeenCalledOnce()
+    expect(strength).toHaveBeenCalledOnce()
+    expect(s.target).toEqual({ x: 100, y: 100 })
+    controller.measure()
+    controller.tick(FRAME_60)
+    controller.composeTarget()
+    expect(s.target.x).toBe(900 + (200 - 900) * PULL_FACTOR)
+    controller.release()
+    anchor.mockClear()
+    strength.mockClear()
+    controller.measure()
+    expect(anchor).not.toHaveBeenCalled()
+    expect(strength).not.toHaveBeenCalled()
+  })
+
+  it('retains post-tick element pull correction with a measurement phase', () => {
+    const { controller, s } = engagedAt(170, 150)
+    controller.measure()
+    controller.tick(FRAME_60)
+    controller.composeTarget()
+    controller.measure()
+    controller.tick(FRAME_60)
+    controller.composeTarget()
+    // The second tick pulls 2.5px; correction must use that new pull.
+    const anchor = 150 - 2.5
+    expect(s.target.x).toBe(anchor + (170 - anchor) * PULL_FACTOR)
+  })
+})
+
 describe('engage', () => {
   it('appends the translate override so the per-frame pull is not re-animated', () => {
     const s = state()

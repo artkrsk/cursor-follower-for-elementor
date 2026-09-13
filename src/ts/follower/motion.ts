@@ -3,8 +3,7 @@ import type {
   IFrameState,
   IMagneticController,
   IMotionSystem,
-  IResolvedOptions,
-  ITickerAdapter
+  IResolvedOptions
 } from '../interfaces'
 import { createElastic } from './elastic'
 import { createFollowerPipeline } from './pipeline'
@@ -27,13 +26,14 @@ export function createMotion(args: {
   state: IFrameState
   stats: ICursorStats
   options: Pick<IResolvedOptions, 'trailing' | 'elastic'>
-  ticker: ITickerAdapter
+  schedule: () => void
   magnetic: IMagneticController
   readScroll: () => void
   getTrailingOverride: () => number | null
 }): IMotionSystem {
   const { state, stats, options, magnetic } = args
-  let unsubscribe: (() => void) | null = null
+  let trailingOverride: number | null = null
+  let measureMs = 0
 
   const writer = createTransformWriter(args.root)
   const elastic = createElastic({ state, writer, options })
@@ -58,16 +58,14 @@ export function createMotion(args: {
   }
 
   const sleep = () => {
-    unsubscribe?.()
-    unsubscribe = null
     stats.active = false
+    args.schedule()
   }
 
   const pipeline = createFollowerPipeline({
     state,
     getTrailing: () => {
-      const override = args.getTrailingOverride()
-      return override == null ? options.trailing : override
+      return trailingOverride == null ? options.trailing : trailingOverride
     },
     composeTarget,
     renderPosition,
@@ -77,32 +75,43 @@ export function createMotion(args: {
     onConverged: sleep
   })
 
-  /** One stable callback — the subscription is re-armed on every wake. */
-  const onFrame = (_time: number, dt: number) => {
-    // frameMs is a dev-only diagnostic readout; the two clock reads are DEV-only so a
-    // shipped frame doesn't pay for them (it reads 0 in production).
+  const measure = () => {
+    const started = import.meta.env?.DEV ? performance.now() : 0
+    magnetic.measure()
+    trailingOverride = args.getTrailingOverride()
+    if (import.meta.env?.DEV) measureMs = performance.now() - started
+  }
+  const onFrame = (dt: number) => {
+    if (!stats.active) return
+    // Include measurement and rendering. Production pays for none of these clock reads.
     const started = import.meta.env?.DEV ? performance.now() : 0
     pipeline.frame(dt)
     // sqrt over hypot: no overflow guards needed at pixel magnitudes.
     stats.lag = Math.sqrt(state.lag.x * state.lag.x + state.lag.y * state.lag.y)
     if (import.meta.env?.DEV) {
-      stats.frameMs = performance.now() - started
+      stats.frameMs = measureMs + performance.now() - started
     }
   }
 
   const wake = () => {
-    if (unsubscribe) {
+    if (stats.active) {
       return
     }
     stats.active = true
-    unsubscribe = args.ticker.subscribe(onFrame, { priority: 1, label: 'arts-cursor/frame' })
+    args.schedule()
   }
 
   return {
+    get active() {
+      return stats.active
+    },
+    measure,
+    frame: onFrame,
     wake,
     sleep,
     snap() {
       args.readScroll()
+      measure()
       pipeline.snap()
     },
     snapTo(x, y) {

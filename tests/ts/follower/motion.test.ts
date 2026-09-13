@@ -1,4 +1,5 @@
 import { FRAME_60 } from '@ts/constants'
+import { createFrameLoop } from '@ts/core/frameLoop'
 import { createMotion } from '@ts/follower/motion'
 import type { ICursorStats, IFrameState, IMagneticController } from '@ts/interfaces'
 import { lerpFactor } from '@ts/utils'
@@ -23,6 +24,7 @@ const fakeMagnetic = (over: Partial<IMagneticController> = {}) =>
     engaged: false,
     busy: false,
     tick: vi.fn(),
+    measure: vi.fn(),
     composeTarget: vi.fn(() => false),
     engage: vi.fn(),
     engageLive: vi.fn(),
@@ -46,12 +48,18 @@ const setup = (
   const ticker = fakeTicker()
   const magnetic = over.magnetic ?? fakeMagnetic()
   const readScroll = vi.fn()
+  const loop = createFrameLoop({
+    ticker: ticker.adapter,
+    measure: () => motion.measure(),
+    render: (dt) => motion.frame(dt),
+    busy: () => motion.active
+  })
   const motion = createMotion({
     root: root as unknown as HTMLElement,
     state,
     stats,
     options: { trailing: over.trailing ?? 0.2, elastic: over.elastic ?? false },
-    ticker: ticker.adapter,
+    schedule: loop.schedule,
     magnetic,
     readScroll,
     getTrailingOverride: () => over.trailingOverride ?? null
@@ -247,7 +255,7 @@ describe('stats', () => {
     expect(stats.lag).toBeGreaterThan(0)
   })
 
-  /** frameMs is a dev-only diagnostic readout; the two clock reads are DEV-only, so a
+  /** frameMs is a dev-only diagnostic readout; all clock reads are DEV-only, so a
       shipped frame (DEV forced false by test-setup) leaves it at 0. */
   it('does not time the frame outside DEV', () => {
     const { motion, stats, ticker } = setup()
@@ -258,15 +266,21 @@ describe('stats', () => {
     expect(stats.frameMs).toBe(0)
   })
 
-  it('times the frame when DEV is on', () => {
+  it('times main-cursor measurement and rendering without the intervening phases in DEV', () => {
     vi.stubEnv('DEV', true)
-    const now = vi.spyOn(performance, 'now').mockReturnValueOnce(5).mockReturnValue(9)
+    const now = vi
+      .spyOn(performance, 'now')
+      .mockReturnValueOnce(5)
+      .mockReturnValueOnce(7)
+      .mockReturnValueOnce(17)
+      .mockReturnValueOnce(20)
     const { motion, stats, ticker } = setup()
 
     motion.wake()
     ticker.step()
 
-    expect(stats.frameMs).toBe(4)
+    expect(stats.frameMs).toBe(5)
+    expect(now).toHaveBeenCalledTimes(4)
     now.mockRestore()
     vi.unstubAllEnvs()
   })

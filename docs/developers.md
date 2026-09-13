@@ -65,6 +65,7 @@ Parsed once per element, matched via delegation — elements added later (AJAX, 
 | `dot` | `true` | A filled dot scales up at the anchor while pressed; rides the press channel |
 | `highlight` | `true` \| `false` \| `{scale?}` | Force, forbid, or tune the highlight for this element |
 | `hideNativeCursor` | `true` | Hide the OS cursor over the element |
+| `hidden` | `true` | Hide the complete engine graphic independently of the native pointer |
 | `backgroundColor` / `borderColor` / `borderWidth` / `textColor` | string / number | Per-element color and stroke overrides |
 | `offset` | `[x, y]` | Shift the whole cursor cluster off the pointer, in px — signed, `+x` right, `+y` down |
 | `showLoadingAnimation` / `showProgressCursor` | `true` | Enter the loading / progress state on hover |

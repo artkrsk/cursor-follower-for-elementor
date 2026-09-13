@@ -7,6 +7,28 @@ interface ITestEvents {
 }
 
 describe('createEmitter', () => {
+  it('tracks actual listener presence through duplicate subscriptions and disposal', () => {
+    const emitter = createEmitter<ITestEvents>()
+    const cb = vi.fn()
+    const off = emitter.on('done', cb)
+    const duplicate = emitter.on('done', cb)
+    expect(emitter.has('done')).toBe(true)
+    off()
+    expect(emitter.has('done')).toBe(false)
+    duplicate()
+    emitter.on('done', cb)
+    emitter.clear()
+    expect(emitter.has('done')).toBe(false)
+  })
+
+  it('stops the remaining callbacks when cleared during delivery', () => {
+    const emitter = createEmitter<ITestEvents>()
+    emitter.on('done', () => emitter.clear())
+    const after = vi.fn()
+    emitter.on('done', after)
+    emitter.emit('done')
+    expect(after).not.toHaveBeenCalled()
+  })
   it('delivers the payload to every listener on that event', () => {
     const emitter = createEmitter<ITestEvents>()
     const first = vi.fn()

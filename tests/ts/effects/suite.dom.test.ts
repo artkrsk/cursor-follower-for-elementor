@@ -17,6 +17,7 @@ import {
   COLLAPSED_ATTR,
   DEFAULT_ANIMATION_DURATION,
   DOT_ATTR,
+  HIDDEN_ATTR,
   HIGHLIGHT_ATTR,
   HINT_ATTR,
   HINT_ICON_ATTR,
@@ -1101,6 +1102,22 @@ describe('recompute — attributes and document flags', () => {
     release()
     expect(html.classList.contains(HTML_NO_NATIVE)).toBe(false)
     expect(html.classList.contains(HTML_PROGRESS)).toBe(false)
+  })
+
+  it('hides the engine graphic independently and restores stacked suppression sessions', () => {
+    const suite = build()
+    suite.setHover({ hideNativeCursor: true }, null)
+
+    const first = suite.addSession({ hidden: true, hideNativeCursor: false })
+    const second = suite.addSession({ hidden: true, hideNativeCursor: false })
+    expect(refs.root.hasAttribute(HIDDEN_ATTR)).toBe(true)
+    expect(html.classList.contains(HTML_NO_NATIVE)).toBe(false)
+
+    first()
+    expect(refs.root.hasAttribute(HIDDEN_ATTR)).toBe(true)
+    second()
+    expect(refs.root.hasAttribute(HIDDEN_ATTR)).toBe(false)
+    expect(html.classList.contains(HTML_NO_NATIVE)).toBe(true)
   })
 
   it('highlights only while the merged view says so', () => {

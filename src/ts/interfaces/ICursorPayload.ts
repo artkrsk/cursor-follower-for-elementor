@@ -38,6 +38,8 @@ export interface ICursorPayload {
   elementScale?: number
   textColor?: string
   hideNativeCursor?: boolean
+  /** Hide the whole engine graphic independently of the native pointer. */
+  hidden?: boolean
   highlight?: boolean | Partial<IHighlightConfig>
   /** Raw SVG/HTML injected (author-trusted) into the hint's icon slot, rendered
       inline with the label text — before or after per `iconPosition`. */

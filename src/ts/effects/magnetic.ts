@@ -127,6 +127,8 @@ export function createMagnetic(args: {
   /** Live mode: strength read once per frame (0 glues the ring rigidly to the
       anchor). */
   let liveStrength: (() => number) | null = null
+  let sampled = false
+  let sampledStrength = 0
   let engaged = false
   let releaseRadius = 0
   /** Click-scale ratio while the primary button is down — mirrored onto the
@@ -269,6 +271,7 @@ export function createMagnetic(args: {
     },
 
     engage(el, pullStrength, entry, zone, elementScale) {
+      sampled = false
       // A previous element keeps easing home in the returning queue; the new
       // one is taken back out of it if it was still on its way.
       if (element && element !== el) {
@@ -309,6 +312,7 @@ export function createMagnetic(args: {
     },
 
     engageLive(getAnchor, readStrength) {
+      sampled = false
       if (engaged) {
         this.release()
       }
@@ -346,6 +350,18 @@ export function createMagnetic(args: {
         // Lifting the press falls back to the resting shrink, not to nothing.
         writeScale(restingScale, ratio)
       }
+    },
+
+    measure() {
+      if (!engaged) {
+        sampled = false
+        return
+      }
+      // Element geometry is already a stable cache entry. Its pull correction
+      // still runs AFTER tick(), preserving the existing magnetic arithmetic.
+      if (liveAnchor) readAnchor()
+      sampledStrength = liveStrength ? liveStrength() : strength
+      sampled = true
     },
 
     tick(dt) {
@@ -391,7 +407,9 @@ export function createMagnetic(args: {
       // No scroll read here: state.scroll is kept current by the passive listener
       // in createScrollReader, so the frame path forces no layout. engage()'s
       // enterPageSpace() is the authoritative re-sync at every engagement.
-      readAnchor()
+      if (anchorEntry || !sampled) readAnchor()
+      const pullStrength = sampled ? sampledStrength : liveStrength ? liveStrength() : strength
+      sampled = false
       const px = state.mouseClient.x + state.scroll.x
       const py = state.mouseClient.y + state.scroll.y
       const dx = px - anchor.x
@@ -413,7 +431,6 @@ export function createMagnetic(args: {
         return false
       }
 
-      const pullStrength = liveStrength ? liveStrength() : strength
       pullTarget.x = dx * PULL_FACTOR * pullStrength
       pullTarget.y = dy * PULL_FACTOR * pullStrength
       state.target.x = anchor.x + pullTarget.x

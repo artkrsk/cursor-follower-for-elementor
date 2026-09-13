@@ -24,6 +24,7 @@ import type {
 } from '../interfaces'
 import { isStyledElement } from '../utils'
 import { createEmitter } from './emitter'
+import { createFrameLoop } from './frameLoop'
 import { createFrameState, createScrollReader } from './frameState'
 import { createPointerInput } from './input'
 import { applyAnimationTokens, buildMarkup, readAnimationTokens, setActiveClasses } from './markup'
@@ -109,6 +110,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
   let suite: IEffectsSuite | null = null
   let drag: IDragSessions | null = null
   let input: IPointerInput | null = null
+  let frameLoop: ReturnType<typeof createFrameLoop> | null = null
 
   const onEnabledChange = (enabled: boolean) => {
     setActiveClasses(html, enabled)
@@ -126,6 +128,16 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
         return
       }
       lifecycle = new AbortController()
+      frameLoop = createFrameLoop({
+        ticker,
+        measure: () => {
+          if (motion?.active) motion.measure()
+        },
+        render: (dt) => {
+          motion?.frame(dt)
+        },
+        busy: () => Boolean(motion?.active)
+      })
       // Passive scroll listener seeds and maintains state.scroll; its lifecycle
       // rides this controller, like input and targets.
       const readScroll = createScrollReader(state, lifecycle.signal)
@@ -158,7 +170,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
         state,
         stats,
         options,
-        ticker,
+        schedule: () => frameLoop?.schedule(),
         readScroll,
         magnetic: magnetics.controller,
         getTrailingOverride: () => magnetics?.trailingOverride() ?? null
@@ -272,6 +284,8 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       if (!lifecycle) {
         return
       }
+      frameLoop?.dispose()
+      frameLoop = null
       motion?.dispose()
       lifecycle.abort()
       lifecycle = null
