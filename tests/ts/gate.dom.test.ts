@@ -72,7 +72,7 @@ afterEach(() => {
 })
 
 describe('parse-time install', () => {
-  it('installs the pending global with a claimable resolver', async () => {
+  it('installs a pending observable global', async () => {
     arm(true)
     bootConfig()
 
@@ -81,7 +81,7 @@ describe('parse-time install', () => {
     const gate = window.artsCursor as IGateGlobal
     expect(gate.get()).toBeNull()
     expect(gate.version).toBe('0.0.0-test')
-    expect(gate.__resolveReady).toBeTypeOf('function')
+    expect(gate.observe).toBeTypeOf('function')
   })
 
   it('resolves the gate-era promise for early consumers once claimed', async () => {
@@ -92,7 +92,7 @@ describe('parse-time install', () => {
     const held = gate.ready
 
     const cursor = { fake: true } as unknown as ICursorFollower
-    gate.__resolveReady(cursor)
+    gate.__publish(cursor)
 
     await expect(held).resolves.toBe(cursor)
   })

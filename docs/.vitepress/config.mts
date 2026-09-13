@@ -36,6 +36,7 @@ export default defineConfig({
     }
   },
   vite: {
+    define: { __ARTS_CURSOR_VERSION__: JSON.stringify('docs') },
     resolve: {
       alias: {
         '@engine': path.resolve(process.cwd(), 'src/ts/index.ts'),

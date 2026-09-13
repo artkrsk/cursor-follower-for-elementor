@@ -7,5 +7,8 @@ import type { ICursorFollower } from './ICursorFollower'
     gate parse and engine init. */
 export interface IGateGlobal extends IArtsCursorGlobal {
   /** Claimed (and thereby retired) by boot.ts. */
-  __resolveReady: (cursor: ICursorFollower) => void
+  /** Shared by the separately bundled gate and engine; never replace this hub. */
+  __publish(cursor: ICursorFollower | null): void
+  __disposeBoot?: () => void
+  __replaceBoot(install: () => void): void
 }

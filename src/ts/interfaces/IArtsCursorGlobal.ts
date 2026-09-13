@@ -1,4 +1,6 @@
+import type { TCursorObserver } from '../types/TCursorObserver'
 import type { ICursorFollower } from './ICursorFollower'
+import type { ICursorObserveOptions } from './ICursorObserveOptions'
 
 /** The discovery global installed by the plugin boot script
     (`window.artsCursor`) — importable so consumers type the window key
@@ -8,5 +10,8 @@ export interface IArtsCursorGlobal {
       boot script runs). */
   ready: Promise<ICursorFollower>
   get(): ICursorFollower | null
+  /** Replays the initialized instance (including capability-disabled cursors),
+      or null. Null is published before provider teardown. */
+  observe(listener: TCursorObserver, options?: ICursorObserveOptions): () => void
   version: string
 }

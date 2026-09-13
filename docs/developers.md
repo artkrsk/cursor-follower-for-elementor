@@ -17,11 +17,34 @@ interface IArtsCursorGlobal {
       loads on the first pointer signal) or never (touch device). */
   ready: Promise<ICursorFollower>
   get(): ICursorFollower | null
+  observe(listener: (cursor: ICursorFollower | null) => void,
+    options?: { signal?: AbortSignal }): () => void
   version: string
 }
 ```
 
-The engine also dispatches a bubbling `arts-cursor:ready` CustomEvent on `document` (detail: the instance) at init. Two consumer patterns, both correct:
+`observe()` synchronously replays the live initialized instance or `null`, then
+reports lifecycle changes. Capability-disabled cursors remain connected; use
+`enabled` and `enabled:change` for pointer capability. The namespace and its
+subscriptions survive gate-to-engine handoff and boot replacement. `destroy()`
+publishes `null` before internal teardown; `destroy(); init()` on the same object
+publishes a new connection. Retained `set()` and `magnetize()` release handles
+are inert once their provider has been disposed.
+
+Pass an owner's `AbortSignal` or call the returned unsubscribe function. An
+already-aborted signal receives no callback; abort/unsubscribe is idempotent,
+including during synchronous replay. Subscriber failures are isolated from the
+provider. Consumers still own release of resources acquired in their callbacks.
+
+The engine also dispatches a bubbling `arts-cursor:ready` CustomEvent on
+`document` (detail: the instance) at init, after publishing the live cursor.
+For namespace discovery, listen for it first, immediately inspect the owning
+document's `defaultView.artsCursor`, then subscribe once and remove the discovery
+listener. Observation does not load assets. No polling, promise coordination or
+legacy fallback is needed.
+
+`get()` and `ready` remain useful for imperative first-use operations, but
+`ready` resolves only the first initialized instance, not every replacement:
 
 ```ts
 // Fire-and-forget — right for decorative effects. Absent engine, nothing happens.

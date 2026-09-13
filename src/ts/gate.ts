@@ -14,23 +14,13 @@ import {
   HTML_INACTIVE,
   POINTER_MEDIA_QUERY
 } from './constants'
+import { getCursorGlobal } from './core/cursorGlobal'
 import { accepts } from './core/input'
-import type { ICursorFollower, IGateGlobal } from './interfaces'
 
 // Idempotence: a second print (double-wp_head themes) or a replayed inline
 // script (AJAX-transition eval paths) must not clobber the live global.
 if (!window.artsCursor) {
-  let resolveReady: (cursor: ICursorFollower) => void
-  const ready = new Promise<ICursorFollower>((resolve) => {
-    resolveReady = resolve
-  })
-  const gate: IGateGlobal = {
-    ready,
-    get: () => null,
-    version: __ARTS_CURSOR_VERSION__,
-    __resolveReady: (cursor) => resolveReady(cursor)
-  }
-  window.artsCursor = gate
+  getCursorGlobal(window)
 
   const html = document.documentElement
   const mql = window.matchMedia(POINTER_MEDIA_QUERY)

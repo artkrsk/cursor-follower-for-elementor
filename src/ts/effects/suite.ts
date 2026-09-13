@@ -601,6 +601,7 @@ export function createEffectsSuite(args: {
   }
 
   let hover: { payload: ICursorPayload; element: Element | null } | null = null
+  let disposed = false
   const sessions: ICursorPayload[] = []
   let pressActive = false
   /** The hover target's size, measured at most once per hover — at enter,
@@ -789,11 +790,12 @@ export function createEffectsSuite(args: {
       }
     },
     addSession(payload) {
+      if (disposed) return () => {}
       sessions.push(payload)
       recompute()
       let released = false
       return () => {
-        if (released) {
+        if (released || disposed) {
           return
         }
         released = true
@@ -831,6 +833,8 @@ export function createEffectsSuite(args: {
       recompute()
     },
     dispose() {
+      if (disposed) return
+      disposed = true
       hover = null
       sessions.length = 0
       // Ahead of the recompute so its applyLoading(false) is a no-op: no

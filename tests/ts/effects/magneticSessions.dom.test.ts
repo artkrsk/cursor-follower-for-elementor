@@ -57,6 +57,27 @@ beforeEach(() => {
 })
 
 describe('engageHover', () => {
+  it('makes a disposed provider release inert on a root adopted by its replacement', () => {
+    const first = build()
+    const releasePayload = vi.fn()
+    vi.mocked(suite.addSession).mockReturnValue(releasePayload)
+    const stale = first.magnetize({
+      getAnchor: () => ({ x: 20, y: 20 }),
+      payload: { hideNativeCursor: true }
+    })
+    first.dispose()
+    const next = build()
+    next.magnetize({ getAnchor: () => ({ x: 40, y: 40 }) })
+    wake.mockClear()
+    stale.release()
+    stale[Symbol.dispose]()
+    expect(root.hasAttribute(MAGNETIC_ATTR)).toBe(true)
+    expect(next.controller.engaged).toBe(true)
+    expect(wake).not.toHaveBeenCalled()
+    expect(releasePayload).not.toHaveBeenCalled()
+    next.dispose()
+  })
+
   it('engages the trap, flags the root and wakes the loop', () => {
     const sessions = build()
 

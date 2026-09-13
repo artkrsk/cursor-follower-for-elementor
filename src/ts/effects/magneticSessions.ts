@@ -33,6 +33,7 @@ export function createMagneticSessions(args: {
       required-but-possibly-undefined so the caller's optional `trailing` can be
       forwarded verbatim under exactOptionalPropertyTypes. */
   let live: { trailing: IMagnetizeOptions['trailing'] } | null = null
+  let disposed = false
   /** Stops the geometry stream feeding a hover-engaged (element) anchor. */
   let stopStream: (() => void) | null = null
 
@@ -55,7 +56,7 @@ export function createMagneticSessions(args: {
     trailingOverride: () => live?.trailing?.() ?? null,
 
     engageHover(element, payload, trigger) {
-      if (options.magnetic === false || live) {
+      if (disposed || options.magnetic === false || live) {
         return
       }
       // Measured fresh, not served from cache: a fixed or stuck-sticky element
@@ -84,7 +85,7 @@ export function createMagneticSessions(args: {
     },
 
     releaseHover() {
-      if (controller.engaged && !live) {
+      if (!disposed && controller.engaged && !live) {
         controller.release()
         clearTrap()
         args.wake()
@@ -92,7 +93,7 @@ export function createMagneticSessions(args: {
     },
 
     magnetize(opts) {
-      if (options.magnetic === false) {
+      if (disposed || options.magnetic === false) {
         return createSession(() => {})
       }
       // A live trap supersedes any hover-driven one.
@@ -114,7 +115,7 @@ export function createMagneticSessions(args: {
       args.wake()
       let released = false
       return createSession(() => {
-        if (released) {
+        if (released || disposed) {
           return
         }
         released = true
@@ -127,6 +128,8 @@ export function createMagneticSessions(args: {
     },
 
     dispose() {
+      if (disposed) return
+      disposed = true
       live = null
       stopStream?.()
       stopStream = null

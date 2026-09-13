@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme'
-import { onMounted } from 'vue'
-import { createCursor } from '@engine'
-import type { ICursorFollower } from '@engine'
+import { onMounted, onUnmounted } from 'vue'
+import { createCursorWithLifecycle } from '../../../src/ts/core/createCursor'
+import { getCursorGlobal } from '../../../src/ts/core/cursorGlobal'
 import { rulesDemoScopes } from './rulesDemoScopes'
 
 const { Layout } = DefaultTheme
@@ -14,22 +14,22 @@ const { Layout } = DefaultTheme
 // bridge, esbuild-injected version). Layout.vue is the persistent SPA root,
 // so this runs once per full page load and the engine survives client-side
 // navigation.
+let dispose: (() => void) | undefined
+onUnmounted(() => dispose?.())
 onMounted(() => {
-  if (window.artsCursor) {
+  if (window.artsCursor?.get()) {
     return
   }
-  let instance: ICursorFollower | null = null
-  let resolveReady!: (cursor: ICursorFollower) => void
-  const ready = new Promise<ICursorFollower>((resolve) => {
-    resolveReady = resolve
-  })
-  window.artsCursor = { ready, get: () => instance, version: 'docs' }
+  const hub = getCursorGlobal(window)
   // The rules-filter demo's scopes ride the one construction call —
   // targetScopes is not patchable later, and unmatched selectors no-op on
   // every other page.
-  instance = createCursor({ targetScopes: rulesDemoScopes })
+  const instance = createCursorWithLifecycle({ targetScopes: rulesDemoScopes }, {
+    initialized: (cursor) => hub.__publish(cursor),
+    destroying: (cursor) => { if (hub.get() === cursor) hub.__publish(null) }
+  })
+  dispose = () => instance.destroy()
   instance.init()
-  resolveReady(instance)
 })
 </script>
 

@@ -1,78 +1,61 @@
 /**
- * WordPress plugin entry (side-effect boot). The library surface stays in
- * index.ts; this file wires the page: discovery global, options intake, init,
- * and the Elementor editor live-preview listener.
- *
- * Discovery contract: `window.artsCursor` exists from parse time with a
- * pending `ready` promise, so consumer code that loads first can await it
- * race-free. `ready` resolves once the engine initializes — i.e. whenever
- * the plugin is active and this script runs.
+ * WordPress entry. Keep the gate's namespace and observer registry across
+ * engine replacement. The first-init promise is not a lifetime.
  */
-
-import { createCursor } from './core/createCursor'
-import type { ICursorFollower, ICursorOptions, IGateGlobal } from './interfaces'
+import { createCursorWithLifecycle } from './core/createCursor'
+import { getCursorGlobal } from './core/cursorGlobal'
+import type { ICursorFollower } from './interfaces'
 import { mapKitSettings } from './kitSettings'
 
-// Window typings live in global.d.ts (the consumer-facing contract).
+const hub = getCursorGlobal(window)
+hub.__replaceBoot(() => {
+  const lifetime = new AbortController()
+  let instance: ICursorFollower | null = null
+  let frame = 0
 
-let instance: ICursorFollower | null = null
-
-// When the wp_head gate printed, it installed the global at parse time with a
-// pending `ready`; claim its resolver so consumers holding that promise see
-// it resolve. Without a gate (direct bundle import, inline script stripped by
-// an optimizer) fall back to self-creating — the pre-gate contract.
-const gate = window.artsCursor as IGateGlobal | undefined
-let resolveReady: (cursor: ICursorFollower) => void
-const ready = gate?.__resolveReady
-  ? gate.ready
-  : new Promise<ICursorFollower>((resolve) => {
-      resolveReady = resolve
-    })
-if (gate?.__resolveReady) {
-  resolveReady = gate.__resolveReady
-}
-
-window.artsCursor = {
-  ready,
-  get: () => instance,
-  version: __ARTS_CURSOR_VERSION__
-}
-
-const createAndInit = (options?: ICursorOptions) => {
-  instance = createCursor(options)
-  instance.init()
-  resolveReady(instance)
-}
-
-const boot = () => {
-  createAndInit(window.artsCursorFollowerOptions)
-}
-
-// Elementor editor live preview: the PHP-printed bridge in the editor window
-// forwards kit-setting changes into this (preview) window. Inert elsewhere —
-// the event never originates outside the editor.
-let remeasureScheduled = false
-window.addEventListener('arts-cursor:kit-change', (e) => {
-  const settings = e.detail?.settings
-  if (!settings) {
-    return
+  const dispose = () => {
+    if (lifetime.signal.aborted) return
+    lifetime.abort()
+    cancelAnimationFrame(frame)
+    instance?.destroy()
+    instance = null
+    if (hub.__disposeBoot === dispose) delete hub.__disposeBoot
   }
-  instance?.updateOptions(mapKitSettings(settings))
-  // Selectors-based controls (size, border width, label typography) land as kit
-  // CSS, already applied by the time this event arrives — the engine only needs
-  // to re-sample what it measures. The rAF coalesces slider-drag bursts:
-  // Elementor fires a change per tick.
-  if (!remeasureScheduled) {
-    remeasureScheduled = true
-    requestAnimationFrame(() => {
-      remeasureScheduled = false
-      instance?.remeasure()
+  hub.__disposeBoot = dispose
+
+  const boot = () => {
+    if (lifetime.signal.aborted || instance) return
+    instance = createCursorWithLifecycle(window.artsCursorFollowerOptions, {
+      initialized(cursor) {
+        if (hub.__disposeBoot === dispose && !lifetime.signal.aborted) hub.__publish(cursor)
+      },
+      destroying(cursor) {
+        if (hub.__disposeBoot === dispose && hub.get() === cursor) hub.__publish(null)
+      }
     })
+    instance.init()
+  }
+
+  // Kit CSS already landed when this bridge fires; coalesce its remeasurement.
+  window.addEventListener(
+    'arts-cursor:kit-change',
+    (e) => {
+      const settings = e.detail?.settings
+      if (!settings) return
+      hub.get()?.updateOptions(mapKitSettings(settings))
+      if (!frame) {
+        frame = requestAnimationFrame(() => {
+          frame = 0
+          hub.get()?.remeasure()
+        })
+      }
+    },
+    { signal: lifetime.signal }
+  )
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true, signal: lifetime.signal })
+  } else {
+    boot()
   }
 })
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot, { once: true })
-} else {
-  boot()
-}

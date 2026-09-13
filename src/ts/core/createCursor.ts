@@ -9,6 +9,7 @@ import { createTargets, geometrySelector, resolveAnchor } from '../interaction/t
 import type {
   ICursorEvents,
   ICursorFollower,
+  ICursorLifecycle,
   ICursorOptions,
   ICursorPayload,
   ICursorRefs,
@@ -91,6 +92,14 @@ export const collectWarmTargets = (
 }
 
 export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower {
+  return createCursorWithLifecycle(userOptions)
+}
+
+/** Internal constructor used by boot to publish at the actual lifecycle boundaries. */
+export function createCursorWithLifecycle(
+  userOptions: ICursorOptions = {},
+  hooks?: ICursorLifecycle
+): ICursorFollower {
   const options = resolveOptions(userOptions)
   const ticker = userOptions.ticker ?? createInternalTicker()
   // Compiled once — targetScopes is wired at init and never patched.
@@ -104,6 +113,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
 
   let refs: ICursorRefs | null = null
   let lifecycle: AbortController | null = null
+  let destroying = false
   let motion: IMotionSystem | null = null
   let geometry: IGeometryCache | null = null
   let targets: ITargets | null = null
@@ -127,7 +137,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
 
   const api: ICursorFollower = {
     init() {
-      if (lifecycle) {
+      if (lifecycle || destroying) {
         return
       }
       lifecycle = new AbortController()
@@ -309,15 +319,21 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       controlledDrag.setEnabled(input.enabled)
       setActiveClasses(html, input.enabled)
 
+      const initializedLifetime = lifecycle
+      hooks?.initialized(api)
+      if (lifecycle !== initializedLifetime) return // Reentrant destroy/re-init.
+
       // The engine is live before the first paint of consumer code that
       // awaits it — announce on the document for load-order-proof discovery.
       document.dispatchEvent(new CustomEvent('arts-cursor:ready', { bubbles: true, detail: api }))
     },
 
     destroy() {
-      if (!lifecycle) {
+      if (!lifecycle || destroying) {
         return
       }
+      destroying = true
+      hooks?.destroying(api)
       frameLoop?.dispose()
       frameLoop = null
       motion?.dispose()
@@ -344,6 +360,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       }
       refs = null
       motion = null
+      destroying = false
     },
 
     bindDrag(target, options) {

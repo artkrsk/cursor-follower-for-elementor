@@ -466,6 +466,23 @@ describe('the effective animation tokens', () => {
 })
 
 describe('destroy', () => {
+  it.each([false, true])(
+    'makes retained sessions inert across reinitialization (same object: %s)',
+    (same) => {
+      boot()
+      const stale = cursor.set({ hideNativeCursor: true, showProgressCursor: true })
+      cursor.destroy()
+      if (!same) cursor = createCursor({ ticker: ticker.adapter })
+      cursor.init()
+      cursor.set({ hideNativeCursor: true, showProgressCursor: true })
+      stale.release()
+      stale.release()
+      stale[Symbol.dispose]()
+      expect(document.documentElement.classList.contains(HTML_NO_NATIVE)).toBe(true)
+      expect(document.documentElement.classList.contains(HTML_PROGRESS)).toBe(true)
+    }
+  )
+
   it('removes the tree it built and clears the document flags', () => {
     boot()
 
