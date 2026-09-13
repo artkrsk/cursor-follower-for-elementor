@@ -7,6 +7,8 @@ export { createCursor } from './core/createCursor'
 export type {
   IAnimationConfig,
   IArtsCursorGlobal,
+  ICursorDragBinding,
+  ICursorDragOptions,
   ICursorEvents,
   ICursorFollower,
   ICursorOptions,
@@ -29,6 +31,7 @@ export type {
 export type {
   TArrowAxis,
   TBootOptions,
+  TCursorDragState,
   TDragPayload,
   TKitSettings,
   TPressPayload,

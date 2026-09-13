@@ -9,6 +9,8 @@ export interface IEffectsSuite {
   /** Returns the applied click-scale ratio, or null when the press is gated
       (click scale off, modified or secondary button) — the composition root
       forwards it to the magnetic trap so the engaged element shrinks along. */
+  /** Event-independent press channel for host-owned gestures and cancellation. */
+  setPressed(pressed: boolean): number | null
   handlePress(e: PointerEvent): number | null
   /** True when this event lifts a primary press. */
   handleRelease(e: PointerEvent): boolean

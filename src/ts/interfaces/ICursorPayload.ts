@@ -28,6 +28,8 @@ export interface ICursorPayload {
       this target — e.g. a carousel that hovers a "Drag" pill and shows arrows
       while dragging. */
   drag?: TDragPayload
+  /** Controlled targets remain neutral until their host binds a gesture state. */
+  dragMode?: 'auto' | 'controlled'
   /** A cursor sub-state composed only while the primary press is held over this
       target. Use it for a grab affordance that precedes the drag threshold. */
   press?: TPressPayload

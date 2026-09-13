@@ -2,6 +2,7 @@ import { VISIBLE_ATTR } from '../constants'
 import { createMagneticSessions } from '../effects/magneticSessions'
 import { createEffectsSuite } from '../effects/suite'
 import { createMotion } from '../follower/motion'
+import { createControlledDrag } from '../interaction/controlledDrag'
 import { createDragSessions } from '../interaction/dragSessions'
 import { createGeometryCache } from '../interaction/geometry'
 import { createTargets, geometrySelector, resolveAnchor } from '../interaction/targets'
@@ -109,11 +110,13 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
   let magnetics: IMagneticSessions | null = null
   let suite: IEffectsSuite | null = null
   let drag: IDragSessions | null = null
+  let controlledDrag: ReturnType<typeof createControlledDrag> | null = null
   let input: IPointerInput | null = null
   let frameLoop: ReturnType<typeof createFrameLoop> | null = null
 
   const onEnabledChange = (enabled: boolean) => {
     setActiveClasses(html, enabled)
+    controlledDrag?.setEnabled(enabled)
     if (!enabled) {
       refs?.root.removeAttribute(VISIBLE_ATTR)
       state.pointerSeen = false
@@ -187,6 +190,11 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       // effects are gated on the drag being idle — extracted so a drag's end can
       // resync to whatever the pointer landed on.
       const enterTarget = (ctx: ITargetContext) => {
+        if (controlledDrag?.enter(ctx)) {
+          magnetics?.releaseHover()
+          events.emit('target:enter', ctx)
+          return
+        }
         suite?.setHover(ctx.payload ?? {}, ctx.element)
         if (ctx.payload?.magnetic && isStyledElement(ctx.element)) {
           magnetics?.engageHover(ctx.element, ctx.payload, ctx.trigger)
@@ -194,19 +202,21 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
         events.emit('target:enter', ctx)
       }
       targets.on('enter', (ctx) => {
-        if (!drag?.isDragging) {
+        if (!drag?.isDragging && !controlledDrag?.active) {
           enterTarget(ctx)
         }
       })
       targets.on('leave', (ctx) => {
-        if (!drag?.isDragging) {
+        controlledDrag?.leave()
+        if (!drag?.isDragging && !controlledDrag?.active) {
           suite?.clearHover()
           magnetics?.releaseHover()
           events.emit('target:leave', ctx)
         }
       })
       targets.on('refresh', (ctx) => {
-        if (!drag?.isDragging) {
+        controlledDrag?.refresh()
+        if (!drag?.isDragging && !controlledDrag?.active) {
           events.emit('target:refresh', ctx)
         }
       })
@@ -219,6 +229,22 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
           if (ctx) {
             enterTarget(ctx)
           } else {
+            suite?.clearHover()
+            magnetics?.releaseHover()
+          }
+        }
+      })
+
+      controlledDrag = createControlledDrag({
+        canEngage: () => !drag?.isDragging,
+        suite,
+        targets,
+        root: refs.root,
+        resetMagneticPress: () => magnetics?.controller.setPressedScale(null),
+        resync: () => {
+          const ctx = targets?.current
+          if (ctx) enterTarget(ctx)
+          else {
             suite?.clearHover()
             magnetics?.releaseHover()
           }
@@ -252,18 +278,25 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
           } else {
             motion?.setPointer(e.clientX, e.clientY)
           }
+          controlledDrag?.refresh()
           drag?.handleMove(e)
         },
         onDown: (e) => {
+          targets?.handleDown()
+          if (e.button === 0 && controlledDrag?.handleDown()) return
           const pressed = suite?.handlePress(e) ?? null
           // The engaged magnetic element mirrors the ring's click scale.
           if (pressed !== null) {
             magnetics?.controller.setPressedScale(pressed)
           }
-          targets?.handleDown()
           drag?.handleDown(e)
         },
         onUp: (e) => {
+          if (e.button !== 0 && e.type !== 'pointercancel') return
+          if (controlledDrag?.handleUp()) {
+            targets?.handleUp()
+            return
+          }
           if (suite?.handleRelease(e)) {
             magnetics?.controller.setPressedScale(null)
           }
@@ -273,6 +306,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
         onEnabledChange
       })
 
+      controlledDrag.setEnabled(input.enabled)
       setActiveClasses(html, input.enabled)
 
       // The engine is live before the first paint of consumer code that
@@ -292,6 +326,8 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       state.pointerSeen = false
       magnetics?.dispose()
       magnetics = null
+      controlledDrag?.dispose()
+      controlledDrag = null
       suite?.dispose()
       suite = null
       geometry?.dispose()
@@ -308,6 +344,10 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
       }
       refs = null
       motion = null
+    },
+
+    bindDrag(target, options) {
+      return controlledDrag?.bind(target, options) ?? { refresh() {}, release() {} }
     },
 
     set(payload: ICursorPayload) {

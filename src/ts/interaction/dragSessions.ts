@@ -51,7 +51,7 @@ export function createDragSessions(args: {
       }
       const payload = targets.current?.payload
       const drag = payload?.drag
-      if (payload && drag) {
+      if (payload && drag && payload.dragMode !== 'controlled') {
         armed = { startX: e.clientX, startY: e.clientY, payload: { ...payload, ...drag } }
       }
     },

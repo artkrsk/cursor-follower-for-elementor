@@ -1,3 +1,5 @@
+import type { ICursorDragBinding } from './ICursorDragBinding'
+import type { ICursorDragOptions } from './ICursorDragOptions'
 import type { ICursorEvents } from './ICursorEvents'
 import type { ICursorOptions } from './ICursorOptions'
 import type { ICursorPayload } from './ICursorPayload'
@@ -7,6 +9,8 @@ import type { ILoadingOptions } from './ILoadingOptions'
 import type { IMagnetizeOptions } from './IMagnetizeOptions'
 
 export interface ICursorFollower {
+  /** Bind presentation to the host gesture; controlled targets never infer drag intent. */
+  bindDrag(target: Element, options: ICursorDragOptions): ICursorDragBinding
   init(): void
   destroy(): void
 

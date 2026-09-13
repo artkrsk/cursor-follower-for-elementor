@@ -758,6 +758,23 @@ export function createEffectsSuite(args: {
     applyLoading(merged.showLoadingAnimation === true)
   }
 
+  const setPressed = (pressed: boolean): number | null => {
+    if (pressed && options.pressScale === false) return null
+    const scale =
+      pressed && options.pressScale !== false
+        ? (resolveScale(options.pressScale.scale, baseSize) ?? 1)
+        : null
+    root.toggleAttribute(PRESSED_ATTR, pressed)
+    setVar(follower, SCALE_PRESSED_VAR, scale)
+    setVar(root, PRESS_VAR, scale)
+    const next = pressed && hover?.payload.press !== undefined
+    if (pressActive !== next) {
+      pressActive = next
+      recompute()
+    }
+    return scale
+  }
+
   return {
     setHover(payload, element) {
       hover = { payload, element }
@@ -787,33 +804,13 @@ export function createEffectsSuite(args: {
         recompute()
       }
     },
+    setPressed,
     handlePress(e) {
-      if (options.pressScale === false || !isLeftUnmodified(e)) {
-        return null
-      }
-      const scale = resolveScale(options.pressScale.scale, baseSize) ?? 1
-      root.setAttribute(PRESSED_ATTR, '')
-      setVar(follower, SCALE_PRESSED_VAR, scale)
-      // Mirror onto the root (inheriting) so the arrows re-seat on the pressed
-      // ring; the follower's registered var can't reach them.
-      setVar(root, PRESS_VAR, scale)
-      pressActive = hover?.payload.press !== undefined
-      if (pressActive) {
-        recompute()
-      }
-      return scale
+      return isLeftUnmodified(e) ? setPressed(true) : null
     },
     handleRelease(e) {
-      if (e.button !== 0) {
-        return false
-      }
-      root.removeAttribute(PRESSED_ATTR)
-      setVar(follower, SCALE_PRESSED_VAR, null)
-      setVar(root, PRESS_VAR, null)
-      if (pressActive) {
-        pressActive = false
-        recompute()
-      }
+      if (e.button !== 0) return false
+      setPressed(false)
       return true
     },
     remeasure() {

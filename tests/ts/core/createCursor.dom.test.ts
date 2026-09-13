@@ -656,3 +656,155 @@ describe('iframes', () => {
     expect(root.hasAttribute(VISIBLE_ATTR)).toBe(true)
   })
 })
+
+describe('host-controlled dragging', () => {
+  const payload = JSON.stringify({
+    dragMode: 'controlled',
+    dot: true,
+    press: { shape: 'pill', arrows: 'horizontal', arrowsPosition: 'outside' },
+    drag: { shape: 'pill', arrows: 'horizontal', hideNativeCursor: true }
+  })
+  const setup = () => {
+    boot(
+      `<div id="slider" data-arts-cursor-follower-target='${payload}'></div><a id="link" href="#">Link</a>`
+    )
+    const el = document.getElementById('slider') as HTMLElement
+    pointer(el, 'pointerover', { clientX: 10, clientY: 10 })
+    return el
+  }
+
+  it('does not infer a press or drag before its host binds', () => {
+    const el = setup()
+    pointer(el, 'pointerdown', { button: 0, clientX: 10, clientY: 10 })
+    pointer(el, 'pointermove', { clientX: 10, clientY: 100 })
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(false)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+    expect(document.documentElement.classList.contains(HTML_NO_NATIVE)).toBe(false)
+  })
+
+  it('clears pressed/native hiding on rejection and stays neutral across target crossings', () => {
+    const el = setup()
+    let state: import('@ts/types').TCursorDragState = 'idle'
+    const binding = cursor.bindDrag(el, { getState: () => state })
+    state = 'pressed'
+    binding.refresh()
+    pointer(el, 'pointerdown', { button: 0, clientX: 10, clientY: 10 })
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(true)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+    pointer(el, 'pointermove', { clientX: 10, clientY: 100 })
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+    state = 'dragging'
+    binding.refresh()
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(true)
+    expect(document.documentElement.classList.contains(HTML_NO_NATIVE)).toBe(true)
+    state = 'rejected'
+    binding.refresh()
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(false)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+    expect(document.documentElement.classList.contains(HTML_NO_NATIVE)).toBe(false)
+    const link = document.getElementById('link') as HTMLElement
+    pointer(el, 'pointerout', { relatedTarget: link })
+    pointer(link, 'pointerover', { relatedTarget: el })
+    pointer(link, 'pointermove', { clientX: 200, clientY: 100 })
+    expect(cursor.el?.hasAttribute(HIGHLIGHT_ATTR)).toBe(false)
+    state = 'idle'
+    binding.refresh()
+    pointer(link, 'pointerup', { button: 0 })
+    expect(cursor.el?.hasAttribute(HIGHLIGHT_ATTR)).toBe(true)
+    binding.release()
+  })
+
+  it('keeps host ownership across a foreign release and clears terminal unavailability', () => {
+    const el = setup()
+    let state: import('@ts/types').TCursorDragState = 'dragging'
+    const binding = cursor.bindDrag(el, { getState: () => state })
+    const link = document.getElementById('link') as HTMLElement
+    pointer(el, 'pointerout', { relatedTarget: link })
+    pointer(link, 'pointerover', { relatedTarget: el })
+    pointer(link, 'pointerup', { button: 0, pointerId: 42 })
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(true)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(true)
+    state = 'unavailable'
+    binding.refresh()
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(false)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+    expect(cursor.el?.hasAttribute(HIGHLIGHT_ATTR)).toBe(true)
+  })
+
+  it('preserves an automatic drag when crossing a controlled target', () => {
+    const el = setup()
+    const binding = cursor.bindDrag(el, { getState: () => 'idle' })
+    const auto = document.createElement('div')
+    auto.setAttribute(DEFAULT_ATTRIBUTE, JSON.stringify({ dot: true, drag: { label: 'Auto' } }))
+    document.body.appendChild(auto)
+    pointer(el, 'pointerout', { relatedTarget: auto })
+    pointer(auto, 'pointerover', { relatedTarget: el })
+    pointer(auto, 'pointerdown', { button: 0, clientX: 0, clientY: 0 })
+    pointer(auto, 'pointermove', { clientX: 100, clientY: 0 })
+    pointer(auto, 'pointerout', { relatedTarget: el })
+    pointer(el, 'pointerover', { relatedTarget: auto })
+    pointer(el, 'pointermove', { clientX: 200, clientY: 0 })
+    binding.refresh()
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(true)
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(true)
+    pointer(el, 'pointerup', { button: 0 })
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+  })
+
+  it('drops native hiding while disabled and restores only the current host phase', () => {
+    const media = fakeMedia(true)
+    const el = setup()
+    let state: import('@ts/types').TCursorDragState = 'dragging'
+    const binding = cursor.bindDrag(el, { getState: () => state })
+    media.flip(false)
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(false)
+    expect(document.documentElement.classList.contains(HTML_NO_NATIVE)).toBe(false)
+    state = 'rejected'
+    binding.refresh()
+    media.flip(true)
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(false)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+    state = 'idle'
+    binding.refresh()
+    state = 'pressed'
+    binding.refresh()
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(true)
+  })
+
+  it('keeps an initially disabled follower neutral when binding an active gesture', () => {
+    fakeMedia(false)
+    const el = setup()
+    const binding = cursor.bindDrag(el, { getState: () => 'dragging' })
+    binding.refresh()
+    expect(cursor.enabled).toBe(false)
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(false)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+    expect(document.documentElement.classList.contains(HTML_NO_NATIVE)).toBe(false)
+  })
+
+  it('binds late in the current state and releases only its own effects', () => {
+    const el = setup()
+    const binding = cursor.bindDrag(el, { getState: () => 'dragging' })
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(true)
+    const loading = cursor.hideNativeCursor()
+    binding.release()
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(false)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+    expect(document.documentElement.classList.contains(HTML_NO_NATIVE)).toBe(true)
+    loading.release()
+    expect(document.documentElement.classList.contains(HTML_NO_NATIVE)).toBe(false)
+  })
+
+  it('uses nested links normally instead of the parent controlled target', () => {
+    const el = setup()
+    el.innerHTML = '<a href="#" id="child">Child</a>'
+    cursor.bindDrag(el, { getState: () => 'unavailable' })
+    const child = document.getElementById('child') as HTMLElement
+    pointer(el, 'pointerout', { relatedTarget: child })
+    pointer(child, 'pointerover', { relatedTarget: el })
+    pointer(child, 'pointerdown', { button: 0 })
+    expect(cursor.el?.hasAttribute(HIGHLIGHT_ATTR)).toBe(true)
+    expect(cursor.el?.hasAttribute(PRESSED_ATTR)).toBe(true)
+    expect(cursor.el?.hasAttribute(DRAGGING_ATTR)).toBe(false)
+  })
+})
