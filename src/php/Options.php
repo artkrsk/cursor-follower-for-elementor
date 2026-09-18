@@ -621,10 +621,10 @@ class Options {
 	 * never drift between the two surfaces.
 	 *
 	 * 'arrows': a compact ‹ › pill from hover, a dot scaling up at the anchor on
-	 * press. The native cursor hides from the FIRST press via the stylesheet's
-	 * :has() rule (the dot replaces the pointer); the `drag` sub-payload is the
-	 * fallback for engines without :has(), where the hide starts at the drag
-	 * threshold. No label by design.
+	 * press. The native cursor hides from the FIRST press via the engine's html
+	 * press-dot class (the dot replaces the pointer); the `drag` sub-payload
+	 * covers sites with pressScale off, where no dot shows and the hide starts
+	 * at the drag threshold. No label by design.
 	 *
 	 * 'always': the labeled pill with its arrows already out on hover. The
 	 * `drag` duplicate keeps them stated through the gesture — the drag session

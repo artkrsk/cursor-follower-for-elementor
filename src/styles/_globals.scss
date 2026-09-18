@@ -15,13 +15,12 @@
 
   // The press dot REPLACES the pointer, so the native cursor hides the moment
   // an eligible press starts — not at the drag threshold, which only exists
-  // for the drag payload. Rides the two attributes the engine already flips,
-  // no JS involved. Kept separate from the class rule above: an engine
-  // without :has() drops the whole selector list it appears in, and this way
-  // it drops only this rule (a drag payload's hideNativeCursor still kicks in
-  // at the threshold as the fallback).
-  html:has(.arts-cursor[data-cursor-dot][data-cursor-pressed]),
-  html:has(.arts-cursor[data-cursor-dot][data-cursor-pressed]) :hover {
+  // for the drag payload. The engine derives this class from the dot + pressed
+  // attributes. Deliberately not `html:has(.arts-cursor[…])`: Chromium re-checks
+  // an html-anchored descendant :has() on every classed insertion anywhere in
+  // the document, turning each DOM write into a full-document style recalc.
+  html.has-cursor-press-dot,
+  html.has-cursor-press-dot :hover {
     cursor: none !important;
   }
 

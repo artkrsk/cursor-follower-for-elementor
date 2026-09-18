@@ -14,10 +14,10 @@ export interface ICursorPayload {
   arrowsPosition?: 'inside' | 'outside'
   /** Scale up a filled dot at the anchor while this target is pressed (the
       whole press-drag gesture). Rides the press channel, so a site that
-      disables pressScale never shows it. The dot replaces the pointer: a
-      stylesheet :has() rule hides the native cursor from the first press —
-      keep drag.hideNativeCursor alongside as the fallback for engines
-      without :has(), where the hide starts at the drag threshold. */
+      disables pressScale never shows it. The dot replaces the pointer: the
+      engine's html press-dot class hides the native cursor from the first
+      press — keep drag.hideNativeCursor alongside for sites with pressScale
+      off, where no dot shows and the hide starts at the drag threshold. */
   dot?: boolean
   backgroundColor?: string
   borderColor?: string

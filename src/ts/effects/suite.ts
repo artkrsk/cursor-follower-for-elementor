@@ -29,6 +29,7 @@ import {
   HINT_PAD_Y,
   HINT_PAD_Y_VAR,
   HTML_NO_NATIVE,
+  HTML_PRESS_DOT,
   HTML_PROGRESS,
   ICON_KIND_ATTR,
   ICON_MASK_VAR,
@@ -680,6 +681,15 @@ export function createEffectsSuite(args: {
   const labelBoxes = new Map<string, { w: number; h: number }>()
   root.ownerDocument.fonts?.ready.then(() => labelBoxes.clear())
 
+  // Read back from both live attributes and called at both write sites:
+  // setPressed() recomputes only when a .press override flips.
+  const syncPressDot = () => {
+    html.classList.toggle(
+      HTML_PRESS_DOT,
+      root.hasAttribute(DOT_ATTR) && root.hasAttribute(PRESSED_ATTR)
+    )
+  }
+
   const recompute = () => {
     // Press enriches the hover layer, but a drag or programmatic session owns
     // the later gesture state. In particular, a compact press pill can keep
@@ -751,6 +761,7 @@ export function createEffectsSuite(args: {
     // -- press dot (eligibility only; the stylesheet keys the scale-up on this
     //    plus data-cursor-pressed) --
     root.toggleAttribute(DOT_ATTR, merged.dot === true)
+    syncPressDot()
     root.toggleAttribute(HIDDEN_ATTR, merged.hidden === true)
 
     // -- document-level states (the merged view IS the refcount) --
@@ -766,6 +777,7 @@ export function createEffectsSuite(args: {
         ? (resolveScale(options.pressScale.scale, baseSize) ?? 1)
         : null
     root.toggleAttribute(PRESSED_ATTR, pressed)
+    syncPressDot()
     setVar(follower, SCALE_PRESSED_VAR, scale)
     setVar(root, PRESS_VAR, scale)
     const next = pressed && hover?.payload.press !== undefined
@@ -843,7 +855,7 @@ export function createEffectsSuite(args: {
       root.removeAttribute(LOADING_ATTR)
       root.removeAttribute(LOADING_OUT_ATTR)
       recompute()
-      html.classList.remove(HTML_NO_NATIVE, HTML_PROGRESS)
+      html.classList.remove(HTML_NO_NATIVE, HTML_PROGRESS, HTML_PRESS_DOT)
     }
   }
 }
