@@ -168,7 +168,7 @@ importers:
     devDependencies:
       '@arts/wp-plugin-tooling':
         specifier: github:artkrsk/wp-plugin-tooling
-        version: https://codeload.github.com/artkrsk/wp-plugin-tooling/tar.gz/95da08ac8317ac5458a57a09def703d077960c63(postcss@8.5.26)(stylelint@17.15.0(supports-color@10.2.2)(typescript@7.0.2))
+        version: https://codeload.github.com/artkrsk/wp-plugin-tooling/tar.gz/f5d242c7b969a3a20180e5c320bcfd8c0586023a(postcss@8.5.26)(stylelint@17.15.0(supports-color@10.2.2)(typescript@7.0.2))
       '@biomejs/biome':
         specifier: 2.5.13
         version: 2.5.13
@@ -205,8 +205,8 @@ importers:
 
 packages:
 
-  '@arts/wp-plugin-tooling@https://codeload.github.com/artkrsk/wp-plugin-tooling/tar.gz/95da08ac8317ac5458a57a09def703d077960c63':
-    resolution: {gitHosted: true, integrity: sha512-1wdFTinjT4Vc82HegCsf9jo/BdCb6MJlfqA7TJBhUni3WKI+QpgSMVwqEkAn649mVA0Ri4xNYTyFxZ6uhnvBWQ==, tarball: https://codeload.github.com/artkrsk/wp-plugin-tooling/tar.gz/95da08ac8317ac5458a57a09def703d077960c63}
+  '@arts/wp-plugin-tooling@https://codeload.github.com/artkrsk/wp-plugin-tooling/tar.gz/f5d242c7b969a3a20180e5c320bcfd8c0586023a':
+    resolution: {gitHosted: true, integrity: sha512-p3hcgPZhY6siN0Qi4IhYczqwQiizrdE1OuTvqqxEtt/i6c9VIKgPppZv8rgo9vLMIl/6FyCe77m4yv9qGOdn3w==, tarball: https://codeload.github.com/artkrsk/wp-plugin-tooling/tar.gz/f5d242c7b969a3a20180e5c320bcfd8c0586023a}
     version: 1.0.0
     engines: {node: '>=24'}
     hasBin: true
@@ -2545,7 +2545,7 @@ packages:
 
 snapshots:
 
-  '@arts/wp-plugin-tooling@https://codeload.github.com/artkrsk/wp-plugin-tooling/tar.gz/95da08ac8317ac5458a57a09def703d077960c63(postcss@8.5.26)(stylelint@17.15.0(supports-color@10.2.2)(typescript@7.0.2))':
+  '@arts/wp-plugin-tooling@https://codeload.github.com/artkrsk/wp-plugin-tooling/tar.gz/f5d242c7b969a3a20180e5c320bcfd8c0586023a(postcss@8.5.26)(stylelint@17.15.0(supports-color@10.2.2)(typescript@7.0.2))':
     dependencies:
       archiver: 8.0.0
       chokidar: 5.0.0
