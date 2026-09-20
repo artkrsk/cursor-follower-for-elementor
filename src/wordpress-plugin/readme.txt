@@ -106,6 +106,13 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
+= 1.2.0 =
+* added: integrations can now drive drag cursor feedback from their real gesture state, including the pressed state before a drag begins.
+* added: integrations can safely observe cursor initialization, replacement and teardown through window.artsCursor.
+* improved: the cursor now refreshes automatically after a click changes content beneath a stationary pointer, so effects update immediately on menus, tabs and similar controls.
+* improved: reduced Chromium style work while using the press-dot drag cursor on pages that add or replace content.
+* fixed: a magnetic target with a custom Element Scale no longer makes the cursor shrink again when it is pressed or another effect updates.
+
 = 1.1.0 =
 * added: a refresh() method — a host that swaps content under a resting pointer (a lightbox changing slides) can ask the cursor to re-resolve what it is hovering.
 * improved: the loading spinner now takes over through a sequenced scale swap — the circle shrinks away, the spinner grows in already spinning — instead of an abrupt cross-fade.
