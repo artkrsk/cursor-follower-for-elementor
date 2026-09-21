@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "types": "./src/ts/index.ts",
-  "packageManager": "pnpm@12.4.1",
+  "packageManager": "pnpm@12.5.1",
   "engines": {
     "node": ">=24"
   },
@@ -19,12 +19,12 @@
   },
   "devDependencies": {
     "@arts/wp-plugin-tooling": "github:artkrsk/wp-plugin-tooling",
-    "@biomejs/biome": "2.5.13",
+    "@biomejs/biome": "2.5.14",
     "@types/node": "^26.1.1",
     "@vitest/coverage-v8": "^5.0.0",
-    "fallow": "3.25.0",
+    "fallow": "3.27.0",
     "happy-dom": "20.14.5",
-    "knip": "6.35.1",
+    "knip": "6.37.0",
     "lefthook": "^2.1.10",
     "stylelint": "^17.14.1",
     "typescript": "^7.0.2",

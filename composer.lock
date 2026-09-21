@@ -4,26 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "85f3f4e62fdcc903a5009239fe3d3d0b",
+    "content-hash": "f69b48ba35d76b9d83f65f16a8b79c18",
     "packages": [],
     "packages-dev": [
         {
             "name": "arts/elementor-stubs",
-            "version": "v4.2.1",
+            "version": "v4.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/artkrsk/elementor-stubs.git",
-                "reference": "4d4860e49b7827940bc2ae308645dc21ff48c2e8"
+                "reference": "4345323b7429014d1cd595178d52107bca16696e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/artkrsk/elementor-stubs/zipball/4d4860e49b7827940bc2ae308645dc21ff48c2e8",
-                "reference": "4d4860e49b7827940bc2ae308645dc21ff48c2e8",
+                "url": "https://api.github.com/repos/artkrsk/elementor-stubs/zipball/4345323b7429014d1cd595178d52107bca16696e",
+                "reference": "4345323b7429014d1cd595178d52107bca16696e",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.0",
-                "php-stubs/woocommerce-stubs": "^10.5",
+                "php-stubs/woocommerce-stubs": "^10.5 || ^11.0",
                 "php-stubs/wordpress-stubs": "^6.9",
                 "php-stubs/wp-cli-stubs": "^2.12"
             },
@@ -64,7 +64,7 @@
             ],
             "support": {
                 "issues": "https://github.com/artkrsk/elementor-stubs/issues",
-                "source": "https://github.com/artkrsk/elementor-stubs/tree/v4.2.1"
+                "source": "https://github.com/artkrsk/elementor-stubs/tree/v4.2.4"
             },
             "funding": [
                 {
@@ -72,7 +72,7 @@
                     "type": "buy_me_a_coffee"
                 }
             ],
-            "time": "2026-08-01T13:49:57+00:00"
+            "time": "2026-09-15T04:00:45+00:00"
         },
         {
             "name": "arts/wp-plugin-standards",
