@@ -109,6 +109,8 @@ export function createMagnetic(args: {
 }): IMagneticController {
   const { state, options } = args
   const anchor = { x: 0, y: 0 }
+  /** The anchor as of the last composed frame. */
+  const prevAnchor = { x: 0, y: 0 }
   /** The active element's pull state — preallocated once, reused across
       engagements. */
   const active: IPullRecord = { pull: { x: 0, y: 0 }, lastX: Number.NaN, lastY: Number.NaN }
@@ -260,6 +262,9 @@ export function createMagnetic(args: {
     args.readScroll()
     state.follower.x += state.scroll.x
     state.follower.y += state.scroll.y
+    // The anchor was just read by the caller.
+    prevAnchor.x = anchor.x
+    prevAnchor.y = anchor.y
   }
 
   return {
@@ -430,6 +435,15 @@ export function createMagnetic(args: {
         args.onRelease()
         return false
       }
+
+      // Carry the follower by however far the anchor itself travelled, so the
+      // lerp smooths only the pull. A fixed or stuck-sticky anchor moves through
+      // page space at scroll speed; lerping that lags the ring behind it by
+      // several times the scroll speed. An in-flow anchor never moves: 0.
+      state.follower.x += anchor.x - prevAnchor.x
+      state.follower.y += anchor.y - prevAnchor.y
+      prevAnchor.x = anchor.x
+      prevAnchor.y = anchor.y
 
       pullTarget.x = dx * PULL_FACTOR * pullStrength
       pullTarget.y = dy * PULL_FACTOR * pullStrength
