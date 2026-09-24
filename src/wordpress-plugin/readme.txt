@@ -107,9 +107,9 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 == Changelog ==
 
 = 1.3.0 =
-* fixed: the cursor now stays aligned with sticky and fixed buttons and carousel arrows while you scroll.
 * improved: cursor effects initialize more smoothly on pages with many interactive elements.
 * improved: the loading spinner stops using resources once it disappears.
+* fixed: the cursor now stays aligned with sticky and fixed buttons and carousel arrows while you scroll.
 
 = 1.2.0 =
 * added: integrations can now drive drag cursor feedback from their real gesture state, including the pressed state before a drag begins.
