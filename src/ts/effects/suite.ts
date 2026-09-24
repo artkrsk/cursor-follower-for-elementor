@@ -58,6 +58,7 @@ import type {
   IResolvedOptions
 } from '../interfaces'
 import { hintFitScale, resolveScale, usesTargetRef } from '../utils'
+import { createSpinnerActivity } from './spinnerActivity'
 
 /**
  * Effect state, computed from LAYERS: the transient hover payload at the
@@ -547,6 +548,7 @@ export function createEffectsSuite(args: {
   let loadingSettleTimer: ReturnType<typeof setTimeout> | null = null
   let loadingOutTimer: ReturnType<typeof setTimeout> | null = null
   let loadingSettled = false
+  const spinnerActivity = createSpinnerActivity(root, () => options.animation.duration)
 
   const clearLoadingTimers = () => {
     if (loadingSettleTimer !== null) {
@@ -571,6 +573,7 @@ export function createEffectsSuite(args: {
         clearTimeout(loadingOutTimer)
         loadingOutTimer = null
       }
+      spinnerActivity.start()
       root.removeAttribute(LOADING_OUT_ATTR)
       root.setAttribute(LOADING_ATTR, '')
       loadingSettled = false
@@ -589,9 +592,11 @@ export function createEffectsSuite(args: {
     }
     root.removeAttribute(LOADING_ATTR)
     if (!loadingSettled) {
+      spinnerActivity.stop()
       return
     }
     root.setAttribute(LOADING_OUT_ATTR, '')
+    spinnerActivity.collapse()
     loadingOutTimer = setTimeout(
       () => {
         root.removeAttribute(LOADING_OUT_ATTR)
@@ -852,6 +857,7 @@ export function createEffectsSuite(args: {
       // Ahead of the recompute so its applyLoading(false) is a no-op: no
       // zombie timer may mutate a torn-down root later.
       clearLoadingTimers()
+      spinnerActivity.stop()
       root.removeAttribute(LOADING_ATTR)
       root.removeAttribute(LOADING_OUT_ATTR)
       recompute()

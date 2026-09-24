@@ -287,18 +287,11 @@
   .arts-cursor[data-cursor-loading] .arts-cursor__spinner {
     scale: 1;
     transition: scale tokens.$motion var(--arts-cursor-duration);
-    animation-play-state: running;
-
-    circle {
-      animation-play-state: running;
-    }
   }
 
-  // Exit: the transient tail (effects/suite.ts raises this the instant
-  // data-cursor-loading drops). The collapse itself is the base rule — scale
-  // 0 on the flattened curve, no delay; this rule's sole job is keeping the
-  // spin alive so the arc visibly shrinks away instead of freezing mid-turn.
-  .arts-cursor[data-cursor-loading-out] .arts-cursor__spinner {
+  // The spinner stops at its scale collapse, while the follower's separate
+  // loading-out tail continues restoring the ring. No invisible stroke paint.
+  .arts-cursor[data-cursor-spinner-active] .arts-cursor__spinner {
     animation-play-state: running;
 
     circle {

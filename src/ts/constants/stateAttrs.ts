@@ -42,3 +42,6 @@ export const SHAPE_ATTR = 'data-cursor-shape'
     so snug-fitted arrows/dot never get pinched. Absent without a pill. */
 export const SHAPE_AXIS_ATTR = 'data-cursor-shape-axis'
 export const DRAGGING_ATTR = 'data-cursor-dragging'
+
+/** Spinner animation lifetime, independent of the follower's loading-out restore tail. */
+export const SPINNER_ACTIVE_ATTR = 'data-cursor-spinner-active'
