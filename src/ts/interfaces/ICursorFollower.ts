@@ -5,6 +5,7 @@ import type { ICursorOptions } from './ICursorOptions'
 import type { ICursorPayload } from './ICursorPayload'
 import type { ICursorSession } from './ICursorSession'
 import type { ICursorStats } from './ICursorStats'
+import type { ICursorTargetSession } from './ICursorTargetSession'
 import type { ILoadingOptions } from './ILoadingOptions'
 import type { IMagnetizeOptions } from './IMagnetizeOptions'
 
@@ -23,9 +24,12 @@ export interface ICursorFollower {
   /** Magnet the cursor to a live (possibly moving) anchor until released. */
   magnetize(opts: IMagnetizeOptions): ICursorSession
 
+  /** Pause automatic target effects; the last release schedules one fresh target resolution. */
+  suspendTargets(): ICursorTargetSession
+
   /** Live-tune feel parameters (trailing, elastic, magnetic). */
   updateOptions(partial: ICursorOptions): void
-  /** Optional pre-measure hint after injecting large DOM subtrees. */
+  /** Optional observer-based geometry warm hint after injecting large DOM subtrees. */
   warm(container?: ParentNode): void
   /** Re-sample the measured theming vars (size, hint padding, arrow box + gap,
       label metrics) after the host changes them at runtime. */

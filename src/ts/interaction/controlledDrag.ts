@@ -18,6 +18,7 @@ export function createControlledDrag(args: {
   let phase: TCursorDragState | null = null
   let enabled = true
   let disposed = false
+  let suspended = false
 
   const stateOf = (ctx: ITargetContext): TCursorDragState =>
     enabled ? (bindings.get(ctx.element)?.getState() ?? 'unavailable') : 'unavailable'
@@ -47,7 +48,7 @@ export function createControlledDrag(args: {
   }
 
   const refresh = () => {
-    if (disposed || !args.canEngage()) return
+    if (disposed || suspended || !args.canEngage()) return
     if (owner) {
       const next = bindings.get(owner.element)?.getState() ?? 'unavailable'
       if (next !== 'idle' && next !== 'unavailable') {
@@ -78,7 +79,7 @@ export function createControlledDrag(args: {
       return owner !== null
     },
     enter(ctx: ITargetContext): boolean {
-      if (!controlled(ctx)) return false
+      if (suspended || !controlled(ctx)) return false
       const state = stateOf(ctx)
       if (state === 'pressed' || state === 'dragging' || state === 'rejected') owner = ctx
       paint(ctx, state)
@@ -108,6 +109,11 @@ export function createControlledDrag(args: {
       return true
     },
     refresh,
+    setSuspended(value: boolean) {
+      suspended = value
+      if (value) clear()
+      // The caller resumes through a coalesced target refresh, not a stale owner paint.
+    },
     setEnabled(value: boolean) {
       enabled = value
       refresh()

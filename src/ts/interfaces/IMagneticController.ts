@@ -35,5 +35,9 @@ export interface IMagneticController {
   tick(dt: number): void
   /** Page-space target composition; false when not engaged (free-roam). */
   composeTarget(): boolean
+  /** Observe only finite element returns already in flight, never continuous following. */
+  whenReturned(): Promise<void>
+  /** Restore invisible returns immediately without disturbing an engaged live anchor. */
+  finishReturns(): void
   dispose(): void
 }

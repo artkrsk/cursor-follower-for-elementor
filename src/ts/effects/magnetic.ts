@@ -174,11 +174,20 @@ export function createMagnetic(args: {
     element.style.scale = value
   }
 
+  const returnWaiters = new Set<{ pending: Set<TStyledElement>; resolve: () => void }>()
+
   const restore = (el: TStyledElement) => {
     el.style.translate = ''
     el.style.scale = ''
     el.style.removeProperty('transition')
     el.style.removeProperty('will-change')
+    for (const waiter of returnWaiters) {
+      waiter.pending.delete(el)
+      if (waiter.pending.size === 0) {
+        returnWaiters.delete(waiter)
+        waiter.resolve()
+      }
+    }
   }
 
   const resetPull = () => {
@@ -450,6 +459,19 @@ export function createMagnetic(args: {
       state.target.x = anchor.x + pullTarget.x
       state.target.y = anchor.y + pullTarget.y
       return true
+    },
+
+    whenReturned() {
+      const pending = new Set(returning.map((record) => record.el))
+      if (element && !engaged) pending.add(element)
+      if (pending.size === 0) return Promise.resolve()
+      return new Promise<void>((resolve) => returnWaiters.add({ pending, resolve }))
+    },
+
+    finishReturns() {
+      for (const record of returning) restore(record.el)
+      returning.length = 0
+      if (!engaged) clearElement()
     },
 
     dispose() {

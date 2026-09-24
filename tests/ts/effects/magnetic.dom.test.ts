@@ -643,3 +643,43 @@ describe('dispose', () => {
     expect(first.style.willChange).toBe('')
   })
 })
+
+describe('finite return completion', () => {
+  it('includes previously returning elements and excludes an engaged live anchor', async () => {
+    const { first, second } = twoDots()
+    const { controller } = engagedAt(170, 150, { target: first, elementScale: 0.8 })
+    controller.composeTarget()
+    controller.tick(FRAME_60)
+    controller.engage(second, 1, entry(), undefined, 0.8)
+    controller.release()
+    const complete = vi.fn()
+    const returning = controller.whenReturned().then(complete)
+    controller.engageLive(
+      () => ({ x: 150, y: 150 }),
+      () => 0
+    )
+    await Promise.resolve()
+    expect(complete).not.toHaveBeenCalled()
+    settle(controller)
+    await returning
+    expect(first.style.transition).toBe('')
+    expect(second.style.transition).toBe('')
+    expect(controller.engaged).toBe(true)
+    controller.dispose()
+  })
+
+  it('resolves a return only after a re-adopted element hands its styles back', async () => {
+    const { controller } = engagedAt(170, 150, { elementScale: 0.8 })
+    controller.release()
+    const complete = vi.fn()
+    const returning = controller.whenReturned().then(complete)
+    controller.engage(el, 1, entry(), undefined, 0.8)
+    settle(controller)
+    await Promise.resolve()
+    expect(complete).not.toHaveBeenCalled()
+    controller.release()
+    settle(controller)
+    await returning
+    expect(el.style.transition).toBe('')
+  })
+})

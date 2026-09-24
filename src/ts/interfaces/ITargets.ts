@@ -16,4 +16,6 @@ export interface ITargets {
    * fires — the held context is re-announced as a `refresh` event instead.
    */
   refresh(): void
+  /** Internal presentation gate; resume queues one latest-position resolution. */
+  setSuspended(value: boolean): void
 }

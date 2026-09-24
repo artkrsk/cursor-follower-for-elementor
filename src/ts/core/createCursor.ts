@@ -65,9 +65,9 @@ const anchorOf = (raw: string | null): string | undefined => {
 }
 
 /**
- * The elements warm() should pre-measure so no first hover pays a synchronous
- * layout: every authored `[attribute]` element and the anchor it may redirect the
- * effect to, plus everything matching the compiled rule geometry selector. Deduped.
+ * The elements warm() should register for observer geometry before first hover:
+ * every authored `[attribute]` element and its optional anchor, plus everything
+ * matching the compiled rule geometry selector. Deduped.
  */
 export const collectWarmTargets = (
   root: ParentNode,
@@ -122,6 +122,10 @@ export function createCursorWithLifecycle(
   let drag: IDragSessions | null = null
   let controlledDrag: ReturnType<typeof createControlledDrag> | null = null
   let input: IPointerInput | null = null
+  const targetLeases = new Set<() => void>()
+  let targetReturn = Promise.resolve()
+  const targetsSuspended = () => targetLeases.size > 0
+
   let frameLoop: ReturnType<typeof createFrameLoop> | null = null
 
   const onEnabledChange = (enabled: boolean) => {
@@ -130,6 +134,7 @@ export function createCursorWithLifecycle(
     if (!enabled) {
       refs?.root.removeAttribute(VISIBLE_ATTR)
       state.pointerSeen = false
+      magnetics?.controller.finishReturns()
       motion?.sleep()
     }
     events.emit('enabled:change', enabled)
@@ -193,13 +198,15 @@ export function createCursorWithLifecycle(
         attribute: options.attribute,
         scopes: options.targetScopes,
         isRuleActive: (rule) => ruleEnabled(rule, options),
-        signal: lifecycle.signal
+        signal: lifecycle.signal,
+        getPoint: () => (state.pointerSeen ? state.mouseClient : null)
       })
       // A drag locks the cursor to its own state: while it's active, hovering an
       // arrow/dot/link must NOT engage magnetic or highlight. So the hover
       // effects are gated on the drag being idle — extracted so a drag's end can
       // resync to whatever the pointer landed on.
       const enterTarget = (ctx: ITargetContext) => {
+        if (targetsSuspended()) return
         if (controlledDrag?.enter(ctx)) {
           magnetics?.releaseHover()
           events.emit('target:enter', ctx)
@@ -212,11 +219,17 @@ export function createCursorWithLifecycle(
         events.emit('target:enter', ctx)
       }
       targets.on('enter', (ctx) => {
+        if (targetsSuspended()) return
+        if (controlledDrag?.active) {
+          controlledDrag.refresh()
+          return
+        }
         if (!drag?.isDragging && !controlledDrag?.active) {
           enterTarget(ctx)
         }
       })
       targets.on('leave', (ctx) => {
+        if (targetsSuspended()) return
         controlledDrag?.leave()
         if (!drag?.isDragging && !controlledDrag?.active) {
           suite?.clearHover()
@@ -225,6 +238,7 @@ export function createCursorWithLifecycle(
         }
       })
       targets.on('refresh', (ctx) => {
+        if (targetsSuspended()) return
         controlledDrag?.refresh()
         if (!drag?.isDragging && !controlledDrag?.active) {
           events.emit('target:refresh', ctx)
@@ -236,6 +250,7 @@ export function createCursorWithLifecycle(
         targets,
         root: refs.root,
         onDragEnd: (ctx) => {
+          if (targetsSuspended()) return
           if (ctx) {
             enterTarget(ctx)
           } else {
@@ -246,12 +261,13 @@ export function createCursorWithLifecycle(
       })
 
       controlledDrag = createControlledDrag({
-        canEngage: () => !drag?.isDragging,
+        canEngage: () => !targetsSuspended() && !drag?.isDragging,
         suite,
         targets,
         root: refs.root,
         resetMagneticPress: () => magnetics?.controller.setPressedScale(null),
         resync: () => {
+          if (targetsSuspended()) return
           const ctx = targets?.current
           if (ctx) enterTarget(ctx)
           else {
@@ -288,10 +304,13 @@ export function createCursorWithLifecycle(
           } else {
             motion?.setPointer(e.clientX, e.clientY)
           }
-          controlledDrag?.refresh()
-          drag?.handleMove(e)
+          if (!targetsSuspended()) {
+            controlledDrag?.refresh()
+            drag?.handleMove(e)
+          }
         },
         onDown: (e) => {
+          if (targetsSuspended()) return
           targets?.handleDown()
           if (e.button === 0 && controlledDrag?.handleDown()) return
           const pressed = suite?.handlePress(e) ?? null
@@ -302,6 +321,7 @@ export function createCursorWithLifecycle(
           drag?.handleDown(e)
         },
         onUp: (e) => {
+          if (targetsSuspended()) return
           if (e.button !== 0 && e.type !== 'pointercancel') return
           if (controlledDrag?.handleUp()) {
             targets?.handleUp()
@@ -315,6 +335,14 @@ export function createCursorWithLifecycle(
         },
         onEnabledChange
       })
+
+      document.addEventListener(
+        'visibilitychange',
+        () => {
+          if (document.hidden) magnetics?.controller.finishReturns()
+        },
+        { signal: lifecycle.signal }
+      )
 
       controlledDrag.setEnabled(input.enabled)
       setActiveClasses(html, input.enabled)
@@ -333,6 +361,8 @@ export function createCursorWithLifecycle(
         return
       }
       destroying = true
+      for (const resolve of targetLeases) resolve()
+      targetLeases.clear()
       hooks?.destroying(api)
       frameLoop?.dispose()
       frameLoop = null
@@ -386,6 +416,47 @@ export function createCursorWithLifecycle(
     },
     magnetize(opts) {
       return magnetics?.magnetize(opts) ?? createSession(() => {})
+    },
+
+    suspendTargets() {
+      if (!lifecycle || destroying) {
+        return { ...createSession(() => {}), settled: Promise.resolve() }
+      }
+      const lifetime = lifecycle
+      let resolve!: () => void
+      const settled = new Promise<void>((done) => {
+        resolve = done
+      })
+      const first = targetLeases.size === 0
+      const departed = first ? targets?.current : null
+      targetLeases.add(resolve)
+      if (first) {
+        targets?.setSuspended(true)
+        controlledDrag?.setSuspended(true)
+        drag?.handleUp()
+        suite?.setPressed(false)
+        suite?.clearHover()
+        magnetics?.controller.setPressedScale(null)
+        magnetics?.releaseHover()
+        if (document.hidden || !input?.enabled) magnetics?.controller.finishReturns()
+        targetReturn = magnetics?.controller.whenReturned() ?? Promise.resolve()
+      }
+      void targetReturn.then(resolve)
+      // Publish departure only after the suspension and its completion promise
+      // exist: host-derived hover sessions release here, and a reentrant lease
+      // must join the same finite return rather than an already-resolved promise.
+      if (departed) events.emit('target:leave', departed)
+      return {
+        ...createSession(() => {
+          resolve()
+          if (!targetLeases.delete(resolve) || lifecycle !== lifetime || destroying) return
+          if (!targetsSuspended()) {
+            controlledDrag?.setSuspended(false)
+            targets?.setSuspended(false)
+          }
+        }),
+        settled
+      }
     },
 
     warm(container) {

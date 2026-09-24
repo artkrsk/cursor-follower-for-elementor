@@ -16,6 +16,7 @@ export type {
   ICursorPayload,
   ICursorSession,
   ICursorStats,
+  ICursorTargetSession,
   IElasticConfig,
   IHighlightConfig,
   ILoadingOptions,

@@ -8,7 +8,8 @@ import type {
   ITargetEvents,
   ITargetRule,
   ITargetScope,
-  ITargets
+  ITargets,
+  IVec2
 } from '../interfaces'
 import type { TStateVarKey } from '../types'
 import { usesTargetRef } from '../utils'
@@ -283,6 +284,8 @@ export function createTargets(args: {
       to its regular behavior (a link still highlights). Defaults to always on. */
   isRuleActive?: (rule: ITargetRule) => boolean
   signal: AbortSignal
+  /** The engine keeps the pointer current between crossings. */
+  getPoint?: () => IVec2 | null
 }): ITargets {
   const base = `${INTERACTIVE_SELECTOR}, [${args.attribute}]`
   const isRuleActive = args.isRuleActive ?? (() => true)
@@ -334,6 +337,8 @@ export function createTargets(args: {
   const payloads = new WeakMap<Element, ICursorPayload | null>()
   const events = createEmitter<ITargetEvents>()
   let current: ITargetContext | null = null
+  let suspended = false
+  let dirty = false
 
   /**
    * Resolve the effect element + payload for a pointer position. Precedence:
@@ -416,7 +421,7 @@ export function createTargets(args: {
       // drive hover effects (and the magnetic element pull) from a stale
       // pointer position. Guard before the memo so an ignored crossing can
       // neither consume nor corrupt it.
-      if (!accepts(e)) {
+      if (suspended || !accepts(e)) {
         return
       }
       const from = e.target as Element | null
@@ -441,7 +446,7 @@ export function createTargets(args: {
   document.addEventListener(
     'pointerout',
     (e) => {
-      if (!accepts(e) || !current) {
+      if (suspended || !accepts(e) || !current) {
         return
       }
       const related = e.relatedTarget as Element | null
@@ -456,6 +461,12 @@ export function createTargets(args: {
   )
 
   const refresh = (): void => {
+    if (suspended) {
+      dirty = true
+      return
+    }
+    cancelPendingRefresh()
+    dirty = false
     // Rules resolve on a crossing and are held while the pointer sits
     // still, so a host that changes what a rule matches — a class toggled
     // under a parked pointer — had no way to be believed until the pointer
@@ -474,9 +485,16 @@ export function createTargets(args: {
     // the crossing recorded: a host that swaps its content — a lightbox
     // recycling slide holders — leaves that one detached, or belonging to
     // something else, and re-reading it keeps a promise that has moved on.
-    // The last crossing's coordinates still describe the pointer, since a
-    // pointer that had moved would have re-resolved on its own.
-    const under = lastPoint ? document.elementFromPoint(lastPoint.x, lastPoint.y) : null
+    // The composition root tracks moves within a target too; standalone callers
+    // without that source fall back to their last crossing coordinates.
+    const point = args.getPoint ? args.getPoint() : lastPoint
+    if (args.getPoint && !point) {
+      // An authoritative null means input is disabled or no pointer is visible.
+      // Neither cached crossing coordinates nor the previous target may revive it.
+      leaveCurrent()
+      return
+    }
+    const under = point ? document.elementFromPoint(point.x, point.y) : null
     const next = resolveTarget(under ?? current?.trigger ?? null)
     if (
       next?.element === current?.element &&
@@ -508,15 +526,17 @@ export function createTargets(args: {
       pendingRefresh = 0
     }
   }
+  const scheduleRefresh = () => {
+    dirty = true
+    if (suspended || pendingRefresh || args.signal.aborted) return
+    pendingRefresh = requestAnimationFrame(() => {
+      pendingRefresh = 0
+      if (!args.signal.aborted && dirty) refresh()
+    })
+  }
   document.addEventListener(
     'click',
-    () => {
-      cancelPendingRefresh()
-      pendingRefresh = requestAnimationFrame(() => {
-        pendingRefresh = 0
-        refresh()
-      })
-    },
+    () => scheduleRefresh(),
     // Capture, unlike the crossings above: toggle handlers stop a click's
     // propagation to keep document-level "outside click closes" listeners at
     // bay, which would starve a bubble listener of exactly these clicks.
@@ -530,6 +550,18 @@ export function createTargets(args: {
     },
     on: events.on,
     refresh,
+    setSuspended(value) {
+      if (suspended === value) return
+      suspended = value
+      crossing = null
+      if (value) {
+        cancelPendingRefresh()
+        dirty = true
+        leaveCurrent()
+      } else {
+        scheduleRefresh()
+      }
+    },
     handleDown() {
       if (current) {
         events.emit('press', current)

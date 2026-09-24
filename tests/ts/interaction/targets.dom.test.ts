@@ -808,6 +808,28 @@ describe('refresh under a still pointer', () => {
   })
 })
 
+describe('authoritative pointer availability', () => {
+  it('drops the held target without a hit-test when its pointer source returns null', () => {
+    mount('<a id="link" href="#">Link</a>')
+    let available = true
+    const targets = createTargets({
+      attribute: DEFAULT_ATTRIBUTE,
+      scopes: [],
+      signal: lifecycle.signal,
+      getPoint: () => (available ? { x: 20, y: 30 } : null)
+    })
+    fire(at('#link'), 'pointerover')
+    const left = vi.fn()
+    targets.on('leave', left)
+    const hit = vi.spyOn(document, 'elementFromPoint').mockReturnValue(at('#link'))
+    available = false
+    targets.refresh()
+    expect(hit).not.toHaveBeenCalled()
+    expect(targets.current).toBeNull()
+    expect(left).toHaveBeenCalledOnce()
+  })
+})
+
 describe('iframes — a hole in the observable document', () => {
   it('lets no rule hold once the pointer crosses into an iframe', () => {
     // The embedded page eats every event while the pointer is over it, so a
@@ -902,7 +924,7 @@ describe('click-triggered refresh', () => {
     click(at('#link'))
 
     expect(raf.armed).toBe(1)
-    expect(raf.cancelled).toHaveLength(2)
+    expect(raf.cancelled).toHaveLength(0)
   })
 
   it('cancels the pending refresh when the lifecycle aborts', () => {
