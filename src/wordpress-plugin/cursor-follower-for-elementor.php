@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Arts Cursor Follower for Elementor
  * Description: Interactive mouse cursor effects for Elementor.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Artem Semkin
  * Author URI: https://artemsemkin.com
  * License: GPLv3
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ARTS_CURSOR_FOLLOWER_PLUGIN_VERSION', '1.2.0' );
+define( 'ARTS_CURSOR_FOLLOWER_PLUGIN_VERSION', '1.3.0' );
 define( 'ARTS_CURSOR_FOLLOWER_PLUGIN_FILE', __FILE__ );
 
 require_once __DIR__ . '/vendor/autoload.php';

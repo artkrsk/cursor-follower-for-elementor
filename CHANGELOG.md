@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+
+* added: integrations can pause automatic target effects during navigation and wait for magnetic targets to finish returning.
+* fixed: the magnetic cursor now stays aligned with sticky and fixed targets while the page scrolls.
+* improved: target geometry warms in bounded observer tasks, reducing layout work when targets are registered.
+* improved: the loading spinner stops repainting once its collapse finishes.
+
 ## 1.2.0
 
 * added: integrations can now drive drag cursor feedback from their real gesture state, including the pressed state before a drag begins.

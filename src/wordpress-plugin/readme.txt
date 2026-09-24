@@ -4,7 +4,7 @@ Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0
 GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
@@ -105,6 +105,11 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 5. Portfolio: a "View Project" pill following the cursor across a card, live in the editor preview.
 
 == Changelog ==
+
+= 1.3.0 =
+* fixed: the cursor now stays aligned with sticky and fixed buttons and carousel arrows while you scroll.
+* improved: cursor effects initialize more smoothly on pages with many interactive elements.
+* improved: the loading spinner stops using resources once it disappears.
 
 = 1.2.0 =
 * added: integrations can now drive drag cursor feedback from their real gesture state, including the pressed state before a drag begins.
