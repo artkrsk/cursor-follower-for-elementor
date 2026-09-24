@@ -253,7 +253,7 @@ describe('the window resize debounce', () => {
     window.dispatchEvent(new Event('resize'))
     window.dispatchEvent(new Event('resize'))
     window.dispatchEvent(new Event('resize'))
-    vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS)
+    vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS + IDLE_FALLBACK_MS)
 
     expect(io.observed).toEqual([el])
   })
@@ -276,7 +276,7 @@ describe('the window resize debounce', () => {
     gone.remove()
 
     window.dispatchEvent(new Event('resize'))
-    vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS)
+    vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS + IDLE_FALLBACK_MS)
 
     expect(io.observed).toEqual([live])
     expect(ro.unobserved).toEqual([gone])
@@ -288,7 +288,7 @@ describe('the window resize debounce', () => {
 
     window.dispatchEvent(new Event('resize'))
     cache.dispose()
-    vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS)
+    vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS + IDLE_FALLBACK_MS)
 
     expect(io.observed).toHaveLength(0)
   })
@@ -299,7 +299,7 @@ describe('warm', () => {
     vi.useFakeTimers()
   })
 
-  it('measures the batch at idle against one shared scroll snapshot', () => {
+  it('warms through observer records without synchronous rectangle reads', () => {
     setScroll(0, 100)
     const a = elementAt({ left: 10, top: 20 })
     const b = elementAt({ left: 30, top: 40 })
@@ -307,12 +307,19 @@ describe('warm', () => {
     cache.warm([a, b])
     vi.advanceTimersByTime(IDLE_FALLBACK_MS)
 
+    expect(a.getBoundingClientRect).not.toHaveBeenCalled()
+    expect(b.getBoundingClientRect).not.toHaveBeenCalled()
+    expect(io.observed).toEqual([a, b])
+    io.deliver([
+      { target: a, boundingClientRect: rect({ left: 10, top: 20 }) },
+      { target: b, boundingClientRect: rect({ left: 30, top: 40 }) }
+    ])
     expect(cache.resolve(a)).toEqual({ pageX: 10, pageY: 120, w: 0, h: 0 })
     expect(cache.resolve(b)).toEqual({ pageX: 30, pageY: 140, w: 0, h: 0 })
     expect(ro.observed).toEqual([a, b])
   })
 
-  it('does nothing at all for an empty batch', () => {
+  it('does no registration for an empty batch with no tracked elements', () => {
     cache.warm([])
     vi.advanceTimersByTime(IDLE_FALLBACK_MS)
 
@@ -346,6 +353,7 @@ describe('warm', () => {
   it('goes through requestIdleCallback when the platform has one', async () => {
     const ric = vi.fn((cb: () => void) => cb())
     vi.stubGlobal('requestIdleCallback', ric)
+    vi.stubGlobal('cancelIdleCallback', vi.fn())
     vi.resetModules()
     const { createGeometryCache: fresh } = await import('@ts/interaction/geometry')
 
@@ -356,6 +364,31 @@ describe('warm', () => {
     expect(ric).toHaveBeenCalledOnce()
     expect(idleCache.resolve(el)).toEqual({ pageX: 3, pageY: 4, w: 0, h: 0 })
     idleCache.dispose()
+  })
+
+  it('coalesces overlapping requests and yields registration after the time budget', () => {
+    const a = elementAt()
+    const b = elementAt()
+    let clock = 0
+    vi.spyOn(performance, 'now').mockImplementation(() => (clock += 5))
+    cache.warm([a, a, b])
+    cache.warm([a, b])
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS)
+    expect(io.observed).toEqual([a])
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS)
+    expect(io.observed).toEqual([a, b])
+    expect(a.getBoundingClientRect).not.toHaveBeenCalled()
+    expect(b.getBoundingClientRect).not.toHaveBeenCalled()
+  })
+
+  it('evicts disconnected elements even when the post-navigation hint is empty', () => {
+    const gone = elementAt()
+    cache.resolve(gone)
+    gone.remove()
+    cache.warm([])
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS)
+    expect(ro.unobserved).toContain(gone)
+    expect(io.unobserved).toContain(gone)
   })
 
   /** The post-navigation sweep: warm evicts tracked elements that detached (SPA

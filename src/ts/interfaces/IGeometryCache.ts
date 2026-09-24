@@ -13,7 +13,7 @@ export interface IGeometryCache {
       while the returned stop function hasn't been called — for anchors that
       animate while engaged. One-frame latency, absorbed by the lerp. */
   stream(el: Element): () => void
-  /** Batch-measure the marked elements at idle. */
+  /** Coalesce geometry hints into bounded observer registration; empty hints also evict detached targets. */
   warm(els: Iterable<Element>): void
   dispose(): void
 }

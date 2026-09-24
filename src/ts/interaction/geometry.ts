@@ -1,10 +1,10 @@
-import { IDLE_FALLBACK_MS, RESIZE_DEBOUNCE_MS } from '../constants'
+import { GEOMETRY_TASK_BUDGET_MS, IDLE_FALLBACK_MS, RESIZE_DEBOUNCE_MS } from '../constants'
 import type { IGeometryCache, IGeometryEntry } from '../interfaces'
 
 /**
  * Page-space element geometry, kept fresh without layout flushes on any
  * interaction path:
- * - pre-warmed in one batched pass at idle (single flush, clean tree)
+ * - pre-warmed through bounded, coalesced observer registration at idle (no rect reads)
  * - revalidated through a shared IntersectionObserver (its boundingClientRect is
  *   served from already-computed geometry — flush-free): the resize sweep pushes
  *   through it, and stream() re-observes for a continuous feed while an anchor is
@@ -24,11 +24,6 @@ import type { IGeometryCache, IGeometryEntry } from '../interfaces'
  * reference sees updates without re-resolving — which is what lets an engaged
  * magnetic anchor read its live entry every frame.
  */
-
-const idle =
-  typeof requestIdleCallback === 'function'
-    ? requestIdleCallback
-    : (cb: () => void) => setTimeout(cb, IDLE_FALLBACK_MS)
 
 /**
  * Page-space entry write — mutates the stable object in place when there is
@@ -64,6 +59,9 @@ export function createGeometryCache(): IGeometryCache {
   const entries = new WeakMap<Element, IGeometryEntry>()
   const tracked = new Set<Element>()
   let disposed = false
+  const pending = new Set<Element>()
+  let scheduled = false
+  let cancelTask: (() => void) | null = null
 
   const resizeObserver = new ResizeObserver((observed) => {
     for (const { target } of observed) {
@@ -81,6 +79,10 @@ export function createGeometryCache(): IGeometryCache {
 
   const untrack = (el: Element) => {
     tracked.delete(el)
+    pending.delete(el)
+    streaming.delete(el)
+    entries.delete(el)
+    io.unobserve(el)
     resizeObserver.unobserve(el)
   }
 
@@ -94,6 +96,7 @@ export function createGeometryCache(): IGeometryCache {
   // frame path's allocation-free rule, and the only flush-free way to keep a
   // moving anchor's geometry live.
   const io = new IntersectionObserver((records) => {
+    if (disposed) return
     for (const { target, boundingClientRect } of records) {
       io.unobserve(target)
       if (target.isConnected) {
@@ -115,15 +118,40 @@ export function createGeometryCache(): IGeometryCache {
     }
   }
 
-  const refreshTracked = () => {
-    // Viewport change invalidates everything; re-measure the tracked set lazily.
-    for (const el of tracked) {
+  // Register with IO in small tasks. Warming must never synchronously measure
+  // an entire page while the browser is rendering a navigation or cursor return.
+  const drain = () => {
+    scheduled = false
+    cancelTask = null
+    if (disposed) return
+    const start = performance.now()
+    for (const el of pending) {
+      pending.delete(el)
       if (el.isConnected) {
+        track(el)
         revalidate(el)
       } else {
         untrack(el)
       }
+      if (performance.now() - start >= GEOMETRY_TASK_BUDGET_MS) break
     }
+    if (pending.size) schedule()
+  }
+  const schedule = () => {
+    if (scheduled || disposed) return
+    scheduled = true
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(drain, { timeout: IDLE_FALLBACK_MS })
+      cancelTask = () => cancelIdleCallback(id)
+    } else {
+      const id = setTimeout(drain, IDLE_FALLBACK_MS)
+      cancelTask = () => clearTimeout(id)
+    }
+  }
+
+  const refreshTracked = () => {
+    for (const el of tracked) pending.add(el)
+    if (pending.size) schedule()
   }
 
   let resizeTimer = 0
@@ -165,35 +193,20 @@ export function createGeometryCache(): IGeometryCache {
       }
     },
     warm(els) {
-      const list = [...els]
-      if (list.length === 0) {
-        return
+      if (disposed) return
+      // Empty hints still sweep detached trees after SPA navigation.
+      for (const el of tracked) {
+        if (!el.isConnected) pending.add(el)
       }
-      idle(() => {
-        if (disposed) {
-          return
-        }
-        // Post-navigation sweep: warm() is the documented hint after injecting
-        // DOM, so it's also where detached tracked elements are evicted (deleting
-        // the current element mid-iteration is safe over a Set).
-        for (const el of tracked) {
-          if (!el.isConnected) {
-            untrack(el)
-          }
-        }
-        // One batched pass — a single flush at idle on a clean tree, and one
-        // scroll snapshot shared by the whole batch.
-        const scrollX = window.scrollX
-        const scrollY = window.scrollY
-        for (const el of list) {
-          writeEntry(entries, el, el.getBoundingClientRect(), scrollX, scrollY)
-          track(el)
-        }
-      })
+      for (const el of els) pending.add(el)
+      if (pending.size) schedule()
     },
     dispose() {
       disposed = true
       clearTimeout(resizeTimer)
+      cancelTask?.()
+      cancelTask = null
+      pending.clear()
       io.disconnect()
       resizeObserver.disconnect()
       tracked.clear()

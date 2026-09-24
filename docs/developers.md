@@ -127,9 +127,10 @@ interface ICursorFollower {
   progress(): ICursorSession
   hideNativeCursor(): ICursorSession
   magnetize(opts: IMagnetizeOptions): ICursorSession
+  suspendTargets(): ICursorTargetSession
 
   updateOptions(partial: ICursorOptions): void  // live-tune trailing/elastic/magnetic/highlight/pressScale
-  warm(container?: ParentNode): void            // pre-measure hint after injecting large DOM
+  warm(container?: ParentNode): void            // queue observer-based geometry warming after injecting DOM
   remeasure(): void                             // re-sample measured theming vars after you change them
   refresh(): void                               // re-resolve the hovered target after your state changed under a still pointer (also runs automatically one frame after any click; same verdict emits 'target:refresh' instead of re-entering)
 
@@ -141,6 +142,28 @@ interface ICursorFollower {
 ```
 
 Sessions **stack** — last wins per property, and releasing one restores whatever remains (other sessions, then hover state). Every session supports `release()` and `using` (`Symbol.dispose`).
+
+`suspendTargets()` temporarily releases automatic hover magnetism and clears target press/drag presentation. It leaves explicit `set()`, `loading()` and `magnetize()` sessions in their owner's control, and never changes a host-controlled drag's state. The first lease emits one `target:leave`, allowing host-derived hover sessions to release themselves. Nested leases keep targets suspended until the last release. During suspension `refresh()` records invalidation without hit-testing; the final release schedules one fresh resolution from the latest pointer coordinates.
+
+```ts
+interface ICursorTargetSession extends ICursorSession {
+  readonly settled: Promise<void>
+}
+
+const targets = cursor.suspendTargets()
+try {
+  // Network acquisition can begin before this wait.
+  await targets.settled
+  // Finite magnetic element returns have finished and restored their styles.
+  await prepareAndRunNavigation()
+} finally {
+  targets.release()
+}
+```
+
+`settled` includes elements already returning before suspension, but excludes continuous following and explicitly owned magnetism. Releasing the lease or destroying the cursor also resolves it. Hidden-document and disabled-input returns finish immediately. Feature-detect `suspendTargets` when supporting older installed plugin versions. Loading feedback alone does not suspend targets.
+
+`warm()` coalesces repeated hints into bounded observer-registration tasks without sweeping layout rectangles synchronously. Cold magnetic engagement still measures its anchor immediately, so moving and sticky targets stay accurate.
 
 `magnetize` is the programmatic magnet for live, moving anchors — no hover coupling, no distance release; the caller owns the lifecycle. Move the pointer into the zone below: the wiring magnetizes the cursor to the orbiting dot and rides it until you leave — the same recipe a production slider uses to keep the cursor caught on its drag knob:
 

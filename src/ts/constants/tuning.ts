@@ -53,3 +53,6 @@ export const ARROW_GAP_FALLBACK = 8
 /** Pointer travel (px, max-axis, from the press point) that promotes a press
     into a drag — the click-vs-drag threshold. */
 export const DRAG_THRESHOLD_PX = 4
+
+/** Maximum observer-registration work per geometry warm task. */
+export const GEOMETRY_TASK_BUDGET_MS = 4
