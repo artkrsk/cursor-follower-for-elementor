@@ -3,7 +3,7 @@ name: Weekly Canary
 on:
   schedule:
     # Monday 03:00 UTC — before the workweek, after the weekend's releases.
-    - cron: '0 3 * * 1'
+    - cron: '0 3 * * 0'
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   canary:
-    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/canary.yml@e6a2fdf517588bf09377a052a59709f152316244 # main
+    uses: artkrsk/wordpress-plugin-workflows/.github/workflows/canary.yml@main
     with:
       integration_suites: '[]'
       # wp_env_ports: '8890,8891'
