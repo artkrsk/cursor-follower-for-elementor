@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "types": "./src/ts/index.ts",
-  "packageManager": "pnpm@12.5.1",
+  "packageManager": "pnpm@12.6.0",
   "engines": {
     "node": ">=24"
   },
@@ -22,13 +22,13 @@
     "@biomejs/biome": "2.5.14",
     "@types/node": "^26.1.1",
     "@vitest/coverage-v8": "^5.0.0",
-    "fallow": "3.27.0",
+    "fallow": "3.30.0",
     "happy-dom": "20.14.5",
-    "knip": "6.37.0",
+    "knip": "6.38.0",
     "lefthook": "^2.1.10",
     "stylelint": "^17.14.1",
     "typescript": "^7.0.2",
     "vitepress": "2.0.0-alpha.20",
-    "vitest": "5.0.1"
+    "vitest": "5.0.2"
   }
 }
