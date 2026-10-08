@@ -9,6 +9,52 @@ import { engageOrbit, releaseOrbit } from './demos/magnetize-session'
 
 ## Discovery
 
+### Standalone browser startup
+
+`pnpm build:library` produces ESM, declarations and CSS independently of the
+WordPress release. The package root is passive; start and retire an app explicitly:
+
+```ts
+import { createCursorApp } from '@arts/cursor-follower'
+import '@arts/cursor-follower/styles.css'
+
+const app = createCursorApp({ options: { trailing: 0.15 } })
+app.init()
+// At host teardown:
+app.destroy()
+```
+
+For pointer-gated downloads, import only `/gate`. Serve the packaged CSS at the
+configured URL and use a dynamic import after it loads:
+
+```ts
+import { createCursorGate } from '@arts/cursor-follower/gate'
+
+const gate = createCursorGate({
+  css: '/assets/cursor.css',
+  async load(signal) {
+    const { createCursorApp } = await import('@arts/cursor-follower')
+    createCursorApp({ signal }).init()
+  }
+})
+gate.init()
+// Cancels pending downloads/initialization and disposes the owned app:
+gate.destroy()
+```
+
+Always pass the captured signal through the asynchronous boundary. A retired
+gate cannot start an app even if its module finishes downloading later. App
+replacement preserves `window.artsCursor`, its observers and first-ready promise.
+Destroyed app and gate handles are terminal; create a new handle to start again.
+
+Default exports resolve to built ESM/declarations. The `arts-source` condition
+selects shipped TypeScript (enable `resolveJsonModule` for canonical version
+metadata). `/styles.scss` provides source Sass, `/styles.css` compiled CSS, and
+`/contract` provides engine-free constants and discovery types. No WordPress
+globals or version defines are required.
+
+### Runtime discovery
+
 The gate installs `window.artsCursor` at parse time on every device:
 
 ```ts

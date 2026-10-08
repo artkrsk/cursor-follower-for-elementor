@@ -3,43 +3,9 @@
  * Zero-dependency, compositor-first cursor follower.
  */
 
+/// <reference path="./env.d.ts" />
+
+export type * from './contract'
 export { createCursor } from './core/createCursor'
-export type {
-  IAnimationConfig,
-  IArtsCursorGlobal,
-  ICursorDragBinding,
-  ICursorDragOptions,
-  ICursorEvents,
-  ICursorFollower,
-  ICursorObserveOptions,
-  ICursorOptions,
-  ICursorPayload,
-  ICursorSession,
-  ICursorStats,
-  ICursorTargetSession,
-  IElasticConfig,
-  IHighlightConfig,
-  ILoadingOptions,
-  IMagneticConfig,
-  IMagnetizeOptions,
-  IPressScaleConfig,
-  ITargetContext,
-  ITargetRule,
-  ITargetScope,
-  ITickerAdapter,
-  ITickerSubscribeOptions,
-  IVec2
-} from './interfaces'
-export type {
-  TArrowAxis,
-  TBootOptions,
-  TCursorDragState,
-  TCursorObserver,
-  TDragPayload,
-  TKitSettings,
-  TPressPayload,
-  TScaleValue,
-  TStateVarKey,
-  TTickerCallback
-} from './types'
+export { createCursorApp } from './createCursorApp'
 export { resolveScale } from './utils'

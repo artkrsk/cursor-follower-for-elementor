@@ -1,6 +1,9 @@
 // @vitest-environment happy-dom
 
 import { GATE_CSS_ID, GATE_JS_ID, HTML_ACTIVE, HTML_INACTIVE } from '@ts/constants'
+import { VERSION } from '@ts/constants/version'
+import { createCursorApp } from '@ts/createCursorApp'
+import { createCursorGate } from '@ts/createCursorGate'
 import type { ICursorFollower, IGateGlobal } from '@ts/interfaces'
 import type { TGateBoot } from '@ts/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -19,10 +22,7 @@ import { fakeMedia } from './support'
  * assertions. Its stderr complaints about the fake host are expected noise —
  * they bypass every vitest console filter (happy-dom-internal reporting).
  *
- * The gate deliberately has no teardown (it is a page-lifetime script), so a
- * test that armed listeners leaves them on this file's shared window. The
- * afterEach flip(false) neutralizes them: a stale closure re-checks its own
- * mql.matches at event time and can never load again.
+ * Every test retires its gate and app so pending asset callbacks cannot leak.
  */
 
 const pointer = (type: string, over: Record<string, unknown> = { pointerType: 'mouse' }) => {
@@ -61,6 +61,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  ;(window.artsCursor as IGateGlobal | undefined)?.__disposeGate?.()
+  ;(window.artsCursor as IGateGlobal | undefined)?.__disposeBoot?.()
   media?.flip(false)
   media = null
   delete window.artsCursor
@@ -80,7 +82,7 @@ describe('parse-time install', () => {
 
     const gate = window.artsCursor as IGateGlobal
     expect(gate.get()).toBeNull()
-    expect(gate.version).toBe('0.0.0-test')
+    expect(gate.version).toBe(VERSION)
     expect(gate.observe).toBeTypeOf('function')
   })
 
@@ -294,5 +296,107 @@ describe('editor mode', () => {
     await importGate()
 
     expect(injectedLink()).not.toBeNull()
+  })
+})
+
+describe('public gate lifetime', () => {
+  it('constructs without globals, listeners or assets', () => {
+    arm(true)
+    const gate = createCursorGate({ css: '/engine.css', js: '/engine.js' })
+    expect(window.artsCursor).toBeUndefined()
+    pointer('pointermove')
+    expect(injectedLink()).toBeNull()
+    gate.destroy()
+    gate.init()
+    expect(window.artsCursor).toBeUndefined()
+  })
+
+  it('ignores a retired stylesheet callback after replacement', () => {
+    arm(true)
+    const first = createCursorGate({ css: '/old.css', js: '/old.js' })
+    first.init()
+    pointer('pointermove')
+    const link = injectedLink()
+    const loaded = link?.onload
+    if (!link || !loaded) {
+      throw new Error('Expected a pending stylesheet')
+    }
+    const second = createCursorGate({ css: '/new.css', js: '/new.js' })
+    second.init()
+    loaded.call(link, new Event('load'))
+    expect(injectedScript()).toBeNull()
+    expect(first.signal.aborted).toBe(true)
+    pointer('pointermove')
+    expect(injectedLink()?.href).toContain('/new.css')
+    first.destroy()
+    expect(injectedLink()?.href).toContain('/new.css')
+  })
+
+  it('passes the original lifetime through a delayed module import', async () => {
+    arm(true)
+    let release!: () => void
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const gate = createCursorGate({
+      css: '/engine.css',
+      load: async (signal) => {
+        await pending
+        createCursorApp({ signal }).init()
+      }
+    })
+    gate.init()
+    pointer('pointermove')
+    injectedLink()?.onload?.(new Event('load') as never)
+    await Promise.resolve()
+    gate.destroy()
+    release()
+    await pending
+    expect(window.artsCursor?.get()).toBeNull()
+    expect(document.getElementById('arts-cursor')).toBeNull()
+  })
+
+  it('retires an initialized module app with its gate', async () => {
+    arm(true)
+    const gate = createCursorGate({
+      css: '/engine.css',
+      load: async (signal) => {
+        createCursorApp({ signal }).init()
+      }
+    })
+    gate.init()
+    pointer('pointermove')
+    injectedLink()?.onload?.(new Event('load') as never)
+    await Promise.resolve()
+    expect(window.artsCursor?.get()).not.toBeNull()
+    gate.destroy()
+    expect(window.artsCursor?.get()).toBeNull()
+    expect(document.getElementById('arts-cursor')).toBeNull()
+  })
+
+  it('keeps a gate requested by a teardown observer over the outer replacement', async () => {
+    arm(true)
+    const first = createCursorGate({
+      css: '/first.css',
+      load: async (signal) => {
+        createCursorApp({ signal }).init()
+      }
+    })
+    const second = createCursorGate({ css: '/second.css', js: '/second.js' })
+    const third = createCursorGate({ css: '/third.css', js: '/third.js' })
+    first.init()
+    pointer('pointermove')
+    injectedLink()?.onload?.(new Event('load') as never)
+    await Promise.resolve()
+    window.artsCursor?.observe((cursor) => {
+      if (!cursor) {
+        third.init()
+      }
+    })
+    second.init()
+    expect(second.signal.aborted).toBe(true)
+    expect(third.signal.aborted).toBe(false)
+    pointer('pointermove')
+    expect(injectedLink()?.href).toContain('/third.css')
   })
 })

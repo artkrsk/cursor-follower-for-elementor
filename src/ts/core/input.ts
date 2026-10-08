@@ -1,15 +1,14 @@
 import { POINTER_MEDIA_QUERY } from '../constants'
 import type { IPointerInput } from '../interfaces'
+import { accepts } from './acceptsPointer'
+
+export { accepts } from './acceptsPointer'
 
 /**
  * Pointer source. A `(hover:hover) and (pointer:fine)` media query owns the
  * listener lifecycle, so hybrid devices attach/detach correctly at runtime.
  * Touch input never reaches the engine (pointerType gate).
  */
-
-/** The engine's pointer-type gate — shared with interaction/targets.ts so
-    hover tracking obeys the same rule as the listeners here. */
-export const accepts = (e: PointerEvent) => e.pointerType === 'mouse' || e.pointerType === 'pen'
 
 export function createPointerInput(args: {
   signal: AbortSignal

@@ -1,8 +1,9 @@
-import type { ICursorFollower, IGateGlobal } from '../interfaces'
+import { VERSION } from '../constants/version'
+import type { IArtsCursorGlobal, ICursorFollower, IGateGlobal } from '../interfaces'
 import type { TCursorObserver } from '../types'
 
 /** Window-owned so the inline gate and separately bundled boot share a registry. */
-export function getCursorGlobal(win: Window): IGateGlobal {
+export function getCursorGlobal(win: Window & { artsCursor?: IArtsCursorGlobal }): IGateGlobal {
   if (win.artsCursor) return win.artsCursor as IGateGlobal
 
   let current: ICursorFollower | null = null
@@ -17,7 +18,7 @@ export function getCursorGlobal(win: Window): IGateGlobal {
       resolveReady = resolve
     }),
     get: () => current,
-    version: __ARTS_CURSOR_VERSION__,
+    version: VERSION,
     __replaceBoot(install) {
       pendingBoot = install
       const flush = () => {

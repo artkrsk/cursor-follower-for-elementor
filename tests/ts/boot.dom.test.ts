@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import { getCursorGlobal } from '@ts/core/cursorGlobal'
+import { createCursorApp } from '@ts/createCursorApp'
 import type { ICursorFollower, IGateGlobal } from '@ts/interfaces'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -20,6 +21,71 @@ afterEach(() => {
   delete window.artsCursorFollowerOptions
   document.getElementById('arts-cursor')?.remove()
   document.documentElement.className = ''
+  vi.restoreAllMocks()
+})
+
+describe('public app lifecycle', () => {
+  it('is passive until explicitly initialized and stays retired after destruction', () => {
+    const app = createCursorApp()
+    expect(window.artsCursor).toBeUndefined()
+    expect(document.getElementById('arts-cursor')).toBeNull()
+    app.init()
+    const cursor = app.get()
+    expect(window.artsCursor?.get()).toBe(cursor)
+    app.init()
+    expect(app.get()).toBe(cursor)
+    app.destroy()
+    app.init()
+    expect(app.get()).toBeNull()
+    expect(window.artsCursor?.get()).toBeNull()
+  })
+
+  it('does not install a global when its captured loader signal is already aborted', () => {
+    const lifetime = new AbortController()
+    lifetime.abort()
+    const app = createCursorApp({ signal: lifetime.signal })
+    app.init()
+    expect(window.artsCursor).toBeUndefined()
+  })
+
+  it('cancels pending DOM-ready initialization', () => {
+    vi.spyOn(document, 'readyState', 'get').mockReturnValue('loading')
+    const app = createCursorApp()
+    app.init()
+    app.destroy()
+    document.dispatchEvent(new Event('DOMContentLoaded'))
+    expect(window.artsCursor?.get()).toBeNull()
+    expect(document.getElementById('arts-cursor')).toBeNull()
+  })
+
+  it('keeps the newest owner when observers replace an initializing app', () => {
+    const hub = getCursorGlobal(window)
+    const first = createCursorApp()
+    const second = createCursorApp()
+    let replace = true
+    hub.observe((cursor) => {
+      if (cursor && replace) {
+        replace = false
+        second.init()
+      }
+    })
+    first.init()
+    expect(first.signal.aborted).toBe(true)
+    expect(hub.get()).toBe(second.get())
+    first.destroy()
+    expect(hub.get()).toBe(second.get())
+  })
+
+  it('refuses a downloaded classic bootstrap from a retired gate', async () => {
+    const lifetime = new AbortController()
+    lifetime.abort()
+    const script = Object.assign(document.createElement('script'), {
+      __artsCursorSignal: lifetime.signal
+    })
+    vi.spyOn(document, 'currentScript', 'get').mockReturnValue(script)
+    await import('@ts/boot')
+    expect(window.artsCursor).toBeUndefined()
+  })
 })
 
 describe('gate handoff', () => {

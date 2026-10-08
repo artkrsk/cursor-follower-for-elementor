@@ -1,6 +1,7 @@
 {
   "extends": "@arts/wp-plugin-tooling/tsconfig",
   "compilerOptions": {
+    "resolveJsonModule": true,
     "paths": {
       "@engine": ["./src/ts/index.ts"],
       "@styles/*": ["./src/styles/*"],
