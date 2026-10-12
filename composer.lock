@@ -9,16 +9,16 @@
     "packages-dev": [
         {
             "name": "arts/elementor-stubs",
-            "version": "v4.2.4",
+            "version": "v4.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/artkrsk/elementor-stubs.git",
-                "reference": "4345323b7429014d1cd595178d52107bca16696e"
+                "reference": "0f0a562a9c94c4db59715361e19dcf48f132a157"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/artkrsk/elementor-stubs/zipball/4345323b7429014d1cd595178d52107bca16696e",
-                "reference": "4345323b7429014d1cd595178d52107bca16696e",
+                "url": "https://api.github.com/repos/artkrsk/elementor-stubs/zipball/0f0a562a9c94c4db59715361e19dcf48f132a157",
+                "reference": "0f0a562a9c94c4db59715361e19dcf48f132a157",
                 "shasum": ""
             },
             "require": {
@@ -64,7 +64,7 @@
             ],
             "support": {
                 "issues": "https://github.com/artkrsk/elementor-stubs/issues",
-                "source": "https://github.com/artkrsk/elementor-stubs/tree/v4.2.4"
+                "source": "https://github.com/artkrsk/elementor-stubs/tree/v4.3.3"
             },
             "funding": [
                 {
@@ -72,7 +72,7 @@
                     "type": "buy_me_a_coffee"
                 }
             ],
-            "time": "2026-09-15T04:00:45+00:00"
+            "time": "2026-10-05T11:44:15+00:00"
         },
         {
             "name": "arts/wp-plugin-standards",
@@ -789,11 +789,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.16",
+            "version": "2.3.1",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/46a6d9060e5a7763adfcc21ebcb8b504ebdbcb92",
-                "reference": "46a6d9060e5a7763adfcc21ebcb8b504ebdbcb92",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+                "reference": "6155239b488e95d26d1ebd95c6b4bb294d7f09db",
                 "shasum": ""
             },
             "require": {
@@ -849,7 +849,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-25T09:31:51+00:00"
+            "time": "2026-10-08T21:09:11+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
