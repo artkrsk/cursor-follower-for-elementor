@@ -4,7 +4,7 @@ Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0
 GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
@@ -105,6 +105,9 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 5. Portfolio: a "View Project" pill following the cursor across a card, live in the editor preview.
 
 == Changelog ==
+
+= 1.3.1 =
+* added: integrations outside WordPress can now start, load on demand and cleanly tear down the cursor through createCursorApp and createCursorGate, with ready-to-use ESM, type and style builds.
 
 = 1.3.0 =
 * improved: cursor effects initialize more smoothly on pages with many interactive elements.
