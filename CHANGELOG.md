@@ -1,11 +1,14 @@
 # Changelog
 
+## 1.3.1
+
+* added: integrations outside WordPress can now start, load on demand and cleanly tear down the cursor through createCursorApp and createCursorGate, with ready-to-use ESM, type and style builds.
+
 ## 1.3.0
 
-* added: integrations can pause automatic target effects during navigation and wait for magnetic targets to finish returning.
-* improved: target geometry warms in bounded observer tasks, reducing layout work when targets are registered.
-* improved: the loading spinner stops repainting once its collapse finishes.
-* fixed: the magnetic cursor now stays aligned with sticky and fixed targets while the page scrolls.
+* improved: cursor effects initialize more smoothly on pages with many interactive elements.
+* improved: the loading spinner stops using resources once it disappears.
+* fixed: the cursor now stays aligned with sticky and fixed buttons and carousel arrows while you scroll.
 
 ## 1.2.0
 
