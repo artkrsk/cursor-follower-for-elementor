@@ -106,6 +106,9 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
+= 1.3.1 =
+* added: integrations outside WordPress can now start, load on demand and cleanly tear down the cursor through createCursorApp and createCursorGate, with ready-to-use ESM, type and style builds.
+
 = 1.3.0 =
 * improved: cursor effects initialize more smoothly on pages with many interactive elements.
 * improved: the loading spinner stops using resources once it disappears.
