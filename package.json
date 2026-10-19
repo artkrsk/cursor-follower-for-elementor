@@ -36,7 +36,7 @@
     "dist/types",
     "composer.json"
   ],
-  "packageManager": "pnpm@12.11.2",
+  "packageManager": "pnpm@12.14.0",
   "engines": {
     "node": ">=24"
   },
@@ -55,7 +55,7 @@
     "@biomejs/biome": "2.5.15",
     "@types/node": "^26.1.1",
     "@vitest/coverage-v8": "^5.0.0",
-    "fallow": "3.33.1",
+    "fallow": "3.34.0",
     "esbuild": "^0.28.1",
     "happy-dom": "20.14.6",
     "knip": "6.41.0",
@@ -64,6 +64,6 @@
     "stylelint": "^17.14.1",
     "typescript": "^7.0.2",
     "vitepress": "2.0.0-alpha.20",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   }
 }

@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "584090f55df4a0dff852a8d28e9826f1",
+    "content-hash": "8dd315c3d1b0aed1ece55ce0c65018d7",
     "packages": [],
     "packages-dev": [
         {
             "name": "arts/elementor-stubs",
-            "version": "v4.3.3",
+            "version": "v4.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/artkrsk/elementor-stubs.git",
-                "reference": "0f0a562a9c94c4db59715361e19dcf48f132a157"
+                "reference": "91dd4da92ab9631314b5b5409cdffdbcd6c62e9e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/artkrsk/elementor-stubs/zipball/0f0a562a9c94c4db59715361e19dcf48f132a157",
-                "reference": "0f0a562a9c94c4db59715361e19dcf48f132a157",
+                "url": "https://api.github.com/repos/artkrsk/elementor-stubs/zipball/91dd4da92ab9631314b5b5409cdffdbcd6c62e9e",
+                "reference": "91dd4da92ab9631314b5b5409cdffdbcd6c62e9e",
                 "shasum": ""
             },
             "require": {
@@ -64,7 +64,7 @@
             ],
             "support": {
                 "issues": "https://github.com/artkrsk/elementor-stubs/issues",
-                "source": "https://github.com/artkrsk/elementor-stubs/tree/v4.3.3"
+                "source": "https://github.com/artkrsk/elementor-stubs/tree/v4.3.5"
             },
             "funding": [
                 {
@@ -72,7 +72,7 @@
                     "type": "buy_me_a_coffee"
                 }
             ],
-            "time": "2026-10-05T11:44:15+00:00"
+            "time": "2026-10-15T03:48:19+00:00"
         },
         {
             "name": "arts/wp-plugin-standards",
