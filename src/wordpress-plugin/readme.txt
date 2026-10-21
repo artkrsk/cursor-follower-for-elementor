@@ -106,22 +106,22 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
-= 1.3.1 =
+= 1.3.1 – October 13, 2026 =
 * added: integrations outside WordPress can now start, load on demand and cleanly tear down the cursor through createCursorApp and createCursorGate, with ready-to-use ESM, type and style builds.
 
-= 1.3.0 =
+= 1.3.0 – September 24, 2026 =
 * improved: cursor effects initialize more smoothly on pages with many interactive elements.
 * improved: the loading spinner stops using resources once it disappears.
 * fixed: the cursor now stays aligned with sticky and fixed buttons and carousel arrows while you scroll.
 
-= 1.2.0 =
+= 1.2.0 – September 20, 2026 =
 * added: integrations can now drive drag cursor feedback from their real gesture state, including the pressed state before a drag begins.
 * added: integrations can safely observe cursor initialization, replacement and teardown through window.artsCursor.
 * improved: the cursor now refreshes automatically after a click changes content beneath a stationary pointer, so effects update immediately on menus, tabs and similar controls.
 * improved: reduced Chromium style work while using the press-dot drag cursor on pages that add or replace content.
 * fixed: a magnetic target with a custom Element Scale no longer makes the cursor shrink again when it is pressed or another effect updates.
 
-= 1.1.0 =
+= 1.1.0 – August 17, 2026 =
 * added: a refresh() method — a host that swaps content under a resting pointer (a lightbox changing slides) can ask the cursor to re-resolve what it is hovering.
 * improved: the loading spinner now takes over through a sequenced scale swap — the circle shrinks away, the spinner grows in already spinning — instead of an abrupt cross-fade.
 * improved: the lightbox cursor controls moved into their own Cursor Effects section beside Elementor's Lightbox settings.
@@ -129,19 +129,19 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 * fixed: crossing into an embedded iframe (a video, a map) left the ring parked over the embed holding the last hover state; it now folds away and returns when the pointer resurfaces.
 * fixed: an arrows-only drag pill kept the previous hover's text or icon visible inside the arrows.
 
-= 1.0.4 =
+= 1.0.4 – August 13, 2026 =
 * improved: confirmed compatibility with WordPress 7.1.
 
-= 1.0.3 =
+= 1.0.3 – August 13, 2026 =
 * added: an Element Scale setting under Magnetic — the magnetized element itself can now shrink or grow slightly while the cursor holds it.
 
-= 1.0.2 =
+= 1.0.2 – August 11, 2026 =
 * improved: the no-cursor-follower class is no longer added on admin screens, where WordPress puts its own class on the same tag.
 * improved: now requires WordPress 6.2 or newer.
 * fixed: the no-cursor-follower class being dropped from the html tag when another plugin adds a class to it as well.
 
-= 1.0.1 =
+= 1.0.1 – August 11, 2026 =
 * fixed: the cursor briefly jumping to a wrong position on the first magnetic hover after scrolling, when the target sits inside a fixed or sticky container such as a sticky header.
 
-= 1.0.0 =
+= 1.0.0 – August 11, 2026 =
 Initial release.
