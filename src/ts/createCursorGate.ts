@@ -19,6 +19,7 @@ export function createCursorGate(config?: ICursorGateOptions): ICursorGate {
   let script: ICursorGateScript | undefined
   let started = false
   let loaded = false
+  let cssReady = false
   let booting = false
   const opts = { passive: true, capture: true }
 
@@ -32,6 +33,7 @@ export function createCursorGate(config?: ICursorGateOptions): ICursorGate {
       return
     }
     predict(false)
+    disarm()
     if (import.meta.env?.DEV) {
       console.warn('[arts-cursor] engine assets failed to load')
     }
@@ -43,13 +45,41 @@ export function createCursorGate(config?: ICursorGateOptions): ICursorGate {
     media?.removeEventListener('change', onChange)
   }
 
-  const load = () => {
-    if (loaded || lifetime.signal.aborted) {
+  /** The engine, once a load trigger fired AND the stylesheet applied. */
+  const boot = () => {
+    if (
+      !loaded ||
+      !cssReady ||
+      booting ||
+      lifetime.signal.aborted ||
+      document.getElementById(GATE_JS_ID)
+    ) {
       return
     }
-    loaded = true
-    disarm()
-    if (!config || document.getElementById(GATE_JS_ID)) {
+    booting = true
+    if (config?.load) {
+      const initialize = config.load
+      Promise.resolve()
+        .then(() => {
+          if (!lifetime.signal.aborted) {
+            return initialize(lifetime.signal)
+          }
+        })
+        .catch(fail)
+    } else if (config?.js) {
+      script = document.createElement('script') as ICursorGateScript
+      script.id = GATE_JS_ID
+      script.__artsCursorSignal = lifetime.signal
+      script.src = config.js
+      script.onerror = fail
+      document.head.appendChild(script)
+    }
+  }
+
+  /** At init on a matching device, so the sheet lands with the page's own first styles: inserted
+   *  after them, its `@layer` and `@property` rules restyle and relayout the whole document. */
+  const insertCss = () => {
+    if (link || !config || lifetime.signal.aborted || document.getElementById(GATE_JS_ID)) {
       return
     }
     link = document.createElement('link')
@@ -57,30 +87,21 @@ export function createCursorGate(config?: ICursorGateOptions): ICursorGate {
     link.rel = 'stylesheet'
     link.href = config.css
     link.onload = () => {
-      if (booting || lifetime.signal.aborted || document.getElementById(GATE_JS_ID)) {
-        return
-      }
-      booting = true
-      if (config.load) {
-        const initialize = config.load
-        Promise.resolve()
-          .then(() => {
-            if (!lifetime.signal.aborted) {
-              return initialize(lifetime.signal)
-            }
-          })
-          .catch(fail)
-      } else if (config.js) {
-        script = document.createElement('script') as ICursorGateScript
-        script.id = GATE_JS_ID
-        script.__artsCursorSignal = lifetime.signal
-        script.src = config.js
-        script.onerror = fail
-        document.head.appendChild(script)
-      }
+      cssReady = true
+      boot()
     }
     link.onerror = fail
     document.head.appendChild(link)
+  }
+
+  const load = () => {
+    if (loaded || lifetime.signal.aborted) {
+      return
+    }
+    loaded = true
+    disarm()
+    insertCss()
+    boot()
   }
 
   function onMove(event: PointerEvent) {
@@ -148,6 +169,9 @@ export function createCursorGate(config?: ICursorGateOptions): ICursorGate {
       if (config?.editor) {
         load()
       } else {
+        if (media.matches) {
+          insertCss()
+        }
         window.addEventListener('pointermove', onMove, opts)
         window.addEventListener('wheel', onWheel, opts)
         media.addEventListener('change', onChange)

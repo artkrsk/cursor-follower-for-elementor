@@ -43,7 +43,7 @@ Elementor's lightbox gets the same treatment site-wide (Site Settings → Cursor
 
 ## Touch devices
 
-Touch devices download **nothing** — no script, no styles. The plugin prints a tiny inline gate that fetches the engine only on the first real mouse or trackpad signal. Hybrid devices work both ways: dock a mouse and the cursor appears; switch to touch and it steps aside. Your theme can style both worlds via the `has-cursor-follower` / `no-cursor-follower` classes on `<html>`.
+Touch devices download **nothing** — no script, no styles. The plugin prints a tiny inline gate: on a mouse or trackpad device it loads the cursor's stylesheet with the page and fetches the engine script on the first real mouse or trackpad signal. Hybrid devices work both ways: dock a mouse and the cursor appears; switch to touch and it steps aside. Your theme can style both worlds via the `has-cursor-follower` / `no-cursor-follower` classes on `<html>`.
 
 ## Troubleshooting
 

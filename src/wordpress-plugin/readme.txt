@@ -44,7 +44,7 @@ Most cursor plugins ship one global effect and tell you to add CSS classes. This
 
 Every cursor plugin calls itself lightweight. Here are actual numbers:
 
-* Visitors get one inline block — the loader plus your settings, about 1.7 KB gzipped — and nothing else up front. The engine, around 13 KB gzipped including its CSS, loads on the first mouse movement.
+* Visitors get one inline block — the loader plus your settings, about 1.7 KB gzipped. On mouse and trackpad devices the cursor's stylesheet loads with the page and the engine script on the first mouse movement, around 13 KB gzipped together.
 * Phones and tablets never produce that movement, so they download zero bytes of engine code.
 * No jQuery. No dependencies.
 * The cursor moves by writing a single transform per frame, and its state changes are CSS transitions. The JavaScript goes to sleep whenever the cursor is at rest.
@@ -62,7 +62,7 @@ Or press Live Preview on this page and try it without installing anything.
 
 = Will it slow down my site? =
 
-Visitors download one inline block of about 1.7 KB gzipped — the loader plus your settings. The engine itself, around 13 KB gzipped, only loads after the first mouse movement, and phones and tablets never load it at all. The JavaScript sleeps while the cursor is idle.
+Visitors download one inline block of about 1.7 KB gzipped — the loader plus your settings. The engine itself, around 13 KB gzipped, loads its stylesheet with the page and its script after the first mouse movement, and phones and tablets never load either. The JavaScript sleeps while the cursor is idle.
 
 = What happens on phones and tablets? =
 

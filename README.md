@@ -10,7 +10,7 @@
 
 An animated cursor follower for Elementor: magnetic buttons, link highlights, text and icon hints, drag effects. Loads nothing on touch devices.
 
-Visitors get a ~1 KB inline loader and nothing else up front — the engine, under 20 KB gzipped including its CSS, arrives on the first mouse movement. No jQuery, no runtime dependencies.
+Visitors get a ~1 KB inline loader up front. On mouse and trackpad devices the cursor's stylesheet loads with the page and the engine script arrives on the first mouse movement, under 20 KB gzipped together. No jQuery, no runtime dependencies.
 
 ## Quick Links
 

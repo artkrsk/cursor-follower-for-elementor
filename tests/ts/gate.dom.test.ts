@@ -169,8 +169,9 @@ describe('the load trigger', () => {
     await importGate()
 
     pointer('pointermove', { pointerType: 'touch' })
+    injectedLink()?.onload?.(new Event('load') as never)
 
-    expect(injectedLink()).toBeNull()
+    expect(injectedScript()).toBeNull()
   })
 
   /** The mq is re-checked at event time — a mouse-type move on a device whose
@@ -239,9 +240,10 @@ describe('capability transitions', () => {
     await importGate()
 
     m.flip(false)
+    injectedLink()?.onload?.(new Event('load') as never)
 
     expect(html().classList.contains(HTML_INACTIVE)).toBe(true)
-    expect(injectedLink()).toBeNull()
+    expect(injectedScript()).toBeNull()
   })
 
   /** Exiting DevTools responsive mode / docking a pointer: an OS-level
