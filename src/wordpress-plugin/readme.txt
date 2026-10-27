@@ -4,7 +4,7 @@ Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0
 GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
@@ -106,7 +106,7 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
-= 1.3.2 =
+= 1.3.2 – October 27, 2026 =
 * improved: the cursor's first mouse movement no longer causes a brief slowdown on large pages.
 
 = 1.3.1 – October 13, 2026 =
