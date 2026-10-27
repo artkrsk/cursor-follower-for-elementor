@@ -106,6 +106,9 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
+= 1.3.2 =
+* improved: the cursor's first mouse movement no longer causes a brief slowdown on large pages.
+
 = 1.3.1 – October 13, 2026 =
 * added: integrations outside WordPress can now start, load on demand and cleanly tear down the cursor through createCursorApp and createCursorGate, with ready-to-use ESM, type and style builds.
 
