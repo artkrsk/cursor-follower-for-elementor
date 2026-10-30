@@ -1,6 +1,6 @@
 @layer arts-cursor {
-  // Document-level state classes, flipped by the engine alone — client-side,
-  // off the pointer media query. Nothing server-side stamps them.
+  // Document-level state classes, toggled by effects/suite.ts from the merged
+  // payload — client-side only. Nothing server-side stamps them.
   //
   // Scoped to :hover instead of `*`: the browser renders the cursor of the
   // hovered chain only, so this is visually identical while a state toggle

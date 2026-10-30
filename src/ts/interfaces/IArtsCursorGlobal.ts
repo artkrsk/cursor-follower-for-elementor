@@ -2,12 +2,12 @@ import type { TCursorObserver } from '../types/TCursorObserver'
 import type { ICursorFollower } from './ICursorFollower'
 import type { ICursorObserveOptions } from './ICursorObserveOptions'
 
-/** The discovery global installed by the plugin boot script
-    (`window.artsCursor`) — importable so consumers type the window key
-    from one source instead of copying structural shapes. */
+/** The discovery global (`window.artsCursor`) — installed by the inline gate at
+    parse time, or by the app when no gate ran — importable so consumers type the
+    window key from one source instead of copying structural shapes. */
 export interface IArtsCursorGlobal {
-  /** Resolves at engine init (i.e. whenever the plugin is active and the
-      boot script runs). */
+  /** Resolves at the first engine init. Never settles where the gate does not
+      load the engine (touch-only devices). */
   ready: Promise<ICursorFollower>
   get(): ICursorFollower | null
   /** Replays the initialized instance (including capability-disabled cursors),

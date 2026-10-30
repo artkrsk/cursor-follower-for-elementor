@@ -11,7 +11,7 @@
   // Each is gated on the same marker class its rule is gated on (see
   // Options::build), so switching the effect off in Cursor Effects takes the
   // enlarged area with it. Note this widens the CLICK target too — worth it for
-  // dots, and ~6px per side for arrows.
+  // dots and arrows alike.
 
   // Square, not the icon's own box: the cursor is a circle, so the area it
   // engages from should read the same in both axes. `aspect-ratio` with a
@@ -21,17 +21,6 @@
   // keeps the area from ever being smaller than the cursor that has to cover it
   // — small arrows are exactly where 1.5× isn't enough. The size var is emitted
   // on the kit wrapper, so it inherits down here.
-  //
-  // 150% and not 200%: the arrows live inside `.swiper`, which is
-  // overflow:hidden, seated 10px from its edge — and clipping removes hit
-  // testing, not just paint. At a typical 25px arrow 1.5× stays inside that
-  // budget where 2× would spill past it. The floor can spill outward on small
-  // arrows; the clip only ever trims that one edge, leaving the inward and
-  // vertical reach — the directions a pointer actually arrives from — intact.
-  //
-  // Testimonial Carousel seats its arrows flush at 0px rather than 10px (Pro's
-  // own widget-carousel-module-base.css), so there the outward half is clipped
-  // whatever the size — which is exactly the trim described above, just always.
   //
   // Nested Carousel (`n-carousel`) also seats them at 0px, but renders them as
   // SIBLINGS of the `.swiper` instead of children — so nothing clips them there

@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The engine builds its own cursor markup client-side, so no PHP markup
  * printer exists. Appearance settings never pass through PHP at runtime —
  * Elementor prints them into kit CSS as the public --arts-cursor-* vars;
- * behavioral settings are printed inline as the exact CursorOptions shape
+ * behavioral settings are printed inline as the exact ICursorOptions shape
  * the boot script consumes (see Options::build()).
  */
 class Plugin {
@@ -132,17 +132,16 @@ class Plugin {
 	/**
 	 * Prints the pre-paint gate inline on wp_head — the plugin's ONLY
 	 * front-end output. Nothing is enqueued: the gate sets the <html> state
-	 * classes synchronously, then fetches the stylesheet + engine itself on
-	 * the first real pointer signal, so touch devices download nothing. The
-	 * real asset tags are created client-side at load time, which keeps them
-	 * out of the output buffer that cache/optimizer plugins rewrite.
+	 * classes synchronously, links the stylesheet at parse when the pointer
+	 * media query matches, and injects the engine script on the first real
+	 * pointer signal, so touch devices download nothing. The real asset tags
+	 * are created client-side, which keeps them out of the output buffer that
+	 * cache/optimizer plugins rewrite.
 	 *
-	 * The markers are per-plugin opt-outs, none honored by the others:
+	 * The markers are per-plugin opt-outs:
 	 * noptimize comments (Autoptimize), data-no-optimize (LiteSpeed),
 	 * data-cfasync (Cloudflare Rocket Loader), nowprocket (WP Rocket). The
-	 * tag itself deliberately carries NO id — ArtsAJAXTransitions re-executes
-	 * id'd head scripts on every transition (its body-scoped id lookup misses
-	 * head tags, so they always register as "new").
+	 * tag itself deliberately carries NO id.
 	 *
 	 * Options ride the same block as inline JSON, not wp_localize_script:
 	 * localize string-casts scalars (an effect's `false` would become "",

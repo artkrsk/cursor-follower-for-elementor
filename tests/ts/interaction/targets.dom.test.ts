@@ -13,7 +13,8 @@ import { at } from '../support'
  * authoredTarget) are covered against no DOM in targets.test.ts.
  *
  * Events are plain bubbling Events rather than PointerEvents: the module reads
- * only `target`, `relatedTarget` and `pointerType`, and happy-dom's
+ * `target`, `relatedTarget` and `pointerType` (plus `clientX`/`clientY`, stored
+ * for refresh()'s hit-test and never set here), and happy-dom's
  * PointerEvent constructor would add nothing the assertions depend on.
  */
 
@@ -772,8 +773,7 @@ describe('refresh', () => {
 
 describe('refresh under a still pointer', () => {
   it('resolves from what is under the pointer, not the element it entered', () => {
-    // A host can replace the element the pointer is over — a lightbox
-    // recycling slide holders does exactly that. Re-resolving from the
+    // A host can replace the element the pointer is over. Re-resolving from the
     // element the crossing recorded then reads a detached node, or one now
     // belonging to something else, and the cursor keeps a promise that no
     // longer applies.
@@ -878,9 +878,9 @@ describe('click-triggered refresh', () => {
 
   beforeEach(() => {
     raf = fakeRaf()
-    // The iframe describe above patches elementFromPoint per test and leaves
-    // the patch behind; park it on the null path so these ride the trigger
-    // fallback deterministically.
+    // The still-pointer and iframe describes above assign elementFromPoint
+    // directly rather than through a spy and leave the patch behind; park it
+    // on the null path so these ride the trigger fallback deterministically.
     document.elementFromPoint = () => null
   })
 

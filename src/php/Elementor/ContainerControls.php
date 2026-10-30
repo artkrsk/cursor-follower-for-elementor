@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * ONE hook, one method, no registry, the same shape as LightboxControls and the
  * opposite of WidgetControls: there is exactly one anchor and only ever will be.
  *
- * Everything except the enable switch rides `selectors` as an --arts-cursor-*
+ * Every hint control except the enable switch rides `selectors` as an --arts-cursor-*
  * custom property, NOT a prefix_class marker like the widget controls do — and
  * that is the whole design, not a stylistic choice. A container nests inside a
  * container as a matter of course, and a marker class in a rule's trigger cannot
@@ -58,10 +58,7 @@ class ContainerControls {
 		// The one marker class, and the only thing here that has to be one: the
 		// scope selector needs something to match on, and a custom property can't
 		// be selected for. Off maps to no class at all, so every container on a
-		// site that never touches this stays exactly as it renders today —
-		// prefix_class is applied on the front end with no visibility check
-		// (Element_Base::add_render_attributes), and only the empty value keeps
-		// it quiet there.
+		// site that never touches this stays exactly as it renders today.
 		$element->add_control(
 			'arts_cursor_container',
 			array(

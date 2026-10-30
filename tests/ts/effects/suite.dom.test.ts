@@ -290,10 +290,12 @@ describe('recompute — pill shape', () => {
 
 /**
  * Reservation: an active INSIDE arrow pair grows the shape so the chevrons get
- * real room instead of overlaying the content. Expectations derive from the
- * same constants the engine composes (pads 18/8; depth = gap + size×⅓ per
- * side; breadth = size×⅔ flooring the cross axis) so retuning a default
- * fallback keeps locking the FORMULA rather than a stale number.
+ * real room instead of overlaying the content. Expectations derive depth and
+ * breadth from the same constants the engine composes (depth = gap + size×⅓ per
+ * side; breadth = size×⅔ flooring the cross axis) so retuning an arrow fallback
+ * keeps locking the FORMULA rather than a stale number. The pads (18/8) are
+ * literals in most of the pill expectations, so a HINT_PAD retune has to be
+ * mirrored here by hand.
  */
 describe('recompute — arrows reserve room in the shape', () => {
   const RES = ARROW_GAP_FALLBACK + ARROW_SIZE_FALLBACK * ARROW_DEPTH_RATIO
@@ -551,7 +553,7 @@ describe('recompute — colours', () => {
 
 describe('recompute — write dedupe', () => {
   /** recompute re-runs on every layer change; a value that did not change must
-      not be rewritten — an identical setProperty still dirties style. */
+      not be rewritten. */
   it('does not rewrite custom properties whose values have not changed', () => {
     const suite = build()
     const payload = { textColor: 'red', scale: `${BASE_SIZE_FALLBACK * 2}px` }
@@ -774,8 +776,8 @@ describe('recompute — adopted markup without a follower', () => {
 })
 
 /**
- * Adopted markup whose label carries no text/icon slots: the text falls back
- * onto the label element itself and the icon is skipped — on fill and on the
+ * Adopted markup whose hint carries no text/icon slots: the text falls back
+ * onto the hint element itself and the icon is skipped — on fill and on the
  * deferred clear alike.
  */
 describe('recompute — adopted markup without label slots', () => {
@@ -946,7 +948,7 @@ describe('remeasure', () => {
     suite.remeasure()
     expect(cssVar(refs.root, BORDER_WIDTH_VAR)).toBe('')
 
-    // An explicit payload width still wins, written inline verbatim.
+    // An explicit payload width still wins, written inline (a bare number as px).
     suite.setHover({ borderWidth: 3 }, null)
     expect(cssVar(refs.root, BORDER_WIDTH_VAR)).toBe('3px')
   })

@@ -79,7 +79,7 @@ describe('target suspension', () => {
   })
 
   it('coalesces nested release and invalidation into one hit-test at the latest pointer', () => {
-    a.click() // already queued before intent
+    a.click() // arms a one-frame refresh before any lease exists
     const first = cursor.suspendTargets()
     const second = cursor.suspendTargets()
     const hit = vi.spyOn(document, 'elementFromPoint').mockReturnValue(b)

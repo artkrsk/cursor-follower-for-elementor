@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 /**
  * These guards exist because `instanceof` is unusable across realms — Elementor's
- * preview iframe has its own constructor set. Every case below is a plain object,
+ * preview iframe has its own constructor set. Every input below is a plain literal,
  * which is the point: nothing here is constructed by a DOM, and the guards still
  * have to answer correctly. That is also what lets the rest of this suite hand
  * object literals to the engine.

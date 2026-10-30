@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Reads the JS-bound kit settings and emits exactly the `CursorOptions`
+ * Reads the JS-bound kit settings and emits exactly the `ICursorOptions`
  * shape the boot script consumes — no mapping layer in TS for the load
  * path. Selectors-based Appearance/duration controls never pass through
  * here: Elementor prints them into kit CSS as the public --arts-cursor-*
@@ -28,8 +28,8 @@ class Options {
 			? array( 'strength' => self::size_of( 'arts_cursor_elastic_strength', 1.5 ) )
 			: false;
 
-		// Magnetic is always on globally now; per-widget Cursor Follower controls
-		// gate it via marker classes. Site Settings keeps only the tuning.
+		// Magnetic is always on globally; each widget's Cursor Effects section
+		// gates it via marker classes. Site Settings keeps only the tuning.
 		$options['magnetic'] = array(
 			'strength'      => self::size_of( 'arts_cursor_magnetic_strength', 0.25 ),
 			'releaseRadius' => self::size_of( 'arts_cursor_magnetic_release', 120 ),
@@ -53,7 +53,7 @@ class Options {
 		// group, a rule's `selector` is scope-relative (`:scope` = the widget root,
 		// the default when omitted) and `payload.anchor` redirects the effect to
 		// another element resolved within the hovered widget instance. Structural
-		// effects only; enabling is per-widget now, via a marker class the Cursor
+		// effects only; enabling is per-widget, via a marker class the Cursor
 		// Effects section stamps on the widget wrapper. The polarity follows the
 		// widget's default: a purpose-built one defaults on and its scope EXCLUDES
 		// `-off`, a generic one defaults off and its scope REQUIRES `-on`. Either
@@ -556,9 +556,8 @@ class Options {
 			// Only a slideshow with somewhere to drag TO gets the hint — a
 			// single-media lightbox renders one slide, and a Drag pill over it
 			// would promise navigation that doesn't exist, so the selector demands
-			// a second slide via :has() (an engine without :has() just never
-			// matches the rule: hint absent, nothing else affected). Both
-			// container spellings cover Elementor's legacy/latest Swiper markup.
+			// a second slide via :has(). Both container spellings cover
+			// Elementor's legacy/latest Swiper markup.
 			// Broadest hover zone in this scope, so it stays last.
 			$style   = self::kit_value( 'arts_cursor_lightbox_drag_style' );
 			$rules[] = array(

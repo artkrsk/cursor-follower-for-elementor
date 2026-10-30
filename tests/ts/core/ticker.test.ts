@@ -3,9 +3,9 @@ import type { TTickerCallback } from '@ts/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
- * The ticker that ships whenever no host ticker is injected — every other test
- * in the suite hands the engine a fake, so this file is the only thing that
- * exercises the real loop.
+ * The ticker that ships whenever no host ticker is injected — the engine suites
+ * inject a fake (fakeTicker in support.ts), so this file is the only thing that
+ * drives the real loop frame by frame.
  *
  * rAF is not a global in the node environment, so the stub is the entire
  * implementation: it hands out handles, holds the pending callback, and a test
@@ -118,9 +118,9 @@ describe('callback arguments', () => {
     expect(deltas).toEqual([16, 32])
   })
 
-  /** `time` is relative to the first subscribe, not to the clock's own epoch —
-      an injected ticker may count from anywhere, so the internal one defines
-      the zero the engine would see. */
+  /** `time` is relative to the first subscribe, not to the clock's own epoch.
+      The engine never reads it — frameLoop drops it, since only deltaTime and
+      frameCount are portable across tickers. */
   it('counts time from the first subscribe', () => {
     vi.spyOn(performance, 'now').mockReturnValue(5000)
     const times: number[] = []

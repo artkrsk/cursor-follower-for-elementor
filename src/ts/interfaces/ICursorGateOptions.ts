@@ -4,5 +4,6 @@ export interface ICursorGateOptions {
   js?: string
   /** Called after CSS loads; pass the captured signal to createCursorApp. */
   load?: (signal: AbortSignal) => Promise<void>
+  /** Load immediately instead of waiting for the first pointer signal. */
   editor?: boolean
 }

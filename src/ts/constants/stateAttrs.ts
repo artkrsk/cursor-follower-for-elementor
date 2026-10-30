@@ -29,8 +29,9 @@ export const ARROWS_POSITION_ATTR = 'data-cursor-arrows-position'
     gesture with no extra JS. */
 export const DOT_ATTR = 'data-cursor-dot'
 export const LOADING_ATTR = 'data-cursor-loading'
-/** Transient tail of a loading exit: raised the instant LOADING_ATTR drops,
-    held by effects/suite.ts for one collapse+restore cycle so the spinner can
+/** Transient tail of a loading exit: raised when LOADING_ATTR drops, but only
+    once the circle's collapse leg has settled (an earlier exit skips it).
+    Held by effects/suite.ts for one collapse+restore cycle so the spinner can
     shrink away before the ring grows back, then dropped (or dropped early if
     loading re-engages mid-exit). */
 export const LOADING_OUT_ATTR = 'data-cursor-loading-out'

@@ -13,7 +13,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * CSSMatrixComponent copy trap the module header documents. The docs site stays
  * the check against the real browser API.
  *
- * setTranslate/setElastic only mark dirty now — flush() is the write — so every
+ * setTranslate/setElastic only mark dirty — flush() is the write — so every
  * assertion on the transform follows a flush.
  */
 

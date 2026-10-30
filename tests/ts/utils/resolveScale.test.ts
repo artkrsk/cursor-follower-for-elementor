@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 /**
  * resolveScale returns a RATIO of the base cursor size, never a pixel value —
- * every expectation below divides by the base it was given.
+ * so each non-null expectation below is a px size divided by BASE.
  */
 
 const BASE = 50

@@ -3,9 +3,10 @@ import { defineConfig } from 'vitepress'
 
 // Docs site for the plugin. `base` comes from CI (DOCS_BASE_PATH must match
 // the GitHub repo name exactly — it is only ever exercised in the Pages
-// build); local dev/build serve from '/'. The aliases mirror what the engine
-// source expects: the docs are a first-class Vite consumer of `src/ts` and
-// `src/styles`, same as the WordPress bundle.
+// build); local dev/build serve from '/'. The aliases re-declare the tsconfig
+// `paths` for the browser build: the docs reach the engine and its styles only
+// through them, as a first-class Vite consumer of `src/ts` and `src/styles`,
+// same as the WordPress bundle.
 export default defineConfig({
   title: 'Arts Cursor Follower for Elementor',
   description:
@@ -45,8 +46,6 @@ export default defineConfig({
     },
     server: {
       watch: {
-        // dist/cache live inside the source root; without this, every
-        // `vitepress build docs` force-reloads any open `pnpm dev` tab.
         ignored: ['**/docs/.vitepress/dist/**', '**/docs/.vitepress/cache/**']
       }
     }

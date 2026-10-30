@@ -9,11 +9,10 @@ import { fakeMedia } from '../support'
  * module exists — a hybrid device that switches between a trackpad and touch
  * has to attach and detach at runtime.
  *
- * happy-dom's real MediaQueryList cannot be flipped, so window.matchMedia is
- * replaced with the fakeMedia stub whose `change` a test fires on demand. That
- * is also the only way to reach the disabled path at all: happy-dom reports
- * `(hover:hover) and (pointer:fine)` as matching, so the engine always boots
- * enabled otherwise.
+ * window.matchMedia is replaced with the fakeMedia stub whose `change` a test
+ * fires on demand. That is the only way to reach the disabled path at all:
+ * happy-dom reports `(hover:hover) and (pointer:fine)` as matching, so the
+ * engine always boots enabled otherwise.
  */
 
 const pointer = (type: string, over: Record<string, unknown> = { pointerType: 'mouse' }) => {

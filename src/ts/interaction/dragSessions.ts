@@ -51,6 +51,8 @@ export function createDragSessions(args: {
       }
       const payload = targets.current?.payload
       const drag = payload?.drag
+      // `controlled` targets are painted from host state by controlledDrag.ts, not
+      // by recognizing pointer travel here.
       if (payload && drag && payload.dragMode !== 'controlled') {
         armed = { startX: e.clientX, startY: e.clientY, payload: { ...payload, ...drag } }
       }
@@ -73,7 +75,7 @@ export function createDragSessions(args: {
       }
       armed = null
       // After the session is released, so the resync recomputes on top of the
-      // restored layers — same order the composition root used to apply.
+      // restored layers.
       if (wasDragging) {
         args.onDragEnd(targets.current)
       }

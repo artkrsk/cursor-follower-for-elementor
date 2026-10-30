@@ -7,9 +7,9 @@ import { vi } from 'vitest'
  * Shared mechanical fakes for the test suites — the pieces that were hand-copied
  * across files and carry no per-test meaning. The make/fake verbs are the
  * test-side convention on purpose; create is reserved for engine factories.
- * Everything here is a FACTORY that
- * builds fresh objects per call: the frame path mutates vectors in place, so a
- * shared literal would leak state across tests (the rule the fixtures encode).
+ * Every make/fake helper is a FACTORY that builds fresh objects per call: the
+ * frame path mutates vectors in place, so a shared literal would leak state
+ * across tests (the rule the fixtures encode).
  * The filename deliberately does not end in `.test.ts`, so Vitest never
  * collects it as a suite; coverage never sees it since it only instruments
  * `src/ts`.

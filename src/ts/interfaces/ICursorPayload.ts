@@ -4,7 +4,8 @@ import type { TPressPayload } from '../types/TPressPayload'
 import type { TScaleValue } from '../types/TScaleValue'
 import type { IHighlightConfig } from './IHighlightConfig'
 
-/** Per-item payload parsed from the data attribute. */
+/** Cursor state for one target — parsed from the data attribute, stated by a
+    target rule, or passed to `set()` as a session. */
 export interface ICursorPayload {
   /** Selector resolved INSIDE the matched element — the magnetic anchor/pull
       target when the hover zone is larger than the visual target. */

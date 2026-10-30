@@ -49,10 +49,11 @@ class LightboxControls {
 	 * lightbox, and a replacement-lightbox plugin adds sections of its own to
 	 * this tab — inline, ours read as part of whatever section they trailed.
 	 *
-	 * Only the magnet is a setting. Zoom and fullscreen also get an effect (see
-	 * Options::build) but no control, because they carry `role="switch"` and so
-	 * answer the pointer with nothing at all today — restoring that is a fix,
-	 * the same call already made for Portfolio's non-anchor filter buttons.
+	 * The magnet and the drag hint are the settings. Zoom and fullscreen also get
+	 * an effect (see Options::lightbox_scope) but no control, because they carry
+	 * `role="switch"` and so answer the pointer with nothing at all today —
+	 * restoring that is a fix, the same call already made for Portfolio's
+	 * non-anchor filter buttons.
 	 *
 	 * @param Controls_Stack        $element
 	 * @param array<string, mixed> $args

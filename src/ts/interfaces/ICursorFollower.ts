@@ -27,18 +27,21 @@ export interface ICursorFollower {
   /** Pause automatic target effects; the last release schedules one fresh target resolution. */
   suspendTargets(): ICursorTargetSession
 
-  /** Live-tune feel parameters (trailing, elastic, magnetic). */
+  /** Live-tune feel parameters (trailing, elastic, magnetic, highlight,
+      pressScale). Structural options and animation are not patchable. */
   updateOptions(partial: ICursorOptions): void
   /** Optional observer-based geometry warm hint after injecting large DOM subtrees. */
   warm(container?: ParentNode): void
   /** Re-sample the measured theming vars (size, hint padding, arrow box + gap,
-      label metrics) after the host changes them at runtime. */
+      label metrics, animation duration + easing) after the host changes them at
+      runtime. */
   remeasure(): void
   /** Re-resolve the hovered element after the HOST changed what its rules
       match — a class toggled under a still pointer is otherwise unseen until
       the pointer leaves and returns. Also runs automatically one frame after
-      any click. When the same target survives, `target:refresh` fires instead
-      of a re-enter, so it is safe to call on any state change. */
+      any click. When the same target survives with an equivalent payload,
+      `target:refresh` fires instead of a re-enter, so it is safe to call on any
+      state change. */
   refresh(): void
 
   on<E extends keyof ICursorEvents>(event: E, cb: ICursorEvents[E]): () => void

@@ -390,8 +390,8 @@ describe('withCssContent', () => {
     ).toEqual({ iconUrl: '/i/star.svg' })
   })
 
-  /** The screenshot bug: picking an icon left the rule's own fallback wording
-      beside it, in the stadium that had been sized to hug that wording. */
+  /** The icon replaces the rule's own fallback wording rather than sitting beside
+      it, and the pill that had been sized to hug that wording goes with it. */
   it('drops the rule wording and its pill when an icon resolves', () => {
     stubVars({ '--icon': 'fas fa-search' })
 

@@ -16,10 +16,11 @@ import { round1, round3 } from '../utils'
  * mutated each frame. Engines without Typed OM (stable Firefox at the time of
  * writing) fall back to transform strings. Sub-precision deltas are skipped.
  *
- * setTranslate and setElastic only update components and mark dirty; flush()
- * commits once per frame. So a frame that moves the cursor AND squashes it — the
- * common case — costs a single attributeStyleMap.set (or one string write on the
- * fallback), not two, and an idle-but-subscribed frame writes nothing at all.
+ * setTranslate and setElastic only update the cached numbers and mark dirty;
+ * flush() writes the components and commits once per frame. So a frame that
+ * moves the cursor AND squashes it — the common case — costs a single
+ * attributeStyleMap.set (or one string write on the fallback), not two, and an
+ * idle-but-subscribed frame writes nothing at all.
  */
 
 const supportsTypedOM = (el: HTMLElement) =>

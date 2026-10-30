@@ -69,7 +69,7 @@ import { createSpinnerActivity } from './spinnerActivity'
  * what remains. No sticky flags, no reset ambiguity.
  *
  * All animation lives in CSS: this module only flips data-cursor-* attributes,
- * two document-level classes, and custom properties; transitions do the rest.
+ * three document-level classes, and custom properties; transitions do the rest.
  * Everything that decides *what* to write is a pure module-scope function
  * taking explicit arguments; recompute() is the applier, with its hint
  * section split out as a module-scope sub-applier (applyHint) that takes its
@@ -463,7 +463,7 @@ export const applyHint = (
   // render for it — gating on the label alone left an icon-only payload invisible.
   if ((merged.label || iconKind(merged)) && refs.hint) {
     fillHintSlots(merged, refs, root, refs.hint)
-    // NUL join so "a b" + "" can't collide with "a" + "b".
+    // NUL join so "ab" + "" can't collide with "a" + "b".
     const key = [merged.label, merged.icon, merged.iconClass, merged.iconUrl].join('\u0000')
     let box = labelBoxes.get(key)
     if (!box) {
@@ -520,7 +520,7 @@ export function createEffectsSuite(args: {
   refs: ICursorRefs
   options: IResolvedOptions
   geometry: IGeometryCache
-  /** Target for the two document-level flags — documentElement in the engine. */
+  /** Target for the document-level flags — documentElement in the engine. */
   html: HTMLElement
 }): IEffectsSuite {
   const { refs, options, geometry, html } = args
@@ -655,8 +655,8 @@ export function createEffectsSuite(args: {
   }
 
   // Last-written value per custom property, so a recompute that changes one
-  // layer does not rewrite the rest — an identical setProperty still dirties
-  // style. Var names are unique across root/follower, so the name is the key.
+  // layer does not rewrite the rest. Var names are unique across root/follower,
+  // so the name is the key.
   const written = new Map<string, string | null>()
   const writeVar = (
     el: HTMLElement | null,
@@ -728,9 +728,9 @@ export function createEffectsSuite(args: {
     )
     const scale = floorScale(appearance.scale, labelFit)
     root.toggleAttribute(HIGHLIGHT_ATTR, appearance.highlight)
-    // Exactly 0, not <= 0: the scale grammar never produces a negative, and a
-    // label floors its own payload above zero, so a labeled pill — which never
-    // collapses to a point anyway — correctly never trips this.
+    // Exactly 0, not <= 0: the attribute exists for the collapse-to-nothing
+    // endpoint (see COLLAPSED_ATTR). floorScale keeps a labeled circle above
+    // zero, so it never trips this.
     root.toggleAttribute(COLLAPSED_ATTR, scale === 0)
     writeVar(follower, SCALE_VAR, scale)
     // Live ring radius the arrows seat against (plain, inheriting — see _parts).

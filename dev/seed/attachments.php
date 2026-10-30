@@ -11,9 +11,7 @@
  * media uploader by default, and the site runs no Safe SVG. Inserting the
  * attachment directly bypasses the mime whitelist, which only guards uploads.
  *
- * Why the metadata is hand-written: `getimagesize()` cannot read an SVG, so
- * WordPress records width/height 0 and Elementor's image size resolution has
- * nothing to work with. The numbers below come from each file's own viewBox.
+ * The width/height below come from each file's own viewBox.
  * No `sizes` array — both consuming widgets are set to `full`.
  *
  * Idempotent: keyed on the `_arts_poster_key` meta, so re-running refreshes the
@@ -105,8 +103,6 @@ foreach ( ARTS_POSTERS as $key => list( $filename, $width, $height, $title ) ) {
 		update_post_meta( $id, '_arts_poster_key', $key );
 	}
 
-	// Never generate_attachment_metadata() here: it would hand the SVG to the
-	// image editor, which cannot size it, and overwrite these values with zeros.
 	wp_update_attachment_metadata(
 		$id,
 		array(

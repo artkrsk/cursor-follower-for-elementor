@@ -107,7 +107,7 @@ class SiteSettingsTab extends Tab_Base {
 
 		// The var carries the whole `blur(...)` value, not a radius: unset, the
 		// stylesheet falls back to `none` and the property costs nothing. Frosts
-		// every state — for content only, use the hint sections' own blur.
+		// every state — for content only, use the Hints section's own blur.
 		$this->add_control(
 			'arts_cursor_backdrop_blur',
 			array(
@@ -174,10 +174,11 @@ class SiteSettingsTab extends Tab_Base {
 				),
 				'default'   => 'normal',
 				// On the kit wrapper rather than the cursor, like Size — but for a
-				// different reason: the state sections' Blend Mode "Inherit" maps to
-				// the CSS `inherit` keyword, which needs the base value to live on an
-				// ANCESTOR. (Mapping Inherit to a var() of this same property would
-				// self-reference on .arts-cursor and invalidate the declaration.)
+				// different reason: the Link Highlight and Magnetic Blend Mode
+				// "Inherit" maps to the CSS `inherit` keyword, which needs the base
+				// value to live on an ANCESTOR. (Mapping Inherit to a var() of this
+				// same property would self-reference on .arts-cursor and invalidate
+				// the declaration.)
 				// A theme setting the var directly on .arts-cursor still wins.
 				'selectors' => array(
 					'{{WRAPPER}}' => '--arts-cursor-blend-mode: {{VALUE}};',
@@ -242,7 +243,7 @@ class SiteSettingsTab extends Tab_Base {
 			)
 		);
 
-		// Its own var, like the label colours: the stylesheet reads it only while
+		// Its own var, like the hint colours: the stylesheet reads it only while
 		// the cursor shows content, so this governs every hint — pill, circle
 		// grown around text, drag and card hints alike. Empty emits nothing, so
 		// the base Border Width stands until one is set.
@@ -817,11 +818,10 @@ class SiteSettingsTab extends Tab_Base {
 	}
 
 	/**
-	 * Loading is a state like the others, so it gets the states treatment. The
+	 * Loading is a state like the others, so it gets a section of its own. The
 	 * uniform appearance kit is deliberately absent: while loading, the stylesheet
 	 * collapses the circle to zero scale (not var-driven), so background/border
-	 * overrides here would be dead declarations. Future loading features land in
-	 * this section when built.
+	 * overrides here would be dead declarations.
 	 */
 	private function add_section_loading(): void {
 		$this->start_controls_section(

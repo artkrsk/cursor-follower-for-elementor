@@ -19,11 +19,10 @@ import type { TKitSettings } from './types'
  */
 
 /**
- * Mirrors PHP `Options::is_on()`, and the distinction it makes is the point: a
- * switcher stores '' once it has been touched and turned off, but a never-saved
- * kit has no key at all. Collapsing both to false would disable a section in
- * the editor preview that the front end — which reads the control's own
- * `'default' => 'yes'` — renders enabled.
+ * Mirrors PHP `Options::is_on()`: a missing key (undefined/null) takes the
+ * fallback, and anything present is on only when it is 'yes'. Collapsing the two
+ * to false would disable a section in the editor preview that the front end
+ * renders enabled by default.
  */
 const isOn = (value: unknown, fallback: boolean): boolean =>
   value === undefined || value === null ? fallback : value === 'yes'

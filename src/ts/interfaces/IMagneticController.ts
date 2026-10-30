@@ -4,7 +4,8 @@ import type { IVec2 } from './IVec2'
 
 export interface IMagneticController {
   readonly engaged: boolean
-  /** Engaged, or the element is still easing back to rest. */
+  /** Engaged, or an element (the active one or any in the returning queue) is
+      still easing back to rest — keeps the frame loop from idling. */
   readonly busy: boolean
   /** Element mode: live entry anchor + element pull + distance release.
       `zone` is the hover zone's rect (the trigger element, before anchor
@@ -19,7 +20,7 @@ export interface IMagneticController {
     zone?: IGeometryEntry,
     elementScale?: number | null
   ): void
-  /** Live mode: caller-owned anchor callback (PAGE coords), no pull, no
+  /** Live mode: caller-owned anchor callback (PAGE coords), no element pull, no
       distance release. `getStrength` is read once per frame (0 glues the ring
       rigidly to the anchor). */
   engageLive(getAnchor: () => IVec2, getStrength: () => number): void
@@ -37,7 +38,8 @@ export interface IMagneticController {
   composeTarget(): boolean
   /** Observe only finite element returns already in flight, never continuous following. */
   whenReturned(): Promise<void>
-  /** Restore invisible returns immediately without disturbing an engaged live anchor. */
+  /** Restore invisible returns immediately (hidden document, disabled input);
+      an active engagement is left untouched. */
   finishReturns(): void
   dispose(): void
 }
