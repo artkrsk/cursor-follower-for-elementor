@@ -6,7 +6,8 @@ import { createCursorApp } from '@ts/createCursorApp'
 import { createCursorGate } from '@ts/createCursorGate'
 import type { ICursorFollower, IGateGlobal } from '@ts/interfaces'
 import type { TGateBoot } from '@ts/types'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Window as HappyDOMWindow } from 'happy-dom'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeMedia } from './support'
 
 /**
@@ -14,8 +15,9 @@ import { fakeMedia } from './support'
  * (matchMedia via arm(), the boot config), then imports a fresh copy via
  * vi.resetModules(). Injection is driven by firing the injected elements'
  * onload/onerror BY HAND — that is what makes the css-before-js serialization
- * assertable. happy-dom's own resource auto-loader is left at defaults; the
- * tests never wait on it.
+ * assertable. happy-dom's own loader is held: with CSS loading at its default
+ * of off, it fires `error` synchronously inside appendChild, and with loading on
+ * a fetch that never settles leaves the hand-fired callbacks as the only signal.
  *
  * Every test retires its gate and app so pending asset callbacks cannot leak.
  */
@@ -50,6 +52,12 @@ const arm = (matches: boolean) => {
   media = m
   return m
 }
+
+beforeAll(() => {
+  const { settings } = (window as unknown as HappyDOMWindow).happyDOM
+  settings.enableCSSFileLoading = true
+  settings.fetch.interceptor = { beforeAsyncRequest: () => new Promise<void>(() => {}) }
+})
 
 beforeEach(() => {
   vi.resetModules()
