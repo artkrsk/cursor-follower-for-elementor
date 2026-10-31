@@ -15,9 +15,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Each control reflects onto the widget's OUTER wrapper (.elementor-widget-{name},
  * always printed regardless of the Optimized Markup experiment) as an
- * `arts-cursor-*` marker class via prefix_class + classes_dictionary — off adds
- * the class, on adds nothing, and Elementor toggles it live in the editor with
- * no re-render. Options::build()'s scope selectors key off those classes.
+ * `arts-cursor-*` marker class via prefix_class + classes_dictionary — only the
+ * non-default state adds a class (see add_magnetic_control()), and Elementor
+ * toggles it live in the editor with no re-render. Options::build()'s scope
+ * selectors key off those classes.
  *
  * Label text can't ride a class, so it goes through `selectors` as an
  * --arts-cursor-* custom property the engine reads off the hovered element. Same

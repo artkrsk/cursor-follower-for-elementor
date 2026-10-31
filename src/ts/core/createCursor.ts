@@ -36,8 +36,9 @@ import { createInternalTicker } from './ticker'
 
 /**
  * Gate a rule by its effect's global toggle: a magnetic rule is inert (and
- * drops to regular behavior — a link still highlights) while Magnetic is off.
- * Reads the live options object, so it tracks updateOptions.
+ * drops to regular behavior — a link still highlights) while Magnetic is off,
+ * and a highlight rule while Highlight is off. Reads the live options object,
+ * so it tracks updateOptions.
  */
 export const ruleEnabled = (rule: ITargetRule, options: IResolvedOptions): boolean => {
   const p = rule.payload
@@ -95,7 +96,7 @@ export function createCursor(userOptions: ICursorOptions = {}): ICursorFollower 
   return createCursorWithLifecycle(userOptions)
 }
 
-/** Internal constructor used by boot to publish at the actual lifecycle boundaries. */
+/** Internal constructor used by createCursorApp to publish at the actual lifecycle boundaries. */
 export function createCursorWithLifecycle(
   userOptions: ICursorOptions = {},
   hooks?: ICursorLifecycle

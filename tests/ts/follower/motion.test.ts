@@ -256,7 +256,7 @@ describe('stats', () => {
   })
 
   /** frameMs is a dev-only diagnostic readout; all clock reads are DEV-only, so a
-      shipped frame (DEV forced false by test-setup) leaves it at 0. */
+      shipped frame (DEV forced false by tests/ts/setup.ts) leaves it at 0. */
   it('does not time the frame outside DEV', () => {
     const { motion, stats, ticker } = setup()
 

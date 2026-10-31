@@ -87,8 +87,8 @@ describe('frame', () => {
     expect(state.follower.x).toBeLessThan(200)
   })
 
-  /** One commit per frame — the transform writer's dedupe rides on flush being
-      called exactly once per frame. */
+  /** One commit per frame — the writer defers its transform write to flush(), so
+      the pipeline must call it exactly once, after all of the frame's renders. */
   it('commits the frame exactly once', () => {
     const state = makeFrameState({ target: { x: 100, y: 50 } })
     const { pipeline, args } = setup(state)

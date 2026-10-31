@@ -6,7 +6,8 @@ import { describe, expect, it, vi } from 'vitest'
 /**
  * The adapter is a pure state machine over pointer events — no DOM, no
  * listeners of its own. The suite is a `{ addSession }` returning a spy release,
- * targets is a swappable `current`, and root is a `{ setAttribute }` stub.
+ * targets is a swappable `current`, and root is a `{ setAttribute,
+ * removeAttribute }` stub.
  */
 
 const ptr = (over: Partial<PointerEvent> = {}): PointerEvent =>

@@ -7,8 +7,8 @@ import type { ITargetScope } from './ITargetScope'
 
 /**
  * The config the frame path holds and applyOptionPatch mutates in place. Neither
- * injectable is here: `ticker` and `root` are consumed once at construction by
- * the composition root, straight off the user's options.
+ * injectable is here: the composition root reads `ticker` at construction and
+ * `root` at each init, straight off the user's options.
  */
 export interface IResolvedOptions {
   trailing: number

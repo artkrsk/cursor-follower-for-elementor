@@ -1,6 +1,6 @@
 /**
  * The custom properties JS writes or reads — not an inventory of the engine's
- * CSS variable surface. Grouped below by who else sets them:
+ * CSS variable surface. Grouped below by who else sets them.
  *
  * Deliberately absent, because JS never touches them — contracts between
  * src/styles and Elementor kit CSS, not between src/styles and this engine:
@@ -22,10 +22,11 @@ export const TEXT_COLOR_VAR = '--arts-cursor-text-color'
 export const BG_VAR = '--arts-cursor-background-color'
 export const BORDER_COLOR_VAR = '--arts-cursor-border-color'
 export const BORDER_WIDTH_VAR = '--arts-cursor-border-width'
-/** Read-only for JS: kit/theme CSS owns the value, the suite samples it as the
-    scale base — the custom property rather than offsetWidth, because the
-    follower transitions width/height and a pill overrides them, while an
-    unregistered custom property always reports the settled value. */
+/** Read-only for JS: kit/theme CSS owns the value. remeasure() re-samples it as
+    the scale base (px values only) — the custom property rather than
+    offsetWidth, because the follower transitions width/height and a pill
+    overrides them, while an unregistered custom property always reports the
+    settled value. The initial base is a one-off offsetWidth read. */
 export const SIZE_VAR = '--arts-cursor-size'
 
 /** Engine channels: written only by effects/suite.ts, read only by the
@@ -84,6 +85,7 @@ export const HINT_CURSOR_SIZE_VAR = '--arts-cursor-hint-cursor-size'
 export const ICON_MASK_VAR = '--arts-cursor-icon-mask'
 
 /** Animation tokens, written once at init by applyAnimationTokens (core/markup.ts)
-    from options.animation. `-duration` is also a kit control; `-ease` is not. */
+    from options.animation — only the explicitly configured ones; the stylesheet
+    and the kit supply the rest. `-duration` is also a kit control; `-ease` is not. */
 export const DURATION_VAR = '--arts-cursor-duration'
 export const EASE_VAR = '--arts-cursor-ease'

@@ -202,8 +202,8 @@ describe('hover wiring', () => {
     expect((cursor.el as HTMLElement).hasAttribute(HIGHLIGHT_ATTR)).toBe(true)
   })
 
-  /** The global switch: with Magnetic off the rule is inert, and the element
-      falls back to its regular behaviour rather than going dead. */
+  /** The global switch for an authored payload, which never passes the rule
+      gate: engageHover itself refuses to raise the flag while Magnetic is off. */
   it('ignores a magnetic payload while Magnetic is switched off', () => {
     document.body.innerHTML = `<a href="#" id="link" ${DEFAULT_ATTRIBUTE}='{"magnetic":true}'>go</a>`
     cursor = createCursor({ ticker: ticker.adapter, magnetic: false })

@@ -182,7 +182,8 @@ describe('live engagement (the magnetize path)', () => {
     controller.composeTarget()
     expect(state.target.x).toBe(260)
 
-    // The pointer sits far outside any hover release radius; a live trap holds.
+    // The pointer at the origin is already past the configured 120px releaseRadius
+    // (~224px from the first anchor); a live trap has no distance release, so it holds.
     expect(controller.engaged).toBe(true)
   })
 

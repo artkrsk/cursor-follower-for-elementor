@@ -15,6 +15,8 @@ export interface IFrameState {
   follower: IVec2
   /** target − follower; drives elastic squash. */
   lag: IVec2
-  /** True once the first pointermove arrived (reveal gate). */
+  /** True once the first pointermove arrived (reveal gate). Cleared when the
+      pointer enters an iframe or the engine disables or destroys, so the next
+      parent-side move re-materializes the ring at the pointer. */
   pointerSeen: boolean
 }

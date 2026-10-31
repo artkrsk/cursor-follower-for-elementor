@@ -26,8 +26,8 @@ import { lerpFactor, round1 } from '../utils'
  *   can't feed back; live mode reads the caller's callback
  * - page space is scroll-invariant, so scrolling moves the *pointer* through
  *   the trap — strain grows naturally and element-mode traps release by
- *   distance; the engine renders `follower − scroll` (scroll applied outside
- *   the lerp — the glue)
+ *   distance once the pointer is outside their hover zone; the engine renders
+ *   `follower − scroll` (scroll applied outside the lerp — the glue)
  * - the release threshold adapts per engagement: at least the configured
  *   radius, but never smaller than the pointer's distance at engage time
  *   (hover zones larger than the radius would insta-release otherwise);
@@ -65,8 +65,9 @@ export const easePull = (record: IPullRecord, tx: number, ty: number, k: number)
 
 /** Settled at the ORIGIN: both axes within the return epsilon of zero. That is
     the only settle the trap ever tests — a queue entry always eases home, and
-    the active record is checked only after release zeroes its target. Not a
-    generic at-target test. */
+    the active record is checked only once it is heading home (tick() after
+    release zeroes its target, or handOff() before queuing it). Not a generic
+    at-target test. */
 export const atRest = (record: IPullRecord): boolean =>
   Math.abs(record.pull.x) < ELEMENT_RETURN_EPS && Math.abs(record.pull.y) < ELEMENT_RETURN_EPS
 
@@ -147,7 +148,8 @@ export function createMagnetic(args: {
       the element never builds one — while the scale is still easing back, and
       restore() strips the transition, which cancels it mid-flight and snaps the
       element. Zero unless a scale was actually written, so the default (no
-      resting shrink, no press) keeps today's timing exactly. */
+      resting shrink, no press) releases the element exactly when the pull
+      settles. */
   let hold = 0
 
   /** Elements easing home after their engagement was taken over by another —
@@ -161,8 +163,9 @@ export function createMagnetic(args: {
       transition isn't stripped mid-flight. */
   const holdMs = () => (scaleWritten ? options.animation.duration * MS_PER_SECOND : 0)
 
-  /** Explicit args rather than reading the fields: engage() writes before
-      enterPageSpace() flips `engaged`. */
+  /** Explicit args rather than reading the fields: release and hand-off write
+      (null, null) to hand both shrinks back while `pressedScale` stays set —
+      it follows the button, not the engagement. */
   const writeScale = (resting: number | null, pressed: number | null) => {
     if (!element) {
       return
@@ -371,8 +374,9 @@ export function createMagnetic(args: {
         sampled = false
         return
       }
-      // Element geometry is already a stable cache entry. Its pull correction
-      // still runs AFTER tick(), preserving the existing magnetic arithmetic.
+      // Element geometry is already a stable cache entry, so only the live callback
+      // needs sampling here. An element anchor is read in composeTarget(), after
+      // tick() has eased the pull it is corrected by.
       if (liveAnchor) readAnchor()
       sampledStrength = liveStrength ? liveStrength() : strength
       sampled = true

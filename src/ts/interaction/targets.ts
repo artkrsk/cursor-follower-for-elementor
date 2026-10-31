@@ -135,7 +135,7 @@ export const readCssLabel = (el: Element, property: string): string => {
   return raw.startsWith('"') && raw.endsWith('"') ? raw.slice(1, -1) : raw
 }
 
-/** True when a rule takes anything per-instance off the hovered element. */
+/** True when a rule takes anything per-instance off its scope element. */
 export const isTuned = (rule: ICompiledRule): boolean =>
   Boolean(rule.labelVar || rule.iconVar || rule.stateVars)
 
@@ -473,8 +473,8 @@ export function createTargets(args: {
     // left and came back. This re-runs the same resolve the crossing does.
     //
     // An unchanged verdict must not re-enter — re-emitting enter would
-    // rebuild the hint markup for nothing, on every click now that clicks
-    // schedule a refresh. samePayload settles it: identity for the common
+    // rebuild the hint markup for nothing, on every click since each click
+    // schedules a refresh. samePayload settles it: identity for the common
     // case, value equivalence for var-tuned rules whose payload is cloned
     // per resolve. The held context is re-announced on its own channel
     // instead: a host that derived state from the element at enter time (a
@@ -513,7 +513,7 @@ export function createTargets(args: {
   }
 
   // A click is the moment page state flips under a parked pointer (a burger
-  // opening a menu), and the browser fires no crossing for what changed
+  // opening a menu), and a crossing is not guaranteed for what changed
   // beneath it. Deferring one frame lets the toggle handler's synchronous
   // class/attribute flips land before the re-resolve reads them. No
   // accepts() gate on purpose: a touch tap can flip the page under a parked

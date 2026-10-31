@@ -23,9 +23,9 @@ export interface ITargetRule {
       name a CSS state rather than content. `none` drops the key (so the rule's
       own default can't reassert), an empty property leaves the payload alone.
 
-      This is the only per-instance channel that survives NESTING: the property
-      is read off the nearest matching scope, whereas a marker class in the
-      trigger selector is not — `closest()` walks straight past a nearer scope
-      that lacks the class and matches a farther one that has it. */
+      Unlike a marker class in the trigger selector, a custom property survives
+      NESTING: it is read off the nearest matching scope, whereas `closest()`
+      walks straight past a nearer scope that lacks the class and matches a
+      farther one that has it. */
   stateVars?: Partial<Record<TStateVarKey, string>>
 }

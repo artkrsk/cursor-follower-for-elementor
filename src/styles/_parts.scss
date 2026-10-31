@@ -255,9 +255,9 @@
   // idiom above) — one property, no opacity to keep in sync. The infinite
   // animations are PAUSED while hidden — running they tick style + paint +
   // commit at 60fps forever, even when invisible with the engine asleep
-  // (stroke-dash animates on the main thread). By the time this base rule
-  // re-applies after an exit, the spinner has already settled at scale 0, so
-  // the pause never freezes a visible frame.
+  // (stroke-dash animates on the main thread). The pause re-applies when
+  // data-cursor-spinner-active drops (effects/spinnerActivity.ts), once the
+  // spinner sits at scale 0, so it never freezes a visible frame.
   .arts-cursor__spinner {
     position: absolute;
     top: 0;

@@ -2,7 +2,7 @@
 
 // Two halves, one contract file:
 // 1. The SCSS-language layer — deliberately this small:
-//    three $values, one selector function, one mixin. Compile-time only.
+//    four $values, one selector function, one mixin. Compile-time only.
 // 2. The runtime knobs: two registered state vars, then every tunable custom
 //    property JS samples once per style epoch (motion tokens, hint paddings,
 //    arrow box + gap) — declared together so the JS↔CSS contract has one home.
@@ -69,7 +69,7 @@ $carousel-widgets: 'image-carousel', 'media-carousel', 'testimonial-carousel', '
 
 @layer arts-cursor {
   .arts-cursor {
-    // Motion tokens: JS overrides these inline from options.animation.
+    // Motion tokens: JS writes inline only the ones options.animation sets explicitly.
     // The default ease is the canonical back-out curve (≈ GSAP back.out(1.7)).
     // Deliberately cubic-bezier, not linear(): an unsupported easing arriving
     // through var() is invalid at computed-value time and silently kills the

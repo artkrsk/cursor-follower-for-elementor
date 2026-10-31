@@ -28,8 +28,9 @@ describe('writeEntry', () => {
     expect(entry).toEqual({ pageX: 15, pageY: 27, w: 100, h: 50 })
   })
 
-  /** Page space is scroll-invariant: the same element measured at two scroll
-      positions has to land on the same page coordinate. */
+  /** Page space is scroll-invariant for an in-flow element: measured at two
+      scroll positions (its client rect moving by the scroll delta) it has to land
+      on the same page coordinate. */
   it('yields the same page coordinate after the page has scrolled', () => {
     const entries = new WeakMap<Element, IGeometryEntry>()
     const element = anElement()

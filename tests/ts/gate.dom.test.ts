@@ -14,13 +14,8 @@ import { fakeMedia } from './support'
  * (matchMedia via arm(), the boot config), then imports a fresh copy via
  * vi.resetModules(). Injection is driven by firing the injected elements'
  * onload/onerror BY HAND — that is what makes the css-before-js serialization
- * assertable. happy-dom's own resource auto-loader is left at defaults on
- * purpose: every setting that silences it (disableCSSFileLoading &co) makes
- * it dispatch load/error SYNCHRONOUSLY during appendChild, racing the
- * hand-fired events; at defaults its consequences are async (a fetch of the
- * fake .test host that never resolves) and land after each test's sync
- * assertions. Its stderr complaints about the fake host are expected noise —
- * they bypass every vitest console filter (happy-dom-internal reporting).
+ * assertable. happy-dom's own resource auto-loader is left at defaults; the
+ * tests never wait on it.
  *
  * Every test retires its gate and app so pending asset callbacks cannot leak.
  */

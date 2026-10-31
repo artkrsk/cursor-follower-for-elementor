@@ -84,8 +84,9 @@ describe('settling', () => {
     expect(writer.resetElastic).not.toHaveBeenCalled()
   })
 
-  /** Resetting every idle frame would write the transform forever; the model
-      only resets on the transition back to rest. */
+  /** Resetting every idle frame would keep hitting the writer forever (its
+      dedupe would swallow the write); the model only resets on the transition
+      back to rest. */
   it('resets exactly once when it comes to rest, not on every idle frame', () => {
     const state = makeFrameState({ lag: BIG })
     const writer = makeWriter()

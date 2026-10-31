@@ -60,9 +60,10 @@ foreach ( array( 'hint-1', 'hint-2', 'hint-3', 'slide-1', 'slide-2', 'slide-3' )
 }
 
 // Everything below is closures rather than named functions with `global`:
-// `wp eval-file` includes this file inside a function scope, so the variables
-// here are locals of that scope and `global $x` would reach a different,
-// undefined $x. Closures capture the enclosing scope correctly.
+// `wp eval-file` evals this file (or includes it with --use-include) inside a
+// method scope, so the variables here are locals of that scope and `global $x`
+// would reach a different, undefined $x. Closures capture the enclosing scope
+// correctly.
 
 /** A slider value at a different size, preserving unit. */
 $arts_size = static function ( array $base, float $size ): array {

@@ -11,7 +11,7 @@ declare global {
     artsCursor?: IArtsCursorGlobal
     /** Read once by boot.ts. See TBootOptions for why the injectables are absent. */
     artsCursorFollowerOptions?: TBootOptions
-    /** Read by gate.ts at parse and at load time. Absent outside WordPress
+    /** Read once by gate.ts at parse. Absent outside WordPress
         (the docs site never sets it). */
     artsCursorFollowerBoot?: TGateBoot
   }

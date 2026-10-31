@@ -2,7 +2,7 @@ import type { TArrowDirection } from '../types'
 
 /** The engine's own root, and what it looks for when adopting existing markup. */
 export const CURSOR_ID = 'arts-cursor'
-/** Part names inside the cursor tree. */
+/** Attribute naming each part inside the cursor tree. */
 export const EL_ATTR = 'data-arts-cursor-follower-element'
 /** Default for `ICursorOptions.attribute` — the per-item payload attribute. */
 export const DEFAULT_ATTRIBUTE = 'data-arts-cursor-follower-target'

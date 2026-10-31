@@ -5,6 +5,10 @@
  * flags every call site that uses the result. Confirmed against the real Elementor
  * source (core/kits/manager.php, core/page-assets/data-managers/font-icon-svg/manager.php)
  * that all of them return a value.
+ *
+ * Upstream gap: artkrsk/elementor-stubs#63. Delete this file and its `stubFiles`
+ * entry in phpstan.neon once the installed arts/elementor-stubs declares these
+ * return types itself.
  */
 
 namespace Elementor\Core\Kits;

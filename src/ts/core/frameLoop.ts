@@ -12,6 +12,8 @@ export function createFrameLoop(args: {
   let disposed = false
 
   const reconcile = () => {
+    // A schedule() made mid-frame (motion sleeping on convergence) is folded into the
+    // reconcile frame() runs once render is done.
     if (disposed || running) return
     if (args.busy()) {
       stop ??= args.ticker.subscribe(frame, { priority: 1, label: 'arts-cursor/frame' })

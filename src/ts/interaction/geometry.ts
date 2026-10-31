@@ -16,9 +16,9 @@ import type { IGeometryCache, IGeometryEntry } from '../interfaces'
  *   measure() instead of trusting resolve()'s cache, and stream while engaged
  * - detached elements are evicted when seen: an IO record that comes back
  *   detached drops the entry, and warm() (the post-navigation hint) and resize
- *   both sweep the tracked set. `tracked` is the only durable strong reference to page
- *   elements the engine holds — the observers hold their targets weakly — so a
- *   long-lived engine surviving SPA navigations doesn't retain dead DOM trees
+ *   both sweep the tracked set. untrack() unobserves the element and drops every
+ *   engine-held reference to it, so a long-lived engine surviving SPA navigations
+ *   doesn't retain dead DOM trees
  *
  * Entries are stable per-element objects mutated in place, so a holder of a
  * reference sees updates without re-resolving — which is what lets an engaged

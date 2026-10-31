@@ -347,9 +347,9 @@ describe('warm', () => {
     expect(ro.unobserved).not.toContain(el)
   })
 
-  /** The module-load ternary: with requestIdleCallback present (every Chromium
-      and Firefox) the batch rides it instead of the setTimeout fallback. A fresh
-      import is the only way to re-evaluate the pick. */
+  /** The idle-callback branch of schedule(): with requestIdleCallback present
+      (every Chromium and Firefox) the batch rides it instead of the setTimeout
+      fallback. */
   it('goes through requestIdleCallback when the platform has one', async () => {
     const ric = vi.fn((cb: () => void) => cb())
     vi.stubGlobal('requestIdleCallback', ric)
@@ -391,9 +391,9 @@ describe('warm', () => {
     expect(io.unobserved).toContain(gone)
   })
 
-  /** The post-navigation sweep: warm evicts tracked elements that detached (SPA
-      nav) before measuring the new batch, so the tracked set doesn't retain dead
-      trees. */
+  /** The post-navigation sweep: warm queues tracked elements that detached (SPA
+      nav) for eviction alongside the new batch, so the tracked set doesn't
+      retain dead trees. */
   it('evicts a detached tracked element and keeps the connected one', () => {
     const gone = elementAt()
     cache.resolve(gone) // cold resolve tracks it
