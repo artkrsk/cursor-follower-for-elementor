@@ -4,7 +4,7 @@ Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0
 GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
@@ -106,7 +106,7 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
-= 1.3.3 =
+= 1.3.3 – November 2, 2026 =
 * fixed: the cursor now picks up your Elementor Site Settings and per-widget Cursor Effects when Elementor is network-activated on a multisite.
 
 = 1.3.2 – October 27, 2026 =
