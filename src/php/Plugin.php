@@ -34,7 +34,13 @@ class Plugin {
 		// Last on the filter so every other plugin's attributes are already in
 		// the string by the time we merge into them — see the callback.
 		add_filter( 'language_attributes', array( $this, 'filter_language_attributes' ), PHP_INT_MAX );
-		add_action( 'elementor/loaded', array( $this, 'init_elementor' ) );
+		// Network-active Elementor loads before a site-active plugin and has
+		// already fired the action by now.
+		if ( did_action( 'elementor/loaded' ) ) {
+			$this->init_elementor();
+		} else {
+			add_action( 'elementor/loaded', array( $this, 'init_elementor' ) );
+		}
 
 		// Only the standalone plugin has a Plugins-page row to attach a link
 		// to — the constant comes from the bootstrap file, absent when src/php
