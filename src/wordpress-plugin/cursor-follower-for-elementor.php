@@ -12,7 +12,6 @@
  * Requires Plugins: elementor
  * Text Domain: cursor-follower-for-elementor
  * Plugin URI: https://artemsemkin.com/plugins/cursor-follower-for-elementor/
- * Tested up to: 7.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
