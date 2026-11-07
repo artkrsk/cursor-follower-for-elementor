@@ -26,7 +26,9 @@ export function createInternalTicker(): ITickerAdapter {
 
   const tick = (now: number) => {
     scheduled = false
-    const delta = now - last
+    // `subscribe` seeds `last` with performance.now(), which can be later than
+    // this frame's rAF timestamp: never hand the lerps a negative delta.
+    const delta = Math.max(0, now - last)
     last = now
     frame++
     // Direct Set iteration — no per-frame defensive copy; Set semantics make
