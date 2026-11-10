@@ -106,6 +106,9 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
+= 1.3.4 =
+* fixed: the cursor no longer jitters backwards for a moment when it first appears on the page.
+
 = 1.3.3 – November 2, 2026 =
 * fixed: the cursor now picks up your Elementor Site Settings and per-widget Cursor Effects when Elementor is network-activated on a multisite.
 
