@@ -61,7 +61,7 @@
     "knip": "6.44.2",
     "lefthook": "^2.1.10",
     "sass": "^1.101.0",
-    "stylelint": "^17.14.1",
+    "stylelint": "^18.0.0",
     "typescript": "^7.0.2",
     "vitepress": "2.0.0-alpha.21",
     "vitest": "5.1.0"
