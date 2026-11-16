@@ -24,4 +24,9 @@ export interface ICursorOptions {
   ticker?: ITickerAdapter
   /** Existing cursor markup to verify; engine builds its own tree when absent. */
   root?: Element | string | null
+  /** Honour the visitor's `prefers-reduced-motion: reduce`: while the system asks
+      for it the cursor stays off (`no-cursor-follower`, native cursor untouched)
+      and it comes back when the setting changes. False keeps it running.
+      Default true; read at init. */
+  reducedMotion?: boolean
 }

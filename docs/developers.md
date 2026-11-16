@@ -221,7 +221,7 @@ try {
 
 ## CSS
 
-**`<html>` classes.** Exactly one of `has-cursor-follower` / `no-cursor-follower` is always present — set pre-paint from the pointer media query, corrected by the engine if reality differs, flipped to `no-` on asset failure, and printed server-side when the site disables the cursor via the PHP filter. Key your fallback styling off them and touch devices, filtered pages and broken deploys all land in the same, handled state.
+**`<html>` classes.** Exactly one of `has-cursor-follower` / `no-cursor-follower` is always present — set pre-paint from the pointer media query, corrected by the engine if reality differs, flipped to `no-` on asset failure, and printed server-side when the site disables the cursor via the PHP filter. Key your fallback styling off them and touch devices, reduced-motion visitors, filtered pages and broken deploys all land in the same, handled state. Anything that hides the native cursor belongs under `has-cursor-follower`, never on the plugin merely being active.
 
 **Theming vars.** Six custom properties, styleable from any stylesheet:
 
@@ -268,6 +268,18 @@ add_filter( 'arts_cursor_follower/enabled', fn( $on ) => $on && ! is_checkout() 
 ```
 
 Evaluated once per request, before output. A disabled request prints no gate and no globals, and `<html>` still gets `no-cursor-follower` (via `language_attributes`), so the class contract stays total — to your CSS, a filtered page is a touch page. The Elementor editor preview ignores the filter; it always shows the cursor.
+
+### Reduced motion
+
+The cursor is decoration, so a visitor whose system asks for reduced motion gets the native cursor and no follower. The pointer media query that decides whether the cursor runs gains ` and (prefers-reduced-motion: no-preference)`, which the browser evaluates: one cached page serves both visitors, the engine is never downloaded for one who asks for reduced motion, and the cursor starts and stops when the system setting changes, without a reload. To your CSS such a visitor is a touch visitor: `no-cursor-follower` on `<html>`.
+
+`arts/reduced_motion/enabled` (default `true`) is the switch. Return `false` to keep the cursor running for everyone:
+
+```php
+add_filter( 'arts/reduced_motion/enabled', '__return_false' );
+```
+
+The filter name is shared with other Arts plugins and themes, so one callback forces full motion across all of them. Its verdict is printed as the `reducedMotion` key of the options payload, before `arts_cursor_follower/options` runs. Outside WordPress, pass the same verdict to both factories: `createCursorApp({ options: { reducedMotion: false } })` and `createCursorGate({ css, load, reducedMotion: false })`.
 
 ## Sharing a frame loop
 

@@ -1,23 +1,25 @@
-import { POINTER_MEDIA_QUERY } from '../constants'
 import type { IPointerInput } from '../interfaces'
 import { accepts } from './acceptsPointer'
 
 export { accepts } from './acceptsPointer'
 
 /**
- * Pointer source. A `(hover:hover) and (pointer:fine)` media query owns the
- * listener lifecycle, so hybrid devices attach/detach correctly at runtime.
- * Touch input never reaches the engine (pointerType gate).
+ * Pointer source. A `(hover:hover) and (pointer:fine)` media query (plus the
+ * reduced-motion condition while that is honoured, see pointerMediaQuery) owns
+ * the listener lifecycle, so hybrid devices and a changed motion setting
+ * attach/detach correctly at runtime. Touch input never reaches the engine
+ * (pointerType gate).
  */
 
 export function createPointerInput(args: {
   signal: AbortSignal
+  query: string
   onMove: (e: PointerEvent) => void
   onDown: (e: PointerEvent) => void
   onUp: (e: PointerEvent) => void
   onEnabledChange: (enabled: boolean) => void
 }): IPointerInput {
-  const mql = window.matchMedia(POINTER_MEDIA_QUERY)
+  const mql = window.matchMedia(args.query)
   let listeners: AbortController | null = null
 
   const attach = () => {

@@ -483,6 +483,11 @@ class Options {
 		$options['targetScopes'][] = self::lightbox_scope( $control_magnet );
 		$options['targetScopes'][] = self::container_scope();
 
+		// A filter shared across Arts plugins and themes, so one callback forces full motion
+		// everywhere. While it holds, the browser keeps the cursor off for a visitor whose system
+		// asks for reduced motion, and follows that setting live, so one cached page serves both.
+		$options['reducedMotion'] = (bool) apply_filters( 'arts/reduced_motion/enabled', true );
+
 		/**
 		 * Filters the cursor options payload before it is printed inline.
 		 *

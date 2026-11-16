@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 
+import { POINTER_MEDIA_QUERY } from '@ts/constants'
 import { createPointerInput } from '@ts/core/input'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeMedia } from '../support'
@@ -33,7 +34,11 @@ const setup = (matches = true) => {
     onUp: vi.fn(),
     onEnabledChange: vi.fn()
   }
-  const input = createPointerInput({ signal: lifecycle.signal, ...handlers })
+  const input = createPointerInput({
+    signal: lifecycle.signal,
+    query: POINTER_MEDIA_QUERY,
+    ...handlers
+  })
   return { input, media, ...handlers }
 }
 

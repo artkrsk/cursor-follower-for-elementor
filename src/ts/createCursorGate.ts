@@ -1,14 +1,9 @@
 /// <reference path="./env.d.ts" />
 
-import {
-  GATE_CSS_ID,
-  GATE_JS_ID,
-  HTML_ACTIVE,
-  HTML_INACTIVE,
-  POINTER_MEDIA_QUERY
-} from './constants'
+import { GATE_CSS_ID, GATE_JS_ID, HTML_ACTIVE, HTML_INACTIVE } from './constants'
 import { accepts } from './core/acceptsPointer'
 import { getCursorGlobal } from './core/cursorGlobal'
+import { pointerMediaQuery } from './core/pointerMediaQuery'
 import type { ICursorGate, ICursorGateOptions, ICursorGateScript, IGateGlobal } from './interfaces'
 
 export function createCursorGate(config?: ICursorGateOptions): ICursorGate {
@@ -164,7 +159,7 @@ export function createCursorGate(config?: ICursorGateOptions): ICursorGate {
       if (lifetime.signal.aborted) {
         return
       }
-      media = window.matchMedia(POINTER_MEDIA_QUERY)
+      media = window.matchMedia(pointerMediaQuery(config?.reducedMotion))
       predict(media.matches)
       if (config?.editor) {
         load()

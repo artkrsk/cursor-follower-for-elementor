@@ -2,5 +2,8 @@
 import { createCursorGate } from './createCursorGate'
 
 if (!window.artsCursor) {
-  createCursorGate(window.artsCursorFollowerBoot).init()
+  // The reduced-motion verdict rides the engine options PHP prints just above this script.
+  const boot = window.artsCursorFollowerBoot
+  const reducedMotion = window.artsCursorFollowerOptions?.reducedMotion
+  createCursorGate(boot && reducedMotion === false ? { ...boot, reducedMotion } : boot).init()
 }

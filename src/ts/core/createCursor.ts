@@ -31,6 +31,7 @@ import { createFrameState, createScrollReader } from './frameState'
 import { createPointerInput } from './input'
 import { applyAnimationTokens, buildMarkup, readAnimationTokens, setActiveClasses } from './markup'
 import { applyOptionPatch, resolveOptions } from './options'
+import { pointerMediaQuery } from './pointerMediaQuery'
 import { createSession } from './session'
 import { createInternalTicker } from './ticker'
 
@@ -283,6 +284,7 @@ export function createCursorWithLifecycle(
 
       input = createPointerInput({
         signal: lifecycle.signal,
+        query: pointerMediaQuery(userOptions.reducedMotion),
         onMove: (e) => {
           // Crossing INTO an iframe is the last event the parent document
           // gets — everything after belongs to the embedded page, so the
