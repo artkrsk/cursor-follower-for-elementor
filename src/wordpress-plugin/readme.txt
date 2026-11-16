@@ -4,7 +4,7 @@ Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.3.4
+Stable tag: 1.3.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0
 GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
@@ -106,7 +106,7 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
-= 1.3.5 =
+= 1.3.5 – November 16, 2026 =
 * added: the cursor follower now stays off for visitors whose system asks for reduced motion, leaving the regular cursor in place, and follows that setting when it changes, without a reload. Developers can switch this off with the arts/reduced_motion/enabled filter.
 
 = 1.3.4 – November 10, 2026 =
