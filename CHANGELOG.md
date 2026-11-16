@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.5 – November 16, 2026
+
+* added: the cursor follower now stays off for visitors whose system asks for reduced motion, leaving the regular cursor in place, and follows that setting when it changes, without a reload. Developers can switch this off with the arts/reduced_motion/enabled filter.
+
 ## 1.3.4 – November 10, 2026
 
 * fixed: the cursor no longer jitters backwards for a moment when it first appears on the page.
