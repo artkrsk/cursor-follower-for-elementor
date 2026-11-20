@@ -2,7 +2,7 @@
 Contributors: artemsemkin
 Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 8.0
 Stable tag: 1.3.5
 License: GPLv3
