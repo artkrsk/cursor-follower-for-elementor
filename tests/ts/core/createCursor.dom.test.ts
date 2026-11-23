@@ -631,6 +631,18 @@ describe('collectWarmTargets', () => {
     expect(set.size).toBe(1)
   })
 
+  /** One bad attribute anywhere on the page must not stop init() from booting. */
+  it('tolerates an anchor that is not a valid selector — the element is still warmed', () => {
+    const root = container(
+      `<div class="zone" ${DEFAULT_ATTRIBUTE}='{"anchor":"[bad"}'><span>d</span></div>`
+    )
+    const zone = root.querySelector('.zone') as Element
+
+    const set = collectWarmTargets(root, DEFAULT_ATTRIBUTE, '')
+
+    expect([...set]).toEqual([zone])
+  })
+
   it('warms an element with an empty attribute value, no anchor lookup', () => {
     const root = container(`<div class="zone" ${DEFAULT_ATTRIBUTE}=''></div>`)
     const zone = root.querySelector('.zone') as Element

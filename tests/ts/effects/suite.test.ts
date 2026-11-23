@@ -87,6 +87,10 @@ describe('highlightEligible', () => {
     expect(highlightEligible({ highlight: false }, el())).toBe(false)
   })
 
+  it('reads a null highlight as not stated', () => {
+    expect(highlightEligible({ highlight: null } as never, el())).toBe(false)
+  })
+
   it('auto-highlights a bare interactive element carrying no payload', () => {
     expect(highlightEligible({}, el())).toBe(true)
   })
@@ -162,6 +166,18 @@ describe('resolveAppearance', () => {
     )
     expect(result.scale).toBe(40 / BASE)
     expect(result.highlight).toBe(true)
+  })
+
+  /** A key the engine can't read drops alone; the rest of the payload applies. */
+  it('drops an unreadable scale and keeps the rest of the payload', () => {
+    const payload = { scale: { size: 80, unit: 'px' }, highlight: { scale: '100px' } } as never
+    expect(resolveAppearance(payload, el(), makeMeasure(), BASE, { scale: '80px' })).toEqual({
+      scale: 100 / BASE,
+      highlight: true
+    })
+    expect(
+      resolveAppearance({ highlight: null } as never, el(), makeMeasure(), BASE, { scale: '80px' })
+    ).toEqual({ scale: null, highlight: false })
   })
 
   /**

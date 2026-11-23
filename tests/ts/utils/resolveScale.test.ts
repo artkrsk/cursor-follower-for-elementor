@@ -79,6 +79,22 @@ describe('resolveScale', () => {
       expect(resolveScale({ ref: 'cursor', min: 'target' }, BASE)).toBe(1)
     })
   })
+
+  /** Themes and cached HTML hand the engine shapes it doesn't know (Trigger's
+      old `{ size, unit }`); the key reads as unset rather than throwing. */
+  it('treats a shape it cannot read as no opinion instead of throwing', () => {
+    const malformed = [
+      { size: 80, unit: 'px' },
+      {},
+      { ref: 5 },
+      80,
+      [],
+      { ref: 'cursor', factor: 'big' }
+    ]
+    for (const value of malformed) {
+      expect(resolveScale(value as never, BASE)).toBeNull()
+    }
+  })
 })
 
 /**

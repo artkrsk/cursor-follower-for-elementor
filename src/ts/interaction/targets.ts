@@ -76,9 +76,18 @@ export const geometrySelector = (scopes: ITargetScope[]): string => {
 }
 
 /** Resolve an anchor within a scope instance. `:scope` is the instance itself;
-    otherwise a descendant query (native `:scope`-aware). */
-export const resolveAnchor = (scopeEl: Element, anchor: string): Element | null =>
-  anchor === ':scope' ? scopeEl : scopeEl.querySelector(anchor)
+    otherwise a descendant query (native `:scope`-aware). An authored anchor
+    that isn't a valid selector names nothing rather than throwing. */
+export const resolveAnchor = (scopeEl: Element, anchor: string): Element | null => {
+  if (anchor === ':scope') {
+    return scopeEl
+  }
+  try {
+    return scopeEl.querySelector(anchor)
+  } catch {
+    return null
+  }
+}
 
 /** Per-element JSON payload, parsed once and memoized (misses cached as null). */
 export const parsePayload = (
