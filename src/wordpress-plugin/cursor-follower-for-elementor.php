@@ -24,3 +24,7 @@ define( 'ARTS_CURSOR_FOLLOWER_PLUGIN_FILE', __FILE__ );
 require_once __DIR__ . '/vendor/autoload.php';
 
 \Arts\CursorFollower\Plugin::instance();
+
+// Elementor's caches cleared once per version. Wired here rather than in src/php, which
+// can also ship inside a host product that has no copy of this prefixed class.
+\ArtsCursorFollower\Arts\Base\Elementor\CacheClear::on_version( 'cursor-follower', ARTS_CURSOR_FOLLOWER_PLUGIN_VERSION );
