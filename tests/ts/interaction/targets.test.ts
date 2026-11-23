@@ -214,6 +214,18 @@ describe('resolveAnchor', () => {
   it('returns null when the anchor is absent, so the caller can drop the rule', () => {
     expect(resolveAnchor(scopeEl, '.missing')).toBeNull()
   })
+
+  /** An authored anchor that isn't a selector names nothing — it must not throw
+      out of a hover handler, or out of init() through warm(). */
+  it('returns null for an anchor that is not a valid selector', () => {
+    const instance = {
+      querySelector: () => {
+        throw new SyntaxError("'[bad' is not a valid selector")
+      }
+    } as unknown as Element
+
+    expect(resolveAnchor(instance, '[bad')).toBeNull()
+  })
 })
 
 describe('parsePayload', () => {

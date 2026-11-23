@@ -160,8 +160,8 @@ export const highlightEligible = (merged: ICursorPayload, element: Element | nul
   }
   if (Object.keys(merged).length > 0) {
     // With a payload present, highlight is opt-in: an authored payload means
-    // the author is in charge.
-    return merged.highlight !== undefined && merged.highlight !== false
+    // the author is in charge. A JSON null reads as not stated.
+    return merged.highlight != null && merged.highlight !== false
   }
   // Bare interactive (link/button/.has-cursor-highlight): auto-highlight.
   return element !== null

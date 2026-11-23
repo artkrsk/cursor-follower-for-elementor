@@ -39,9 +39,10 @@ export const usesTargetRef = (value: TScaleValue | false | null | undefined): bo
 
 /**
  * The one canonical scale resolver — pure and contextless. Returns a scale
- * factor (ratio of the base cursor size), or null when unresolvable. See
- * TScaleValue for the grammar; `targetSize` (the hovered element's larger
- * dimension) is required for the 'target' reference.
+ * factor (ratio of the base cursor size), or null when unresolvable — a shape
+ * outside the grammar included, since payloads arrive as JSON from themes and
+ * cached HTML. See TScaleValue for the grammar; `targetSize` (the hovered
+ * element's larger dimension) is required for the 'target' reference.
  */
 export function resolveScale(
   value: TScaleValue | false | undefined | null,
@@ -51,10 +52,8 @@ export function resolveScale(
   if (value === undefined || value === null || value === false || baseSize <= 0) {
     return null
   }
-  let px =
-    typeof value === 'string'
-      ? refPx(value, baseSize, targetSize)
-      : refPx(value.ref, baseSize, targetSize)
+  const ref = typeof value === 'object' ? value.ref : value
+  let px = typeof ref === 'string' ? refPx(ref, baseSize, targetSize) : null
   if (px === null) {
     return null
   }
@@ -71,5 +70,6 @@ export function resolveScale(
       px = Math.min(px, max)
     }
   }
-  return px / baseSize
+  // A non-numeric factor yields NaN, which `??` fallbacks would not catch.
+  return Number.isFinite(px) ? px / baseSize : null
 }
