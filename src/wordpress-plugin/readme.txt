@@ -21,6 +21,10 @@ One thing it is not: a static cursor image swapper. If you want to replace the p
 
 Live demos and developer documentation: https://artkrsk.github.io/cursor-follower-for-elementor/
 
+= ✅ Used in Velum theme =
+
+Velum, my portfolio theme for architects and studios, uses this plugin for its custom cursor. [Velum's page](https://artemsemkin.com/themes/velum/?utm_source=wordpress.org&utm_medium=referral&utm_campaign=cursor-follower-for-elementor) has a live demo to try it.
+
 = The effects =
 
 * **Link highlight.** The cursor grows and fades over links and buttons. On by default, works everywhere.
