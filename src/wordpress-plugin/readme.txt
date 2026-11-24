@@ -106,6 +106,10 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
+= 1.3.6 =
+* improved: Elementor's cached styles and markup are now cleared once after an update, so changes in a new version show up on existing pages.
+* fixed: a cursor setting on an element that the cursor cannot read no longer breaks the cursor on that element or stops it from starting.
+
 = 1.3.5 – November 16, 2026 =
 * added: the cursor follower now stays off for visitors whose system asks for reduced motion, leaving the regular cursor in place, and follows that setting when it changes, without a reload. Developers can switch this off with the arts/reduced_motion/enabled filter.
 
