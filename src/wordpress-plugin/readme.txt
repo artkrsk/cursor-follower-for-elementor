@@ -4,7 +4,7 @@ Tags: cursor, custom cursor, cursor effects, mouse cursor, elementor
 Requires at least: 6.2
 Tested up to: 7.2
 Requires PHP: 8.0
-Stable tag: 1.3.5
+Stable tag: 1.3.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0
 GitHub Plugin URI: https://github.com/artkrsk/cursor-follower-for-elementor/
@@ -106,7 +106,7 @@ Deactivate the plugin, or for conditional control use the "arts_cursor_follower/
 
 == Changelog ==
 
-= 1.3.6 =
+= 1.3.6 – November 24, 2026 =
 * improved: Elementor's cached styles and markup are now cleared once after an update, so changes in a new version show up on existing pages.
 * fixed: a cursor setting on an element that the cursor cannot read no longer breaks the cursor on that element or stops it from starting.
 
