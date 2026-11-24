@@ -21,9 +21,9 @@ One thing it is not: a static cursor image swapper. If you want to replace the p
 
 Live demos and developer documentation: https://artkrsk.github.io/cursor-follower-for-elementor/
 
-= ✅ Used in Velum theme =
+= ✅ Used in Velum and Trigger themes =
 
-Velum, my portfolio theme for architects and studios, uses this plugin for its custom cursor. [Velum's page](https://artemsemkin.com/themes/velum/?utm_source=wordpress.org&utm_medium=referral&utm_campaign=cursor-follower-for-elementor) has a live demo to try it.
+Velum, my portfolio theme for architects and studios, uses this plugin for its custom cursor. Trigger, my AJAX portfolio theme, installs it during setup for its cursor. [Velum's page](https://artemsemkin.com/themes/velum/?utm_source=wordpress.org&utm_medium=referral&utm_campaign=cursor-follower-for-elementor) and [Trigger's page](https://artemsemkin.com/themes/trigger/?utm_source=wordpress.org&utm_medium=referral&utm_campaign=cursor-follower-for-elementor) have live demos to try it.
 
 = The effects =
 
