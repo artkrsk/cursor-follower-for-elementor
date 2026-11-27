@@ -25,4 +25,8 @@ await cp(new URL('../src/ts/env.d.ts', import.meta.url), new URL('types/src/ts/e
 const css = compile(fileURLToPath(new URL('../src/styles/index.scss', import.meta.url)), {
   style: 'compressed'
 }).css
+// styles.css serves pages without Elementor, where widget rules match nothing.
+if (/elementor|swiper|\.e-/.test(css)) {
+  throw new Error('styles.css names an Elementor class: move the rule to src/styles/elementor.scss')
+}
 await writeFile(new URL('esm/styles.css', output), css)
