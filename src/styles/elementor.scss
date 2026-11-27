@@ -1,4 +1,41 @@
+// WordPress bundle entry: the engine (index.scss, which is also the package's
+// styles entry) plus the rules that only match on an Elementor page. They are
+// emitted after the engine and inside the same layer, so the split leaves the
+// cascade as it was.
+
+@use 'sass:list';
 @use 'tokens';
+@use 'index';
+
+// The slider widgets whose controls get enlarged hover areas below — mirrors
+// the rule set in Options::build. n-carousel is Pro's Nested Carousel: its
+// root class overrides get_html_wrapper_class().
+$carousel-widgets: 'image-carousel', 'media-carousel', 'testimonial-carousel', 'slides',
+  'n-carousel';
+
+// One selector per slider widget: .elementor-widget-<w><marker> <inner>.
+@function carousel-selectors($marker, $inner) {
+  $out: ();
+
+  @each $w in $carousel-widgets {
+    $out: list.append($out, '.elementor-widget-#{$w}#{$marker} #{$inner}', comma);
+  }
+
+  @return $out;
+}
+
+// The square hover-target enlargement shared by slider arrows and magnetic
+// icons — sizing rationale lives with the call sites below.
+@mixin square-hit-area {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  aspect-ratio: 1;
+  min-width: max(150%, var(--arts-cursor-size, #{tokens.$size-fallback}));
+  min-height: max(150%, var(--arts-cursor-size, #{tokens.$size-fallback}));
+}
 
 @layer arts-cursor {
   // The one place this stylesheet touches HOST markup rather than the cursor's
@@ -26,9 +63,9 @@
   // SIBLINGS of the `.swiper` instead of children — so nothing clips them there
   // and the whole square survives, which is the one case this budget isn't
   // spent against.
-  #{tokens.carousel-selectors(':not(.arts-cursor-arrows-off)', '.elementor-swiper-button')} {
+  #{carousel-selectors(':not(.arts-cursor-arrows-off)', '.elementor-swiper-button')} {
     &::before {
-      @include tokens.square-hit-area;
+      @include square-hit-area;
     }
   }
 
@@ -37,7 +74,7 @@
   // adjacent areas meet without ever overlapping — no ambiguity about which dot
   // a hover belongs to, at any spacing the widget is set to. Bullets are square,
   // so an even inset keeps the area square for the circular cursor.
-  #{tokens.carousel-selectors(':not(.arts-cursor-dots-off)', '.swiper-pagination-bullet')} {
+  #{carousel-selectors(':not(.arts-cursor-dots-off)', '.swiper-pagination-bullet')} {
     // Swiper leaves bullets static; without this the pseudo would resolve
     // against .swiper-pagination — the whole row — instead of the dot.
     position: relative;
@@ -74,7 +111,7 @@
     position: relative;
 
     &::before {
-      @include tokens.square-hit-area;
+      @include square-hit-area;
     }
   }
 }

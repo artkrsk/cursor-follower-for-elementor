@@ -2,9 +2,9 @@ import type { Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import CursorDemo from './components/CursorDemo.vue'
 import Layout from './Layout.vue'
-// The docs are the engine's browser harness: the full cursor stylesheet loads
-// on every page, same cascade layer and all, so what readers see is what the
-// plugin ships.
+// The docs are the engine's browser harness: the engine stylesheet loads on
+// every page, same cascade layer and all, so what readers see is what the
+// plugin ships (minus elementor.scss, whose widget rules match nothing here).
 import '@styles/index.scss'
 import './demos.css'
 

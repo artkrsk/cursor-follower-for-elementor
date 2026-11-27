@@ -1,8 +1,6 @@
-@use 'sass:list';
-
 // Two halves, one contract file:
 // 1. The SCSS-language layer — deliberately this small:
-//    four $values, one selector function, one mixin. Compile-time only.
+//    three $values. Compile-time only.
 // 2. The runtime knobs: two registered state vars, then every tunable custom
 //    property JS samples once per style epoch (motion tokens, hint paddings,
 //    arrow box + gap) — declared together so the JS↔CSS contract has one home.
@@ -22,36 +20,6 @@ $motion: var(--arts-cursor-duration) var(--arts-cursor-ease);
 // curve direction-aware for free: shrinking lands on whichever rule matches the
 // settled post-flip state, growing lands on the other. No JS timing logic.
 $motion-collapse: var(--arts-cursor-duration) var(--arts-cursor-collapse-ease);
-
-// The slider widgets whose controls get enlarged hover areas in
-// _integrations.scss — mirrors the rule set in Options::build. n-carousel is
-// Pro's Nested Carousel: its root class overrides get_html_wrapper_class().
-$carousel-widgets: 'image-carousel', 'media-carousel', 'testimonial-carousel', 'slides',
-  'n-carousel';
-
-// One selector per slider widget: .elementor-widget-<w><marker> <inner>.
-@function carousel-selectors($marker, $inner) {
-  $out: ();
-
-  @each $w in $carousel-widgets {
-    $out: list.append($out, '.elementor-widget-#{$w}#{$marker} #{$inner}', comma);
-  }
-
-  @return $out;
-}
-
-// The square hover-target enlargement shared by slider arrows and magnetic
-// icons — sizing rationale lives with the call sites in _integrations.scss.
-@mixin square-hit-area {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  aspect-ratio: 1;
-  min-width: max(150%, var(--arts-cursor-size, #{$size-fallback}));
-  min-height: max(150%, var(--arts-cursor-size, #{$size-fallback}));
-}
 
 // Internal state vars — registered so they are typed and non-inheriting.
 // JS sets them directly on the elements that consume them.

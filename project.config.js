@@ -5,7 +5,7 @@ export default {
   versionConstant: 'ARTS_CURSOR_FOLLOWER_PLUGIN_VERSION',
   defineKey: '__ARTS_CURSOR_VERSION__',
   esbuildTarget: 'es2022',
-  entry: { ts: './src/ts/boot.ts', sass: './src/styles/index.scss' },
+  entry: { ts: './src/ts/boot.ts', sass: './src/styles/elementor.scss' },
   // The gate is inlined into HTML by PHP: no banner (per-page weight), no
   // sourcemap (its URL would 404 against the page).
   bundles: [{ name: 'gate', entry: './src/ts/gate.ts', banner: 'none' }],
